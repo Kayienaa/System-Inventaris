@@ -33,10 +33,12 @@ class DatabaseSeeder extends Seeder
 
         // 3. Dummy Data Barang (Hasil Wawancara: Laptop 11 unit, Merchandise, dll)
         
-        // Laptop TEFA (11 Unit)
-        for ($i = 1; $i <= 6; $i++) {
+        // 3. Laptop TEFA (Total 27 Unit)
+        // 14 Unit Asus di Ruang TEFA 1
+        for ($i = 1; $i <= 14; $i++) {
+            $kode = 'TEFA-LPT-' . str_pad($i, 3, '0', STR_PAD_LEFT);
             Item::create([
-                'kode_unik' => 'TEFA-LPT-00' . $i,
+                'kode_unik' => $kode,
                 'nama_barang' => 'Laptop Asus Vivobook #' . $i,
                 'kategori' => 'Laptop',
                 'jenis' => 'Elektronik',
@@ -47,14 +49,30 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        for ($i = 7; $i <= 11; $i++) {
+        // 13 Unit Lenovo di Ruang TEFA 2
+        for ($i = 15; $i <= 27; $i++) {
+            $kode = 'TEFA-LPT-' . str_pad($i, 3, '0', STR_PAD_LEFT);
             Item::create([
-                'kode_unik' => 'TEFA-LPT-0' . $i,
+                'kode_unik' => $kode,
                 'nama_barang' => 'Laptop Lenovo ThinkPad #' . $i,
                 'kategori' => 'Laptop',
                 'jenis' => 'Elektronik',
                 'merk' => 'Lenovo',
                 'lokasi_ruangan' => 'Ruang TEFA 2',
+                'stok' => 1,
+                'status' => 'Tersedia',
+            ]);
+        }
+
+        // 4. Smartphone / HP (3 Unit)
+        for ($i = 1; $i <= 3; $i++) {
+            Item::create([
+                'kode_unik' => 'TEFA-HP-00' . $i,
+                'nama_barang' => 'Smartphone Pengujian #' . $i,
+                'kategori' => 'HP',
+                'jenis' => 'Elektronik',
+                'merk' => 'Samsung',
+                'lokasi_ruangan' => 'Ruang TEFA 1',
                 'stok' => 1,
                 'status' => 'Tersedia',
             ]);
