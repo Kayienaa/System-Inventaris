@@ -13,14 +13,34 @@ return new class extends Migration
 {
     Schema::create('borrowings', function (Blueprint $table) {
         $table->id();
-        $table->foreignId('user_id')->constrained()->onDelete('cascade');
-        $table->foreignId('item_id')->constrained()->onDelete('cascade');
+
+        $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+        $table->foreignId('item_id')->constrained()->cascadeOnDelete();
+
         $table->dateTime('tgl_pinjam');
-        $table->dateTime('tgl_kembali_rencana'); // Otomatis +3 hari dari tgl_pinjam
+        $table->dateTime('tgl_kembali_rencana');
         $table->dateTime('tgl_kembali_realitas')->nullable();
-        $table->string('foto_bukti_pinjam'); // Menyimpan path foto ber-timestamp
-        $table->enum('status', ['Dipinjam', 'Dikembalikan', 'Terlambat', 'Rusak/Hilang'])->default('Dipinjam');
+
+        //Foto saat meminjam
+        $table->string('foto_pinjam');
+
+        //Foto saat mengembalikan
+        $table->string('foto_pengembalian')->nullable();
+
+        //Jika meminjam laptop
+        $table->boolean('include_charger')->default(false);
+        $table->boolean('include_mouse')->default(false);
+
+        $table->enum('status', [
+            'Dipinjam',
+            'Dikembalikan',
+            'Terlambat',
+            'Rusak',    
+            'Hilang'
+        ])->default('Dipinjam');
+
         $table->text('catatan')->nullable();
+
         $table->timestamps();
     });
 }
