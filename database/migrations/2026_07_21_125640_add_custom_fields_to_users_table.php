@@ -15,7 +15,6 @@ return new class extends Migration
         $table->string('nis_nip')->unique()->after('id');
         $table->date('tanggal_lahir')->nullable()->after('email');
         $table->string('no_wa')->nullable()->after('tanggal_lahir');
-        $table->string('foto_profil')->nullable()->after('no_wa');
     });
 }
 
