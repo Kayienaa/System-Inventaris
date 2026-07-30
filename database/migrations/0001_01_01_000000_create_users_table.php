@@ -14,39 +14,23 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
 
-            // Data akun 
             $table->string('name');
-            $table->string('email')->unique();
-            $table->string('password');
+            $table->enum('role', ['admin', 'guru', 'siswa'])->default('siswa');
 
-            // Hak akses
-            $table->enum('role', ['admin', 'user'])->default('user');
+            // Kredensial login berbeda per role
+            $table->string('nis')->nullable()->unique();   // Login Siswa
+            $table->string('nip')->nullable()->unique();   // Login Guru
+            $table->string('email')->nullable()->unique(); // Login Admin + tujuan notifikasi email
 
-            // NIS atau NIP
-            $table->string('identitas')->unique();
+            $table->date('tanggal_lahir')->nullable(); // Dipakai sebagai "password" login Siswa
+            $table->string('password')->nullable();    // Wajib utk admin/guru, siswa = hash(tanggal_lahir)
 
-            // Nomor WhatsApp
-            $table->string('nomor_whatsapp');
-
-            // Foto profil
+            $table->string('no_wa')->nullable();
             $table->string('foto_profil')->nullable();
 
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
-        });
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-        });
-        Schema::create('sessions', function (Blueprint $table) {
-            $table->string('id')->primary();
-            $table->foreignId('user_id')->nullable()->index();
-            $table->string('ip_address', 45)->nullable();
-            $table->text('user_agent')->nullable();
-            $table->longText('payload');
-            $table->integer('last_activity')->index();
         });
     }
 
