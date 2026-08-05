@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
@@ -17,13 +14,12 @@ return new class extends Migration
             $table->string('name');
             $table->enum('role', ['admin', 'guru', 'siswa'])->default('siswa');
 
-            // Kredensial login berbeda per role
-            $table->string('nis')->nullable()->unique();   // Login Siswa
-            $table->string('nip')->nullable()->unique();   // Login Guru
-            $table->string('email')->nullable()->unique(); // Login Admin + tujuan notifikasi email
+            $table->string('nis')->nullable()->unique();
+            $table->string('nip')->nullable()->unique();
+            $table->string('email')->nullable()->unique();
 
-            $table->date('tanggal_lahir')->nullable(); // Dipakai sebagai "password" login Siswa
-            $table->string('password')->nullable();    // Wajib utk admin/guru, siswa = hash(tanggal_lahir)
+            $table->date('tanggal_lahir')->nullable();
+            $table->string('password')->nullable();
 
             $table->string('no_wa')->nullable();
             $table->string('foto_profil')->nullable();
@@ -34,13 +30,8 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
-        Schema::dropIfExists('sessions');
     }
 };

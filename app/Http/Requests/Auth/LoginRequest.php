@@ -18,59 +18,38 @@ class LoginRequest extends FormRequest
     }
 
     /**
+     * Validasi form login — semua role kini menggunakan Email + Password.
+     *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
-        return match ($this->input('login_as', 'admin')) {
-            'guru' => [
-                'nip' => ['required', 'string'],
-                'password' => ['required', 'string'],
-            ],
-            'siswa' => [
-                'nis' => ['required', 'string'],
-                'tanggal_lahir' => ['required', 'date_format:Y-m-d'],
-            ],
-            default => [
-                'email' => ['required', 'string', 'email'],
-                'password' => ['required', 'string'],
-            ],
-        };
+        return [
+            'email'    => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
+        ];
     }
 
     /**
+     * Lakukan autentikasi menggunakan email + password.
+     * Role tidak lagi dipilih user; dibaca dari database setelah login.
+     *
      * @throws ValidationException
      */
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
 
-        $role = $this->input('login_as', 'admin');
-
-        $credentials = match ($role) {
-            'guru' => [
-                'nip' => $this->input('nip'),
-                'password' => $this->input('password'),
-                'role' => 'guru',
-            ],
-            'siswa' => [
-                'nis' => $this->input('nis'),
-                // "password" siswa = tanggal lahir mereka sendiri
-                'password' => $this->input('tanggal_lahir'),
-                'role' => 'siswa',
-            ],
-            default => [
-                'email' => $this->input('email'),
-                'password' => $this->input('password'),
-                'role' => 'admin',
-            ],
-        };
+        $credentials = [
+            'email'    => $this->input('email'),
+            'password' => $this->input('password'),
+        ];
 
         if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'login' => 'Data yang Anda masukkan tidak cocok dengan data kami.',
+                'email' => 'Email atau password yang Anda masukkan salah.',
             ]);
         }
 
@@ -88,7 +67,7 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'login' => trans('auth.throttle', [
+            'email' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
@@ -97,8 +76,6 @@ class LoginRequest extends FormRequest
 
     public function throttleKey(): string
     {
-        $identifier = $this->input('email') ?? $this->input('nip') ?? $this->input('nis') ?? 'unknown';
-
-        return Str::transliterate(Str::lower($identifier).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->input('email', '')) . '|' . $this->ip());
     }
 }
