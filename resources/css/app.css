@@ -1,3 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ===========================
+   TEVault Design System
+=========================== */
+
+:root {
+    --bg: #F8F6F2;
+    --card: #FFFFFF;
+
+    --primary: #6F4E37;
+    --primary-hover: #5A3F2B;
+
+    --gold: #C89B3C;
+
+    --text: #2D2D2D;
+    --text-secondary: #6B7280;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.brand-font {
+    font-family: 'DM Serif Display', serif;
+}
+
+.bg-primary {
+    background-color: var(--primary);
+}
+
+.bg-primary:hover {
+    background-color: var(--primary-hover);
+}
+
+.text-primary {
+    color: var(--primary);
+}
+
+.text-gold {
+    color: var(--gold);
+}
+
+.border-gold {
+    border-color: var(--gold);
+}
+
+.card-shadow {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .08);
+}
