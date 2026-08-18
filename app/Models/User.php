@@ -2,80 +2,80 @@
 
 namespace App\Models;
 
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'role', 'nis', 'nip', 'email', 'tanggal_lahir', 'password', 'no_wa', 'foto_profil'])]
+#[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, HasRoles, Notifiable;
 
-    protected $fillable = [
-        'name',
-        'role',
-        'nis',
-        'nip',
-        'email',
-        'tanggal_lahir',
-        'password',
-        'no_wa',
-        'foto_profil',
-    ];
-
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'tanggal_lahir' => 'date',
+            'deactivated_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
 
+    public function guruProfile(): HasOne
+    {
+        return $this->hasOne(GuruProfile::class);
+    }
+
+    public function siswaProfile(): HasOne
+    {
+        return $this->hasOne(SiswaProfile::class);
+    }
+
     public function borrowings(): HasMany
     {
-        return $this->hasMany(Borrowing::class);
+        return $this->hasMany(Borrowing::class, 'borrower_user_id');
     }
 
-    public function isAdmin(): bool
+    public function approvedBorrowings(): HasMany
     {
-        return $this->role === 'admin';
+        return $this->hasMany(Borrowing::class, 'approved_by_user_id');
     }
 
-    public function isGuru(): bool
+    public function rejectedBorrowings(): HasMany
     {
-        return $this->role === 'guru';
+        return $this->hasMany(Borrowing::class, 'rejected_by_user_id');
     }
 
-    public function isSiswa(): bool
+    public function cancelledBorrowings(): HasMany
     {
-        return $this->role === 'siswa';
+        return $this->hasMany(Borrowing::class, 'cancelled_by_user_id');
     }
 
-    /**
-     * Password Siswa diturunkan dari tanggal lahir.
-     * Format WAJIB sama persis dengan yang divalidasi di RegisterRequest & LoginRequest: Y-m-d.
-     */
-    public static function passwordFromTanggalLahir(string $tanggalLahirYmd): string
+    public function verifiedReturns(): HasMany
     {
-        return Hash::make($tanggalLahirYmd);
+        return $this->hasMany(Borrowing::class, 'return_verified_by_user_id');
     }
 
-    // Dipakai Laravel saat mengirim Mailable/Notification ke user ini
-    public function routeNotificationForMail(): ?string
+    public function notificationLogs(): HasMany
     {
-        return $this->email;
+        return $this->hasMany(NotificationLog::class, 'recipient_user_id');
+    }
+
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(AuditLog::class, 'actor_user_id');
     }
 }

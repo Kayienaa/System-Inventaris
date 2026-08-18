@@ -21,7 +21,6 @@ class AuthenticatedSessionController extends Controller
 
     /**
      * Handle an incoming authentication request.
-     * Redirect berdasarkan role yang tersimpan di database.
      */
     public function store(LoginRequest $request): RedirectResponse
     {
@@ -29,15 +28,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-
-        return match ($user->role) {
-            'admin'  => redirect()->route('dashboard'),
-            'guru'   => redirect()->route('dashboard'),
-            'siswa'  => redirect()->route('dashboard'),
-            default  => redirect()->route('dashboard'),
-        };
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     /**

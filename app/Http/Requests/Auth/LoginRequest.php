@@ -12,27 +12,29 @@ use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     */
     public function authorize(): bool
     {
         return true;
     }
 
     /**
-     * Validasi form login — semua role kini menggunakan Email + Password.
+     * Get the validation rules that apply to the request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'email'    => ['required', 'string', 'email'],
+            'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
         ];
     }
 
     /**
-     * Lakukan autentikasi menggunakan email + password.
-     * Role tidak lagi dipilih user; dibaca dari database setelah login.
+     * Attempt to authenticate the request's credentials.
      *
      * @throws ValidationException
      */
@@ -40,22 +42,22 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $credentials = [
-            'email'    => $this->input('email'),
-            'password' => $this->input('password'),
-        ];
-
-        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
+        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => 'Email atau password yang Anda masukkan salah.',
+                'email' => trans('auth.failed'),
             ]);
         }
 
         RateLimiter::clear($this->throttleKey());
     }
 
+    /**
+     * Ensure the login request is not rate limited.
+     *
+     * @throws ValidationException
+     */
     public function ensureIsNotRateLimited(): void
     {
         if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
@@ -74,8 +76,11 @@ class LoginRequest extends FormRequest
         ]);
     }
 
+    /**
+     * Get the rate limiting throttle key for the request.
+     */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->input('email', '')) . '|' . $this->ip());
+        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
     }
 }
