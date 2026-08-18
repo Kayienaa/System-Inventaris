@@ -11,19 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
-            $table->id();
-            $table->string('nama')->unique();
-            $table->text('deskripsi')->nullable();
-            $table->timestamps();
+        Schema::table('users', function (Blueprint $table): void {
+            $table->boolean('is_active')->default(true);
+            $table->dateTime('deactivated_at')->nullable();
         });
     }
 
     /**
-     * Reverse the migrations.
+     * This migration intentionally has no destructive rollback.
      */
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        // Account lifecycle data is preserved by design.
     }
 };

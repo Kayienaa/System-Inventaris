@@ -2,65 +2,110 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreBorrowingRequest;
+use App\Actions\Borrowings\ApproveBorrowingAction;
+use App\Actions\Borrowings\CancelBorrowingAction;
+use App\Actions\Borrowings\CheckoutBorrowingAction;
+use App\Actions\Borrowings\RejectBorrowingAction;
+use App\Actions\Borrowings\RequestBorrowingAction;
+use App\Actions\Borrowings\SubmitReturnAction;
+use App\Actions\Borrowings\VerifyReturnAction;
+use App\Enums\AssetCondition;
+use App\Http\Requests\Borrowings\ApproveBorrowingRequest;
+use App\Http\Requests\Borrowings\CancelBorrowingRequest;
+use App\Http\Requests\Borrowings\CheckoutBorrowingRequest;
+use App\Http\Requests\Borrowings\RejectBorrowingRequest;
+use App\Http\Requests\Borrowings\StoreBorrowingRequest;
+use App\Http\Requests\Borrowings\SubmitReturnRequest;
+use App\Http\Requests\Borrowings\VerifyReturnRequest;
+use App\Http\Resources\BorrowingResource;
+use App\Models\Asset;
 use App\Models\Borrowing;
-use App\Models\Item;
-use App\Services\ImageCompressionService;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use App\Services\AuditLogService;
+use App\Services\NotificationService;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class BorrowingController extends Controller
 {
-    public function __construct(private ImageCompressionService $imageService)
+    public function index(): AnonymousResourceCollection
     {
+        $query = Borrowing::query()->with(['asset', 'borrower']);
+        if (! request()->user()->hasRole('admin')) {
+            $query->where('borrower_user_id', request()->user()->id);
+        }
+
+        return BorrowingResource::collection($query->paginate());
     }
 
-    /**
-     * Proses peminjaman alat baru.
-     */
-    public function store(StoreBorrowingRequest $request)
+    public function store(StoreBorrowingRequest $request, RequestBorrowingAction $action, AuditLogService $audit): BorrowingResource
     {
-        $validated = $request->validated();
+        $borrowing = $action->execute($request->user(), Asset::findOrFail($request->integer('asset_id')), $request->input('borrower_note'));
+        $audit->record($request->user(), 'borrowing.requested', $borrowing, null, $borrowing->getAttributes());
 
-        return DB::transaction(function () use ($validated) {
-            // Lock baris item agar tidak ada race condition (2 orang pinjam bersamaan)
-            $item = Item::lockForUpdate()->findOrFail($validated['item_id']);
-
-            if (! $item->isAvailable()) {
-                return back()->withErrors(['item_id' => 'Alat ini sudah tidak tersedia untuk dipinjam.']);
-            }
-
-            $fotoSiswa = $this->imageService->compressAndStore($validated['foto_siswa'], 'borrowings/siswa');
-            $fotoBarang = $this->imageService->compressAndStore($validated['foto_barang'], 'borrowings/barang');
-
-            Borrowing::create([
-                'user_id' => Auth::id(),
-                'item_id' => $item->id,
-                'tgl_pinjam' => now(),
-                'tgl_kembali_rencana' => $validated['tgl_kembali_rencana'],
-                'foto_pinjam' => $fotoSiswa,
-                'foto_barang' => $fotoBarang,
-                'include_charger' => $validated['include_charger'] ?? false,
-                'include_mouse' => $validated['include_mouse'] ?? false,
-                'status' => 'Dipinjam',
-                'catatan' => $validated['catatan'] ?? null,
-            ]);
-
-            $item->update(['status' => 'Dipinjam']);
-
-            return redirect()->route('items.index')->with('success', 'Peminjaman berhasil dicatat.');
-        });
+        return new BorrowingResource($borrowing->load(['asset', 'borrower']));
     }
 
-    /**
-     * Riwayat peminjaman milik user yang sedang login.
-     */
-    public function myBorrowings()
+    public function show(Borrowing $borrowing): BorrowingResource
     {
-            /** @var \App\Models\User $user */
-        $user = Auth::user();
-        $borrowings = $user->borrowings()->with('item')->latest()->paginate(10);
+        $this->authorize('view', $borrowing);
 
-        return view('borrowings.index', compact('borrowings'));
+        return new BorrowingResource($borrowing->load(['asset', 'borrower']));
+    }
+
+    public function approve(ApproveBorrowingRequest $request, Borrowing $borrowing, ApproveBorrowingAction $action, AuditLogService $audit, NotificationService $notifications): BorrowingResource
+    {
+        $old = $borrowing->getAttributes();
+        $result = $action->execute($request->user(), $borrowing);
+        $audit->record($request->user(), 'borrowing.approved', $result, $old, $result->getAttributes());
+        $notifications->scheduleReminder($result);
+        $notifications->queueApproval($result);
+
+        return new BorrowingResource($result->load(['asset', 'borrower']));
+    }
+
+    public function reject(RejectBorrowingRequest $request, Borrowing $borrowing, RejectBorrowingAction $action, AuditLogService $audit, NotificationService $notifications): BorrowingResource
+    {
+        $old = $borrowing->getAttributes();
+        $result = $action->execute($request->user(), $borrowing, $request->string('rejection_reason')->toString());
+        $audit->record($request->user(), 'borrowing.rejected', $result, $old, $result->getAttributes());
+        $notifications->queueRejection($result);
+
+        return new BorrowingResource($result);
+    }
+
+    public function cancel(CancelBorrowingRequest $request, Borrowing $borrowing, CancelBorrowingAction $action, AuditLogService $audit): BorrowingResource
+    {
+        $old = $borrowing->getAttributes();
+        $result = $action->execute($request->user(), $borrowing, $request->input('cancellation_reason'));
+        $audit->record($request->user(), 'borrowing.cancelled', $result, $old, $result->getAttributes());
+
+        return new BorrowingResource($result);
+    }
+
+    public function checkout(CheckoutBorrowingRequest $request, Borrowing $borrowing, CheckoutBorrowingAction $action, AuditLogService $audit): BorrowingResource
+    {
+        $old = $borrowing->getAttributes();
+        $result = $action->execute($request->user(), $borrowing, $request->enum('checkout_condition', AssetCondition::class));
+        $audit->record($request->user(), 'borrowing.checked_out', $result, $old, $result->getAttributes());
+
+        return new BorrowingResource($result);
+    }
+
+    public function submitReturn(SubmitReturnRequest $request, Borrowing $borrowing, SubmitReturnAction $action, AuditLogService $audit): BorrowingResource
+    {
+        $old = $borrowing->getAttributes();
+        $result = $action->execute($request->user(), $borrowing, $request->string('return_evidence_path')->toString(), $request->input('return_note'));
+        $audit->record($request->user(), 'borrowing.return_submitted', $result, $old, $result->getAttributes());
+
+        return new BorrowingResource($result);
+    }
+
+    public function verifyReturn(VerifyReturnRequest $request, Borrowing $borrowing, VerifyReturnAction $action, AuditLogService $audit, NotificationService $notifications): BorrowingResource
+    {
+        $old = $borrowing->getAttributes();
+        $result = $action->execute($request->user(), $borrowing, $request->enum('return_condition', AssetCondition::class), $request->input('return_verification_note'));
+        $audit->record($request->user(), 'borrowing.return_verified', $result, $old, $result->getAttributes());
+        $notifications->queueReturnVerification($result);
+
+        return new BorrowingResource($result);
     }
 }
