@@ -25,22 +25,22 @@
         </div>
 
         {{-- Daftar Barang --}}
-        @if ($items->count())
+        @if ($assets->count())
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 
-                @foreach ($items as $item)
+                @foreach ($assets as $asset)
 
                     <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
 
                         {{-- Foto Barang --}}
                         <div class="aspect-[4/3] bg-gray-100 overflow-hidden">
 
-                            @if (!empty($item['gambar']))
+                            @if ($asset->photo_path)
 
                                 <img
-                                    src="{{ asset('storage/' . $item['gambar']) }}"
-                                    alt="{{ $item['nama_barang'] }}"
+                                    src="{{ asset('storage/' . $asset->photo_path) }}"
+                                    alt="{{ $asset->name }}"
                                     class="w-full h-full object-cover"
                                 >
 
@@ -61,22 +61,28 @@
 
                                 <div>
                                     <h2 class="font-semibold text-lg text-gray-800">
-                                        {{ $item['nama_barang'] }}
+                                        {{ $asset->name }}
                                     </h2>
 
                                     <p class="text-sm text-gray-500">
-                                        {{ $item['kode_unik'] }}
+                                        {{ $asset->asset_code }}
                                     </p>
+
+                                    @if ($asset->category)
+                                        <p class="text-xs text-gray-400 mt-0.5">
+                                            {{ $asset->category->name }}
+                                        </p>
+                                    @endif
                                 </div>
 
                                 {{-- Status --}}
-                                @if ($item['status'] === 'Tersedia')
+                                @if ($asset->availability_status === 'tersedia')
 
                                     <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
                                         Tersedia
                                     </span>
 
-                                @elseif ($item['status'] === 'Dipinjam')
+                                @elseif ($asset->availability_status === 'dipinjam')
 
                                     <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">
                                         Dipinjam
@@ -85,15 +91,15 @@
                                 @else
 
                                     <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
-                                        {{ $item['status'] }}
+                                        {{ ucfirst(str_replace('_', ' ', $asset->availability_status)) }}
                                     </span>
 
                                 @endif
 
                             </div>
 
-                            {{-- Jika sedang dipinjam --}}
-                            @if ($item['status'] === 'Dipinjam' && $item['borrower_name'])
+                            {{-- Jika sedang dipinjam, tampilkan peminjam aktif --}}
+                            @if ($asset->availability_status === 'dipinjam' && $asset->activeBorrowing)
 
                                 <div class="mt-4 p-3 bg-red-50 rounded-xl">
 
@@ -102,14 +108,12 @@
                                     </p>
 
                                     <p class="font-medium text-red-700">
-                                        {{ $item['borrower_name'] }}
+                                        {{ $asset->activeBorrowing->borrower->name }}
                                     </p>
 
-                                    @if ($item['due_date'])
-                                        <p class="text-xs text-red-500 mt-1">
-                                            Kembali: {{ $item['due_date'] }}
-                                        </p>
-                                    @endif
+                                    <p class="text-xs text-red-500 mt-1">
+                                        Kembali: {{ $asset->activeBorrowing->due_at->format('d M Y, H:i') }}
+                                    </p>
 
                                 </div>
 
@@ -121,6 +125,10 @@
 
                 @endforeach
 
+            </div>
+
+            <div class="mt-8">
+                {{ $assets->links() }}
             </div>
 
         @else

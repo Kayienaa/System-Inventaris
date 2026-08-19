@@ -14,27 +14,36 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Admin
-        User::create([
-            'name' => 'Admin Inventaris',
-            'email' => 'admin@inventaris.com',
-            'password' => Hash::make('admin123'),
-            'role' => 'admin',
-            'identitas' => 'ADMIN001',
-            'nomor_whatsapp' => '081234567890',
-            'foto_profil' => null,
-            'email_verified_at' => now(),
-        ]);
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@inventaris.com'],
+            [
+                'name' => 'Admin Inventaris',
+                'password' => Hash::make('admin123'),
+                'email_verified_at' => now(),
+            ]
+        );
+        $admin->assignRole('admin');
 
-        // User
-        User::create([
-            'name' => 'Karin',
-            'email' => 'karin@gmail.com',
-            'password' => Hash::make('karin123'),
-            'role' => 'user',
-            'identitas' => '123456789',
-            'nomor_whatsapp' => '081298765432',
-            'foto_profil' => null,
-            'email_verified_at' => now(),
-        ]);
+        // Guru
+        $guru = User::firstOrCreate(
+            ['email' => 'guru@inventaris.com'],
+            [
+                'name' => 'Guru Contoh',
+                'password' => Hash::make('guru123'),
+                'email_verified_at' => now(),
+            ]
+        );
+        $guru->assignRole('guru');
+
+        // Siswa
+        $siswa = User::firstOrCreate(
+            ['email' => 'karin@gmail.com'],
+            [
+                'name' => 'Karin',
+                'password' => Hash::make('karin123'),
+                'email_verified_at' => now(),
+            ]
+        );
+        $siswa->assignRole('siswa');
     }
 }

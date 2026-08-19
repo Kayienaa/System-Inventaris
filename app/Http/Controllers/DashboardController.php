@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\BorrowingStatus;
+use App\Models\Asset;
 use App\Models\Borrowing;
-use App\Models\Item;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -14,32 +15,34 @@ class DashboardController extends Controller
     }
 
     /**
-     * Endpoint JSON khusus untuk chart/dashboard admin.
+     * Halaman Laporan (web view).
      */
     public function analytics()
     {
-        return response()->json($this->analyticsData());
+        return view('reports.index', $this->analyticsData());
     }
 
     private function analyticsData(): array
     {
         return [
-            'total_aset' => Item::count(),
-            'per_kategori' => Item::join('categories', 'items.category_id', '=', 'categories.id')
-                ->select('categories.nama', DB::raw('count(*) as total'))
-                ->groupBy('categories.nama')
-                ->pluck('total', 'nama'),
-            'status_aset' => Item::select('status', DB::raw('count(*) as total'))
-                ->groupBy('status')
-                ->pluck('total', 'status'),
-            'overdue' => Borrowing::with(['user', 'item'])
-                ->overdue() // status Dipinjam & tgl_kembali_rencana < now()
+            'total_aset' => Asset::count(),
+            'per_kategori' => Asset::join('asset_categories', 'assets.asset_category_id', '=', 'asset_categories.id')
+                ->select('asset_categories.name', DB::raw('count(*) as total'))
+                ->groupBy('asset_categories.name')
+                ->pluck('total', 'name'),
+            'status_aset' => Asset::select('availability_status', DB::raw('count(*) as total'))
+                ->groupBy('availability_status')
+                ->pluck('total', 'availability_status'),
+            'overdue' => Borrowing::with(['borrower', 'asset'])
+                ->whereIn('status', [BorrowingStatus::Borrowed, BorrowingStatus::ReturnPendingVerification])
+                ->whereNull('returned_at')
+                ->where('due_at', '<', now())
                 ->get()
                 ->map(fn (Borrowing $b) => [
-                    'peminjam' => $b->user->name,
-                    'barang' => $b->item->nama_barang,
-                    'jatuh_tempo' => $b->tgl_kembali_rencana->format('d M Y, H:i'),
-                    'terlambat_sejak' => $b->tgl_kembali_rencana->diffForHumans(),
+                    'peminjam' => $b->borrower->name,
+                    'barang' => $b->asset->name,
+                    'jatuh_tempo' => $b->due_at->format('d M Y, H:i'),
+                    'terlambat_sejak' => $b->due_at->diffForHumans(),
                 ]),
         ];
     }

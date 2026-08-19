@@ -26,6 +26,19 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class BorrowingController extends Controller
 {
+        /**
+     * Halaman daftar peminjaman milik user yang sedang login (web view).
+     */
+    public function webMine()
+    {
+        $borrowings = Borrowing::query()
+            ->with(['asset', 'approvedBy'])
+            ->where('borrower_user_id', request()->user()->id)
+            ->latest('requested_at')
+            ->paginate(15);
+
+        return view('borrowings.mine', compact('borrowings'));
+    }
     public function index(): AnonymousResourceCollection
     {
         $query = Borrowing::query()->with(['asset', 'borrower']);

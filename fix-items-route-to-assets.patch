@@ -1,0 +1,231 @@
+diff --git a/app/Http/Controllers/AssetController.php b/app/Http/Controllers/AssetController.php
+index 013761c..31066b0 100644
+--- a/app/Http/Controllers/AssetController.php
++++ b/app/Http/Controllers/AssetController.php
+@@ -12,6 +12,18 @@
+ 
+ class AssetController extends Controller
+ {
++    /**
++     * Halaman katalog barang (web view) — dilihat oleh guru & siswa.
++     */
++    public function webIndex()
++    {
++        $assets = Asset::query()
++            ->with(['category', 'activeBorrowing.borrower'])
++            ->paginate(12);
++
++        return view('assets.index', compact('assets'));
++    }
++
+     public function index(): AnonymousResourceCollection
+     {
+         return AssetResource::collection(Asset::query()->with('category')->paginate());
+diff --git a/app/Models/Asset.php b/app/Models/Asset.php
+index 3910285..c32b067 100644
+--- a/app/Models/Asset.php
++++ b/app/Models/Asset.php
+@@ -8,6 +8,7 @@
+ use Illuminate\Database\Eloquent\Model;
+ use Illuminate\Database\Eloquent\Relations\BelongsTo;
+ use Illuminate\Database\Eloquent\Relations\HasMany;
++use Illuminate\Database\Eloquent\Relations\HasOne;
+ use Illuminate\Database\Eloquent\SoftDeletes;
+ 
+ class Asset extends Model
+@@ -50,4 +51,14 @@ public function borrowings(): HasMany
+     {
+         return $this->hasMany(Borrowing::class);
+     }
++
++    /**
++     * Peminjaman aktif (belum dikembalikan) yang terbaru untuk aset ini.
++     */
++    public function activeBorrowing(): HasOne
++    {
++        return $this->hasOne(Borrowing::class)
++            ->whereIn('status', ['approved', 'borrowed', 'return_pending_verification'])
++            ->latestOfMany();
++    }
+ }
+diff --git a/resources/views/items/index.blade.php b/resources/views/assets/index.blade.php
+similarity index 72%
+rename from resources/views/items/index.blade.php
+rename to resources/views/assets/index.blade.php
+index 3c62618..baf6041 100644
+--- a/resources/views/items/index.blade.php
++++ b/resources/views/assets/index.blade.php
+@@ -25,22 +25,22 @@
+         </div>
+ 
+         {{-- Daftar Barang --}}
+-        @if ($items->count())
++        @if ($assets->count())
+ 
+             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+ 
+-                @foreach ($items as $item)
++                @foreach ($assets as $asset)
+ 
+                     <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
+ 
+                         {{-- Foto Barang --}}
+                         <div class="aspect-[4/3] bg-gray-100 overflow-hidden">
+ 
+-                            @if (!empty($item['gambar']))
++                            @if ($asset->photo_path)
+ 
+                                 <img
+-                                    src="{{ asset('storage/' . $item['gambar']) }}"
+-                                    alt="{{ $item['nama_barang'] }}"
++                                    src="{{ asset('storage/' . $asset->photo_path) }}"
++                                    alt="{{ $asset->name }}"
+                                     class="w-full h-full object-cover"
+                                 >
+ 
+@@ -61,22 +61,28 @@ class="w-full h-full object-cover"
+ 
+                                 <div>
+                                     <h2 class="font-semibold text-lg text-gray-800">
+-                                        {{ $item['nama_barang'] }}
++                                        {{ $asset->name }}
+                                     </h2>
+ 
+                                     <p class="text-sm text-gray-500">
+-                                        {{ $item['kode_unik'] }}
++                                        {{ $asset->asset_code }}
+                                     </p>
++
++                                    @if ($asset->category)
++                                        <p class="text-xs text-gray-400 mt-0.5">
++                                            {{ $asset->category->name }}
++                                        </p>
++                                    @endif
+                                 </div>
+ 
+                                 {{-- Status --}}
+-                                @if ($item['status'] === 'Tersedia')
++                                @if ($asset->availability_status === 'tersedia')
+ 
+                                     <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
+                                         Tersedia
+                                     </span>
+ 
+-                                @elseif ($item['status'] === 'Dipinjam')
++                                @elseif ($asset->availability_status === 'dipinjam')
+ 
+                                     <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">
+                                         Dipinjam
+@@ -85,15 +91,15 @@ class="w-full h-full object-cover"
+                                 @else
+ 
+                                     <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
+-                                        {{ $item['status'] }}
++                                        {{ ucfirst(str_replace('_', ' ', $asset->availability_status)) }}
+                                     </span>
+ 
+                                 @endif
+ 
+                             </div>
+ 
+-                            {{-- Jika sedang dipinjam --}}
+-                            @if ($item['status'] === 'Dipinjam' && $item['borrower_name'])
++                            {{-- Jika sedang dipinjam, tampilkan peminjam aktif --}}
++                            @if ($asset->availability_status === 'dipinjam' && $asset->activeBorrowing)
+ 
+                                 <div class="mt-4 p-3 bg-red-50 rounded-xl">
+ 
+@@ -102,14 +108,12 @@ class="w-full h-full object-cover"
+                                     </p>
+ 
+                                     <p class="font-medium text-red-700">
+-                                        {{ $item['borrower_name'] }}
++                                        {{ $asset->activeBorrowing->borrower->name }}
+                                     </p>
+ 
+-                                    @if ($item['due_date'])
+-                                        <p class="text-xs text-red-500 mt-1">
+-                                            Kembali: {{ $item['due_date'] }}
+-                                        </p>
+-                                    @endif
++                                    <p class="text-xs text-red-500 mt-1">
++                                        Kembali: {{ $asset->activeBorrowing->due_at->format('d M Y, H:i') }}
++                                    </p>
+ 
+                                 </div>
+ 
+@@ -123,6 +127,10 @@ class="w-full h-full object-cover"
+ 
+             </div>
+ 
++            <div class="mt-8">
++                {{ $assets->links() }}
++            </div>
++
+         @else
+ 
+             <div class="bg-white rounded-2xl p-10 text-center shadow-sm">
+@@ -138,4 +146,4 @@ class="w-full h-full object-cover"
+     </div>
+ 
+ </body>
+-</html>
+\ No newline at end of file
++</html>
+diff --git a/resources/views/dashboard.blade.php b/resources/views/dashboard.blade.php
+index b908f9b..7dc09a0 100644
+--- a/resources/views/dashboard.blade.php
++++ b/resources/views/dashboard.blade.php
+@@ -746,7 +746,7 @@ class="menu-link active"
+ 
+             {{-- Barang --}}
+             <a
+-                href="{{ route('items.index') }}"
++                href="{{ route('assets.index') }}"
+                 class="menu-link"
+             >
+                 <svg class="menu-icon" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+diff --git a/resources/views/layouts/navigation.blade.php b/resources/views/layouts/navigation.blade.php
+index 4ba7018..02d99a0 100644
+--- a/resources/views/layouts/navigation.blade.php
++++ b/resources/views/layouts/navigation.blade.php
+@@ -88,8 +88,8 @@ class="{{ $link }} {{ request()->routeIs('dashboard') ? $active : $inactive }}">
+             </a>
+ 
+             {{-- Barang --}}
+-            <a href="{{ route('items.index') }}"
+-               class="{{ $link }} {{ request()->routeIs('items.*') ? $active : $inactive }}">
++            <a href="{{ route('assets.index') }}"
++               class="{{ $link }} {{ request()->routeIs('assets.*') ? $active : $inactive }}">
+                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                     <path stroke-linecap="round" stroke-linejoin="round"
+                           d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5
+diff --git a/routes/web.php b/routes/web.php
+index 74bb7ca..1f055fc 100644
+--- a/routes/web.php
++++ b/routes/web.php
+@@ -1,5 +1,7 @@
+ <?php
+ 
++use App\Http\Controllers\AssetController;
++use App\Http\Controllers\DashboardController;
+ use App\Http\Controllers\ProfileController;
+ use Illuminate\Support\Facades\Route;
+ 
+@@ -7,9 +9,13 @@
+     return view('welcome');
+ });
+ 
+-Route::get('/dashboard', function () {
+-    return view('dashboard');
+-})->middleware(['auth', 'verified'])->name('dashboard');
++Route::get('/dashboard', [DashboardController::class, 'index'])
++    ->middleware(['auth', 'verified'])
++    ->name('dashboard');
++
++Route::get('/assets', [AssetController::class, 'webIndex'])
++    ->middleware(['auth', 'verified'])
++    ->name('assets.index');
+ 
+ Route::middleware('auth')->group(function () {
+     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

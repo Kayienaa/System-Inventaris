@@ -11,6 +11,17 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AssetCategoryController extends Controller
 {
+        /**
+     * Halaman daftar kategori (web view) — dilihat oleh admin.
+     */
+    public function webIndex()
+    {
+        $categories = AssetCategory::query()
+            ->withCount('assets')
+            ->paginate(15);
+
+        return view('categories.index', compact('categories'));
+    }
     public function index(): AnonymousResourceCollection
     {
         return AssetCategoryResource::collection(AssetCategory::query()->paginate());

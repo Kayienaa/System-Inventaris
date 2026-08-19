@@ -1,0 +1,269 @@
+diff --git a/app/Http/Controllers/CategoryController.php b/app/Http/Controllers/CategoryController.php
+deleted file mode 100644
+index 8fdbe56..0000000
+--- a/app/Http/Controllers/CategoryController.php
++++ /dev/null
+@@ -1,65 +0,0 @@
+-<?php
+-
+-namespace App\Http\Controllers;
+-
+-use App\Models\Category;
+-use Illuminate\Http\Request;
+-
+-class CategoryController extends Controller
+-{
+-    /**
+-     * Display a listing of the resource.
+-     */
+-    public function index()
+-    {
+-        //
+-    }
+-
+-    /**
+-     * Show the form for creating a new resource.
+-     */
+-    public function create()
+-    {
+-        //
+-    }
+-
+-    /**
+-     * Store a newly created resource in storage.
+-     */
+-    public function store(Request $request)
+-    {
+-        //
+-    }
+-
+-    /**
+-     * Display the specified resource.
+-     */
+-    public function show(Category $category)
+-    {
+-        //
+-    }
+-
+-    /**
+-     * Show the form for editing the specified resource.
+-     */
+-    public function edit(Category $category)
+-    {
+-        //
+-    }
+-
+-    /**
+-     * Update the specified resource in storage.
+-     */
+-    public function update(Request $request, Category $category)
+-    {
+-        //
+-    }
+-
+-    /**
+-     * Remove the specified resource from storage.
+-     */
+-    public function destroy(Category $category)
+-    {
+-        //
+-    }
+-}
+diff --git a/app/Http/Controllers/DashboardController.php b/app/Http/Controllers/DashboardController.php
+index 5f03880..6542682 100644
+--- a/app/Http/Controllers/DashboardController.php
++++ b/app/Http/Controllers/DashboardController.php
+@@ -2,8 +2,9 @@
+ 
+ namespace App\Http\Controllers;
+ 
++use App\Enums\BorrowingStatus;
++use App\Models\Asset;
+ use App\Models\Borrowing;
+-use App\Models\Item;
+ use Illuminate\Support\Facades\DB;
+ 
+ class DashboardController extends Controller
+@@ -24,23 +25,25 @@ public function analytics()
+     private function analyticsData(): array
+     {
+         return [
+-            'total_aset' => Item::count(),
+-            'per_kategori' => Item::join('categories', 'items.category_id', '=', 'categories.id')
+-                ->select('categories.nama', DB::raw('count(*) as total'))
+-                ->groupBy('categories.nama')
+-                ->pluck('total', 'nama'),
+-            'status_aset' => Item::select('status', DB::raw('count(*) as total'))
+-                ->groupBy('status')
+-                ->pluck('total', 'status'),
+-            'overdue' => Borrowing::with(['user', 'item'])
+-                ->overdue() // status Dipinjam & tgl_kembali_rencana < now()
++            'total_aset' => Asset::count(),
++            'per_kategori' => Asset::join('asset_categories', 'assets.asset_category_id', '=', 'asset_categories.id')
++                ->select('asset_categories.name', DB::raw('count(*) as total'))
++                ->groupBy('asset_categories.name')
++                ->pluck('total', 'name'),
++            'status_aset' => Asset::select('availability_status', DB::raw('count(*) as total'))
++                ->groupBy('availability_status')
++                ->pluck('total', 'availability_status'),
++            'overdue' => Borrowing::with(['borrower', 'asset'])
++                ->whereIn('status', [BorrowingStatus::Borrowed, BorrowingStatus::ReturnPendingVerification])
++                ->whereNull('returned_at')
++                ->where('due_at', '<', now())
+                 ->get()
+                 ->map(fn (Borrowing $b) => [
+-                    'peminjam' => $b->user->name,
+-                    'barang' => $b->item->nama_barang,
+-                    'jatuh_tempo' => $b->tgl_kembali_rencana->format('d M Y, H:i'),
+-                    'terlambat_sejak' => $b->tgl_kembali_rencana->diffForHumans(),
++                    'peminjam' => $b->borrower->name,
++                    'barang' => $b->asset->name,
++                    'jatuh_tempo' => $b->due_at->format('d M Y, H:i'),
++                    'terlambat_sejak' => $b->due_at->diffForHumans(),
+                 ]),
+         ];
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/app/Http/Controllers/ItemController.php b/app/Http/Controllers/ItemController.php
+deleted file mode 100644
+index 5e50b30..0000000
+--- a/app/Http/Controllers/ItemController.php
++++ /dev/null
+@@ -1,40 +0,0 @@
+-<?php
+-
+-namespace App\Http\Controllers;
+-
+-use App\Models\Item;
+-use Illuminate\Http\Request;
+-
+-class ItemController extends Controller
+-{
+-    /**
+-     * Katalog aset — dilihat oleh guru & siswa.
+-     * Sertakan info peminjam aktif agar frontend bisa toggle grayscale <-> full color.
+-     */
+-    public function index(Request $request)
+-    {
+-        $items = Item::with(['category', 'activeBorrowing.user'])
+-            ->when($request->category, fn ($q) => $q->whereHas('category', fn ($c) => $c->where('nama', $request->category)))
+-            ->get()
+-            ->map(function (Item $item) {
+-                $borrowing = $item->activeBorrowing;
+-
+-                return [
+-                    'id' => $item->id,
+-                    'kode_unik' => $item->kode_unik,
+-                    'nama_barang' => $item->nama_barang,
+-                    'gambar' => $item->gambar,
+-                    'status' => $item->status,
+-                    'is_borrowed' => $item->status === 'Dipinjam',       // flag utk UI: true = full color
+-                    'borrower_name' => $borrowing?->user?->name,
+-                    'borrow_date' => $borrowing?->tgl_pinjam?->format('d M Y, H:i'),
+-                    'due_date' => $borrowing?->tgl_kembali_rencana?->format('d M Y, H:i'),
+-                ];
+-            });
+-
+-        // Jika butuh untuk konsumsi API/JS, tinggal ganti baris di bawah:
+-        // return response()->json($items);
+-
+-        return view('items.index', compact('items'));
+-    }
+-}
+\ No newline at end of file
+diff --git a/app/Models/Category.php b/app/Models/Category.php
+deleted file mode 100644
+index 9718cac..0000000
+--- a/app/Models/Category.php
++++ /dev/null
+@@ -1,20 +0,0 @@
+-<?php
+-
+-namespace App\Models;
+-
+-use Illuminate\Database\Eloquent\Attributes\Fillable;
+-use Illuminate\Database\Eloquent\Model;
+-use Illuminate\Database\Eloquent\Relations\HasMany;
+-
+-#[Fillable([
+-    'nama',
+-    'deskripsi',  
+-
+-])]
+-class Category extends Model
+-{
+-    public function items(): HasMany
+-    {
+-        return $this->hasMany(Item::class);
+-    }
+-}
+diff --git a/app/Models/Item.php b/app/Models/Item.php
+deleted file mode 100644
+index 3f1a7b1..0000000
+--- a/app/Models/Item.php
++++ /dev/null
+@@ -1,37 +0,0 @@
+-<?php
+-
+-namespace App\Models;
+-
+-use Illuminate\Database\Eloquent\Attributes\Fillable;
+-use Illuminate\Database\Eloquent\Factories\HasFactory;
+-use Illuminate\Database\Eloquent\Model;
+-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+-use Illuminate\Database\Eloquent\Relations\HasMany;
+-use Illuminate\Database\Eloquent\Relations\HasOne;
+-
+-#[Fillable(['category_id', 'kode_unik', 'nama_barang', 'merk', 'lokasi_ruangan', 'status', 'gambar'])]
+-class Item extends Model
+-{
+-    use HasFactory;
+-
+-    public function category(): BelongsTo
+-    {
+-        return $this->belongsTo(Category::class);
+-    }
+-
+-    public function borrowings(): HasMany
+-    {
+-        return $this->hasMany(Borrowing::class);
+-    }
+-
+-    // Peminjaman aktif (status = Dipinjam) yang terbaru untuk item ini
+-    public function activeBorrowing(): HasOne
+-    {
+-        return $this->hasOne(Borrowing::class)->where('status', 'Dipinjam')->latestOfMany();
+-    }
+-
+-    public function isAvailable(): bool
+-    {
+-        return $this->status === 'Tersedia';
+-    }
+-}
+\ No newline at end of file
+diff --git a/routes/web.php b/routes/web.php
+index 74bb7ca..739a340 100644
+--- a/routes/web.php
++++ b/routes/web.php
+@@ -1,5 +1,6 @@
+ <?php
+ 
++use App\Http\Controllers\DashboardController;
+ use App\Http\Controllers\ProfileController;
+ use Illuminate\Support\Facades\Route;
+ 
+@@ -7,9 +8,9 @@
+     return view('welcome');
+ });
+ 
+-Route::get('/dashboard', function () {
+-    return view('dashboard');
+-})->middleware(['auth', 'verified'])->name('dashboard');
++Route::get('/dashboard', [DashboardController::class, 'index'])
++    ->middleware(['auth', 'verified'])
++    ->name('dashboard');
+ 
+ Route::middleware('auth')->group(function () {
+     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

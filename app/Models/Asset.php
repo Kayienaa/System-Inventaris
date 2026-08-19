@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Asset extends Model
@@ -49,5 +50,15 @@ class Asset extends Model
     public function borrowings(): HasMany
     {
         return $this->hasMany(Borrowing::class);
+    }
+
+    /**
+     * Peminjaman aktif (belum dikembalikan) yang terbaru untuk aset ini.
+     */
+    public function activeBorrowing(): HasOne
+    {
+        return $this->hasOne(Borrowing::class)
+            ->whereIn('status', ['approved', 'borrowed', 'return_pending_verification'])
+            ->latestOfMany();
     }
 }

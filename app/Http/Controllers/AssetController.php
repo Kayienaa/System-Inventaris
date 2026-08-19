@@ -12,6 +12,18 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AssetController extends Controller
 {
+        /**
+     * Halaman katalog barang (web view) — dilihat oleh guru & siswa.
+     */
+    public function webIndex()
+    {
+        $assets = Asset::query()
+            ->with(['category', 'activeBorrowing.borrower'])
+            ->paginate(12);
+
+        return view('assets.index', compact('assets'));
+    }
+
     public function index(): AnonymousResourceCollection
     {
         return AssetResource::collection(Asset::query()->with('category')->paginate());
