@@ -26,83 +26,121 @@
                         sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
                     },
                     colors: {
-                        brand: {
-                            50:  '#EFF6FF',
-                            100: '#DBEAFE',
-                            500: '#3B82F6',
-                            600: '#2563EB',
-                            700: '#1D4ED8',
-                            800: '#1E40AF',
-                        }
-                    },
+    brand: {
+        50:  '#F7F1E8',
+        100: '#EFE3D2',
+        500: '#C69A4B',
+        600: '#A97832',
+        700: '#805827',
+        800: '#5A3A24',
+    }
+},
                     boxShadow: {
-                        'card': '0 8px 48px 0 rgba(37,99,235,0.10), 0 2px 8px 0 rgba(0,0,0,0.06)',
-                        'btn':  '0 4px 16px 0 rgba(37,99,235,0.30)',
-                    }
+    'card': '0 8px 48px 0 rgba(112,72,45,0.10), 0 2px 8px 0 rgba(0,0,0,0.06)',
+    'btn':  '0 4px 16px 0 rgba(169,120,50,0.28)',
+}
                 }
             }
         }
     </script>
 
-    <style>
-        * { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif; }
-        [x-cloak] { display: none !important; }
+   <style>
+    * {
+        font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    }
 
-        body {
-            background: linear-gradient(145deg, #EFF6FF 0%, #DBEAFE 40%, #EFF6FF 70%, #F8FAFC 100%);
-            min-height: 100vh;
+    [x-cloak] {
+        display: none !important;
+    }
+
+    body {
+        background:
+            radial-gradient(circle at 15% 20%, rgba(196, 145, 58, 0.12), transparent 30%),
+            radial-gradient(circle at 85% 80%, rgba(112, 72, 45, 0.10), transparent 32%),
+            linear-gradient(145deg, #F7F1E8 0%, #EFE3D2 48%, #F9F6F1 100%);
+        min-height: 100vh;
+    }
+
+    .inp {
+        display: block;
+        width: 100%;
+        border: 1.5px solid #D8C9B8;
+        border-radius: 14px;
+        background: #FCFAF7;
+        color: #3F2A1E;
+        font-size: 0.9375rem;
+        padding: 1rem 1rem 1rem 3rem;
+        height: 56px;
+        transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+        outline: none;
+    }
+
+    .inp::placeholder {
+        color: #A89787;
+    }
+
+    .inp:focus {
+        border-color: #A97832;
+        background: #FFFFFF;
+        box-shadow: 0 0 0 3px rgba(169, 120, 50, 0.14);
+    }
+
+    .inp-error {
+        border-color: #EF4444 !important;
+        background: #FFF5F5;
+    }
+
+    .inp-error:focus {
+        box-shadow: 0 0 0 3.5px rgba(239, 68, 68, 0.13);
+    }
+
+    .inp-pr {
+        padding-right: 3rem;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .spinner {
+        animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(28px);
         }
 
-        /* Custom input focus ring */
-        .inp {
-            display: block;
-            width: 100%;
-            border: 1.5px solid #CBD5E1;
-            border-radius: 14px;
-            background: #F8FAFC;
-            color: #0F172A;
-            font-size: 0.9375rem;
-            padding: 1rem 1rem 1rem 3rem;
-            height: 56px;
-            transition: border-color 0.15s, box-shadow 0.15s;
-            outline: none;
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
-        .inp::placeholder { color: #94A3B8; }
-        .inp:focus {
-            border-color: #3B82F6;
-            background: #fff;
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
-        }
-        .inp-error {
-            border-color: #EF4444 !important;
-            background: #FFF5F5;
-        }
-        .inp-error:focus {
-            box-shadow: 0 0 0 3.5px rgba(239,68,68,0.13);
-        }
-        .inp-pr { padding-right: 3rem; }
+    }
 
-        /* Spinner */
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .spinner { animation: spin 0.7s linear infinite; }
+    .card-anim {
+        animation: slideUp 0.5s cubic-bezier(.22,.68,0,1.15) both;
+    }
 
-        /* Card slide-up */
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(28px); }
-            to   { opacity: 1; transform: translateY(0); }
+    @keyframes logoPulse {
+        0%, 100% {
+            box-shadow: 0 8px 24px rgba(169, 120, 50, 0.20);
         }
-        .card-anim { animation: slideUp 0.5s cubic-bezier(.22,.68,0,1.15) both; }
 
-        /* Logo pulse glow */
-        @keyframes logoPulse {
-            0%,100% { box-shadow: 0 8px 24px rgba(37,99,235,0.28); }
-            50%      { box-shadow: 0 8px 36px rgba(37,99,235,0.48); }
+        50% {
+            box-shadow: 0 8px 34px rgba(169, 120, 50, 0.34);
         }
-        .logo-glow { animation: logoPulse 2.8s ease-in-out infinite; }
-    </style>
+    }
+
+    .logo-glow {
+        animation: logoPulse 2.8s ease-in-out infinite;
+    }
+</style>
 </head>
 
-<body class="flex min-h-screen items-center justify-center p-4 sm:p-6 antialiased selection:bg-blue-500 selection:text-white"
+<body class="flex min-h-screen items-center justify-center p-4 sm:p-6 antialiased selection:bg-amber-700 selection:text-white"
       x-data="{
           showPass: false,
           loading: false,
@@ -114,16 +152,16 @@
         <!-- ╔══════════════════════════════════════╗ -->
         <!-- ║               CARD                   ║ -->
         <!-- ╚══════════════════════════════════════╝ -->
-        <div class="bg-white rounded-2xl overflow-hidden" style="box-shadow: 0 8px 48px rgba(37,99,235,0.12), 0 2px 12px rgba(0,0,0,0.06);">
-
+        <div class="bg-white rounded-2xl overflow-hidden" style="box-shadow: 0 8px 48px rgba(112,72,45,0.13), 0 2px 12px rgba(0,0,0,0.06);">
             <!-- Top accent bar -->
-            <div class="h-1.5 w-full" style="background: linear-gradient(90deg,#1D4ED8,#3B82F6,#6366F1);"></div>
+            <div class="h-1.5 w-full" style="background: linear-gradient(90deg,#70482D,#A97832,#C69A4B);"></div>
 
             <div class="px-8 pt-9 pb-10">
 
                 <!-- ── Brand ── -->
                 <div class="flex flex-col items-center text-center mb-8">
-                    <div class="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-white mb-4 logo-glow">
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-white mb-4 logo-glow"
+     style="background: linear-gradient(145deg,#70482D,#A97832);">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                   d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
@@ -132,7 +170,7 @@
                     <h1 class="text-base font-extrabold text-slate-900 tracking-tight leading-snug">
                         Sistem Inventaris Barang
                     </h1>
-                    <p class="text-sm font-semibold text-blue-600 mt-0.5">SMK Negeri 1 Bangsri</p>
+                    <p class="text-sm font-semibold mt-0.5" style="color:#A97832;">SMK Negeri 1 Bangsri</p>
                 </div>
 
                 <!-- ── Heading ── -->
@@ -210,7 +248,7 @@
                             <!-- Eye toggle -->
                             <button type="button"
                                     @click="showPass = !showPass"
-                                    class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-blue-600 transition-colors duration-150"
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-amber-700 transition-colors duration-150"
                                     :title="showPass ? 'Sembunyikan' : 'Tampilkan'">
                                 <!-- Eye open -->
                                 <svg x-show="!showPass" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
@@ -231,7 +269,7 @@
                     <div class="flex items-center mb-7">
                         <label class="flex items-center gap-2 cursor-pointer group select-none">
                             <input type="checkbox" name="remember" id="remember"
-                                   style="width:16px;height:16px;border-radius:4px;border:1.5px solid #CBD5E1;cursor:pointer;accent-color:#2563EB;">
+                                   style="width:16px;height:16px;border-radius:4px;border:1.5px solid #CBD5E1;cursor:pointer;accent-color:#A97832;">
                             <span class="text-sm text-slate-600 group-hover:text-slate-800 transition-colors">Ingat saya</span>
                         </label>
                     </div>
@@ -239,10 +277,9 @@
                     <!-- Submit Button -->
                     <button type="submit"
                             :disabled="loading"
-                            style="border-radius:12px; background:#2563EB; color:#fff; width:100%; padding:0.875rem 1.5rem; font-size:1rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; border:none; cursor:pointer; box-shadow:0 4px 16px rgba(37,99,235,0.30); transition:background 0.15s,transform 0.1s,box-shadow 0.15s;"
-                            onmouseover="if(!this.disabled){this.style.background='#1D4ED8';this.style.boxShadow='0 6px 20px rgba(37,99,235,0.38)';this.style.transform='translateY(-1px)';}"
-                            onmouseout="this.style.background='#2563EB';this.style.boxShadow='0 4px 16px rgba(37,99,235,0.30)';this.style.transform='translateY(0)';"
-                            onmousedown="this.style.transform='translateY(0)';">
+                            style="border-radius:12px; background:linear-gradient(135deg,#70482D,#A97832); color:#fff; width:100%; padding:0.875rem 1.5rem; font-size:1rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; border:none; cursor:pointer; box-shadow:0 4px 16px rgba(112,72,45,0.30); transition:background 0.15s,transform 0.1s,box-shadow 0.15s;"
+onmouseover="if(!this.disabled){this.style.background='linear-gradient(135deg,#5A3A24,#805827)';this.style.boxShadow='0 6px 20px rgba(112,72,45,0.38)';this.style.transform='translateY(-1px)';}"
+onmouseout="this.style.background='linear-gradient(135deg,#70482D,#A97832)';this.style.boxShadow='0 4px 16px rgba(112,72,45,0.30)';this.style.transform='translateY(0)';">
                         <!-- Normal -->
                         <span x-show="!loading" style="display:flex;align-items:center;gap:8px;">
                             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
