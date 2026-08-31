@@ -40,10 +40,15 @@
             font-family: 'Inter', sans-serif;
             background: var(--cream);
             color: var(--text);
+            overflow-x: hidden;
         }
 
         .brand-font {
             font-family: 'DM Serif Display', serif;
+        }
+
+        .mobile-overlay {
+            display: none;
         }
 
         /* =========================
@@ -597,11 +602,39 @@
 
         @media (max-width: 800px) {
             .sidebar {
-                display: none;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: min(82vw, 290px);
+                transform: translateX(-105%);
+                transition: transform 0.25s ease;
+                box-shadow: 12px 0 30px rgba(55, 35, 23, 0.24);
+                z-index: 60;
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
             }
 
             .main-content {
                 margin-left: 0;
+                width: 100%;
+            }
+
+            .mobile-overlay {
+                display: block;
+                position: fixed;
+                inset: 0;
+                background: rgba(18, 12, 10, 0.45);
+                z-index: 55;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.2s ease;
+            }
+
+            .mobile-overlay.mobile-visible {
+                opacity: 1;
+                pointer-events: auto;
             }
 
             .mobile-topbar {
@@ -612,6 +645,33 @@
                 justify-content: space-between;
                 background: var(--brown);
                 color: white;
+                position: sticky;
+                top: 0;
+                z-index: 30;
+            }
+
+            .mobile-brand-wrap {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .mobile-menu-toggle {
+                width: 38px;
+                height: 38px;
+                border: 0;
+                border-radius: 10px;
+                background: rgba(255,255,255,0.08);
+                color: white;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+            }
+
+            .mobile-menu-toggle svg {
+                width: 20px;
+                height: 20px;
             }
 
             .mobile-brand {
@@ -643,6 +703,17 @@
             .page-heading h1 {
                 font-size: 32px;
             }
+
+            .page-heading p,
+            .section-heading span,
+            .panel-subtitle,
+            .welcome-description,
+            .stat-label,
+            .category-name,
+            .overdue-item-name,
+            .overdue-meta {
+                line-height: 1.5;
+            }
         }
 
         @media (max-width: 600px) {
@@ -667,12 +738,26 @@
 
 <body>
 
-<div class="dashboard-wrapper">
+<div class="dashboard-wrapper" x-data="{ sidebarOpen: false }">
+
+    <div
+        x-show="sidebarOpen"
+        x-transition:enter="transition-opacity ease-linear duration-200"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition-opacity ease-linear duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        @click="sidebarOpen = false"
+        class="mobile-overlay"
+        :class="sidebarOpen ? 'mobile-visible' : ''"
+        x-cloak
+    ></div>
 
     {{-- =========================
          SIDEBAR ADMIN
     ========================== --}}
-    <aside class="sidebar">
+    <aside class="sidebar" :class="sidebarOpen ? 'mobile-open' : ''">
 
         <div class="brand-area">
 
@@ -746,8 +831,8 @@
 
             {{-- Barang --}}
             <a
-                href="{{ route('assets.index') }}"
-                class="menu-link {{ request()->routeIs('assets.*') ? 'active' : '' }}"
+                href="{{ route('items.index') }}"
+                class="menu-link {{ request()->routeIs('items.*') ? 'active' : '' }}"
             >
                 <svg class="menu-icon" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -856,9 +941,22 @@
     ========================== --}}
     <div class="mobile-topbar">
 
-        <span class="brand-font mobile-brand">
-            TE-Vault
-        </span>
+        <div class="mobile-brand-wrap">
+            <button
+                type="button"
+                class="mobile-menu-toggle"
+                @click="sidebarOpen = !sidebarOpen"
+                aria-label="Buka menu navigasi"
+            >
+                <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"/>
+                </svg>
+            </button>
+
+            <span class="brand-font mobile-brand">
+                TE-Vault
+            </span>
+        </div>
 
         <div class="mobile-user">
             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
