@@ -32,7 +32,7 @@ class BorrowingController extends Controller
     public function webMine()
     {
         $borrowings = Borrowing::query()
-            ->with(['asset', 'approvedBy'])
+            ->with(['asset', 'item', 'approvedBy'])
             ->where('borrower_user_id', request()->user()->id)
             ->latest('requested_at')
             ->paginate(15);

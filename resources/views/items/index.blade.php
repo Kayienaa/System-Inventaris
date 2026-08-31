@@ -154,12 +154,12 @@
 
                                 <div class="mt-4">
 
-                                    <button
-                                        type="button"
-                                        class="w-full rounded-xl bg-gray-800 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-gray-700"
+                                    <a
+                                        href="{{ route('items.borrow', $item) }}"
+                                        class="block w-full rounded-xl bg-gray-800 px-4 py-2.5 text-center text-sm font-medium text-white transition hover:bg-gray-700"
                                     >
                                         Pinjam Barang
-                                    </button>
+                                    </a>
 
                                 </div>
 

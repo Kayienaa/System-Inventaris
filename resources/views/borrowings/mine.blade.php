@@ -18,8 +18,8 @@
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 flex items-center justify-between gap-4">
 
                         <div>
-                            <p class="font-semibold text-gray-800">{{ $borrowing->asset->name }}</p>
-                            <p class="text-sm text-gray-500">{{ $borrowing->asset->asset_code }}</p>
+                            <p class="font-semibold text-gray-800">{{ $borrowing->asset->name ?? $borrowing->item->nama_barang ?? '-' }}</p>
+                            <p class="text-sm text-gray-500">{{ $borrowing->asset->asset_code ?? $borrowing->item->kode_unik ?? '-' }}</p>
 
                             @if ($borrowing->due_at)
                                 <p class="text-xs text-gray-400 mt-1">
