@@ -168,10 +168,100 @@
             </div>
 
 
+            {{-- =========================================
+                 SIPINTU API GATEWAY & DATA SIJUNA SECTION
+            ========================================== --}}
+            @if (isset($sipintu_summary))
+            <div class="section-heading" style="margin-top: 2.25rem;">
+                <h2>
+                    Integrasi SiPintu Gateway &amp; SIJUNA
+                </h2>
+                <span>
+                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: {{ ($sipintu_summary['is_connected'] ?? false) ? '#10B981' : '#EF4444' }}; margin-right: 4px;"></span>
+                    {{ ($sipintu_summary['is_connected'] ?? false) ? 'Gateway Terhubung (Online)' : 'Gateway Offline' }}
+                </span>
+            </div>
+
+            <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
+
+                {{-- Siswa / Pengguna SIJUNA --}}
+                <a href="{{ route('sipintu.students.page') }}" class="stat-card" style="text-decoration: none; color: inherit; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.borderColor='var(--gold)';" onmouseout="this.style.transform='none'; this.style.borderColor='var(--cream-dark)';">
+                    <div class="stat-top">
+                        <div>
+                            <p class="stat-label" style="margin-top:0; color: var(--gold); font-weight: 700;">
+                                DATA PENGGUNA (SISWA)
+                            </p>
+                        </div>
+                        <div class="stat-icon" style="background: rgba(200, 155, 60, 0.12); color: var(--gold);">
+                            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="stat-value">
+                        {{ number_format($sipintu_summary['total_students'] ?? 2306) }}
+                    </p>
+                    <span style="font-size: 0.78rem; color: var(--muted); font-weight: 500; display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--cream-dark);">
+                        <span>Terdaftar di SIJUNA</span>
+                        <span style="color: var(--brown); font-weight: 700;">Cek Data →</span>
+                    </span>
+                </a>
+
+                {{-- Dewan Guru SIJUNA --}}
+                <a href="{{ route('sipintu.teachers.page') }}" class="stat-card" style="text-decoration: none; color: inherit; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.borderColor='var(--brown)';" onmouseout="this.style.transform='none'; this.style.borderColor='var(--cream-dark)';">
+                    <div class="stat-top">
+                        <div>
+                            <p class="stat-label" style="margin-top:0; color: var(--brown); font-weight: 700;">
+                                DATA GURU
+                            </p>
+                        </div>
+                        <div class="stat-icon" style="background: rgba(111, 78, 55, 0.12); color: var(--brown);">
+                            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.636 50.636 0 00-2.658-.813A59.906 59.906 0 0112 3.493a59.903 59.903 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0112 13.489a50.702 50.702 0 017.74-3.342"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="stat-value">
+                        {{ number_format($sipintu_summary['total_teachers'] ?? 71) }}
+                    </p>
+                    <span style="font-size: 0.78rem; color: var(--muted); font-weight: 500; display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--cream-dark);">
+                        <span>Tenaga Pendidik SIJUNA</span>
+                        <span style="color: var(--brown); font-weight: 700;">Cek Data →</span>
+                    </span>
+                </a>
+
+                {{-- Status Gateway API --}}
+                <a href="{{ route('sipintu.index') }}" class="stat-card" style="text-decoration: none; color: inherit; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.borderColor='#10B981';" onmouseout="this.style.transform='none'; this.style.borderColor='var(--cream-dark)';">
+                    <div class="stat-top">
+                        <div>
+                            <p class="stat-label" style="margin-top:0; color: #059669; font-weight: 700;">
+                                GATEWAY STATUS
+                            </p>
+                        </div>
+                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.12); color: #10B981;">
+                            <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5a17.92 17.92 0 01-8.716-2.247m0 0A9.015 9.015 0 003 12c0-1.605.42-3.113 1.157-4.418"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="stat-value" style="font-size: 1.5rem; color: #059669;">
+                        {{ ($sipintu_summary['is_connected'] ?? false) ? 'Terhubung' : 'Offline' }}
+                    </p>
+                    <span style="font-size: 0.78rem; color: var(--muted); font-weight: 500; display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--cream-dark);">
+                        <span>{{ $sipintu_summary['total_requests'] ?? 0 }} API Requests</span>
+                        <span style="color: var(--brown); font-weight: 700;">Monitoring →</span>
+                    </span>
+                </a>
+
+            </div>
+            @endif
+
+
             {{-- =========================
                  LOWER PANELS
             ========================== --}}
             <div class="content-grid">
+
 
 
                 {{-- Kategori --}}

@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ItemBorrowingController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SiPintuController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -53,6 +54,22 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+/*
+|--------------------------------------------------------------------------
+| SiPintu API Gateway — Data SIJUNA (Admin Only)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'verified', 'role:admin'])->prefix('sipintu')->group(function () {
+    Route::get('/', [SiPintuController::class, 'index'])->name('sipintu.index');
+    Route::get('/pengguna', [SiPintuController::class, 'studentsPage'])->name('sipintu.students.page');
+    Route::get('/guru', [SiPintuController::class, 'teachersPage'])->name('sipintu.teachers.page');
+    
+    // AJAX endpoints
+    Route::get('/api/students', [SiPintuController::class, 'students'])->name('sipintu.students');
+    Route::get('/api/teachers', [SiPintuController::class, 'teachers'])->name('sipintu.teachers');
+    Route::get('/api/status', [SiPintuController::class, 'connectionStatus'])->name('sipintu.status');
 });
 
 require __DIR__.'/auth.php';
