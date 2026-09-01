@@ -1,7 +1,9 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Sprint 1B — Make asset_id nullable in borrowings table.
@@ -38,6 +40,17 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            Schema::table('borrowings', function (Blueprint $table) {
+                $table->unsignedBigInteger('asset_id')->nullable()->change();
+            });
+            return;
+        }
+
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         // 1. Drop UNIQUE index (MariaDB requires index removal before column drop
         //    when the column is the sole member of a unique key).
         DB::statement('ALTER TABLE `borrowings` DROP INDEX `borrowings_active_asset_id_unique`');
@@ -73,6 +86,17 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            Schema::table('borrowings', function (Blueprint $table) {
+                $table->unsignedBigInteger('asset_id')->nullable(false)->change();
+            });
+            return;
+        }
+
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         // Guard: refuse rollback if any Item-based borrowing (asset_id = NULL) exists.
         $nullCount = DB::table('borrowings')->whereNull('asset_id')->count();
 
