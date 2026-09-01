@@ -45,6 +45,10 @@ Route::get('/borrowings/mine', [BorrowingController::class, 'webMine'])
     ->middleware(['auth', 'verified'])
     ->name('borrowings.mine');
 
+Route::post('/borrowings/{borrowing}/return-request', [BorrowingController::class, 'requestReturn'])
+    ->middleware(['auth', 'verified'])
+    ->name('borrowings.return-request');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

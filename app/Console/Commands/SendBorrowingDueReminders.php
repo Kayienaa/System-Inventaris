@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\BorrowingStatus;
 use App\Mail\DueReminderMail;
 use App\Models\Borrowing;
 use Illuminate\Console\Command;
@@ -15,16 +16,22 @@ class SendBorrowingDueReminders extends Command
 
     public function handle(): int
     {
-        $borrowings = Borrowing::with(['user', 'item'])
-            ->active() // status = Dipinjam
-            ->whereBetween('tgl_kembali_rencana', [now(), now()->addDay()])
+        $borrowings = Borrowing::with(['borrower', 'asset', 'item'])
+            ->where('status', BorrowingStatus::Borrowed)
+            ->whereBetween('due_at', [now(), now()->addDay()])
+            ->whereNull('due_reminder_sent_at')
             ->get();
 
         foreach ($borrowings as $borrowing) {
-            if ($borrowing->user?->email) {
-                Mail::to($borrowing->user->email)->queue(new DueReminderMail($borrowing));
-            }
-        }
+            if ($borrowing->borrower?->email) {
+                Mail::to($borrowing->borrower->email)
+                    ->queue(new DueReminderMail($borrowing));
+
+                $borrowing->update([
+                    'due_reminder_sent_at' => now(),
+        ]);
+    }
+}
 
         $this->info("Berhasil mengirim {$borrowings->count()} email pengingat.");
 

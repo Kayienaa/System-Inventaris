@@ -1,14 +1,14 @@
 <x-mail::message>
 # Pengingat Pengembalian Alat
 
-Halo **{{ $borrowing->user->name }}**,
+Halo **{{ $borrowing->borrower->name }}**,
 
 Alat berikut harus segera dikembalikan ke Ruang TEFA:
 
-<x-mail::panel>php artisan make:command SendBorrowingDueReminders
-**Nama Barang:** {{ $borrowing->item->nama_barang }}<br>
-**Kode Aset:** {{ $borrowing->item->kode_unik }}<br>
-**Batas Pengembalian:** {{ $borrowing->tgl_kembali_rencana->format('d M Y, H:i') }} WIB
+<x-mail::panel>
+**Nama Barang:** {{ $borrowing->asset?->name ?? $borrowing->item?->nama_barang ?? '-' }}<br>
+**Kode Aset:** {{ $borrowing->asset?->asset_code ?? $borrowing->item?->kode_unik ?? '-' }}<br>
+**Batas Pengembalian:** {{ $borrowing->due_at->format('d M Y, H:i') }} WIB
 </x-mail::panel>
 
 Mohon kembalikan tepat waktu untuk menghindari status keterlambatan.

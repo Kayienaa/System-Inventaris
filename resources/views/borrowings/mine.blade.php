@@ -11,6 +11,12 @@
             <p class="text-gray-500 mt-1">Riwayat & status peminjaman barang kamu</p>
         </div>
 
+        @if (session('success'))
+            <div class="mb-6 rounded-xl bg-green-50 border border-green-200 px-5 py-3 text-sm text-green-700">
+                {{ session('success') }}
+            </div>
+        @endif
+
         @if ($borrowings->count())
 
             <div class="space-y-4">
@@ -31,7 +37,7 @@
                         <div>
                             @php
                                 $statusLabel = match ($borrowing->status->value ?? $borrowing->status) {
-                                    'requested' => ['Menunggu Persetujuan', 'bg-yellow-100 text-yellow-700'],
+                                    'pending' => ['Menunggu Persetujuan', 'bg-yellow-100 text-yellow-700'],
                                     'approved' => ['Disetujui', 'bg-blue-100 text-blue-700'],
                                     'borrowed' => ['Dipinjam', 'bg-red-100 text-red-700'],
                                     'return_pending_verification' => ['Menunggu Verifikasi', 'bg-purple-100 text-purple-700'],
@@ -45,6 +51,17 @@
                             <span class="px-3 py-1 text-xs font-medium rounded-full {{ $statusLabel[1] }}">
                                 {{ $statusLabel[0] }}
                             </span>
+
+                            @if (($borrowing->status->value ?? $borrowing->status) === 'borrowed')
+                                <form action="{{ route('borrowings.return-request', $borrowing) }}" method="POST" class="mt-2">
+                                    @csrf
+                                    <button type="submit"
+                                        class="px-3 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-700 hover:bg-orange-200 transition"
+                                        onclick="return confirm('Yakin ingin mengajukan pengembalian?')">
+                                        Ajukan Pengembalian
+                                    </button>
+                                </form>
+                            @endif
                         </div>
 
                     </div>

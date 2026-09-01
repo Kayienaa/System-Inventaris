@@ -10,6 +10,7 @@ use App\Actions\Borrowings\RequestBorrowingAction;
 use App\Actions\Borrowings\SubmitReturnAction;
 use App\Actions\Borrowings\VerifyReturnAction;
 use App\Enums\AssetCondition;
+use App\Enums\BorrowingStatus;
 use App\Http\Requests\Borrowings\ApproveBorrowingRequest;
 use App\Http\Requests\Borrowings\CancelBorrowingRequest;
 use App\Http\Requests\Borrowings\CheckoutBorrowingRequest;
@@ -38,6 +39,25 @@ class BorrowingController extends Controller
             ->paginate(15);
 
         return view('borrowings.mine', compact('borrowings'));
+    }
+
+    public function requestReturn(Borrowing $borrowing)
+    {
+        if ($borrowing->borrower_user_id !== request()->user()->id) {
+            abort(403, 'Anda tidak memiliki akses ke peminjaman ini.');
+        }
+
+        if ($borrowing->status !== BorrowingStatus::Borrowed) {
+            abort(403, 'Hanya peminjaman dengan status "Dipinjam" yang dapat diajukan pengembaliannya.');
+        }
+
+        $borrowing->update([
+            'status' => BorrowingStatus::ReturnPendingVerification,
+            'return_submitted_at' => now(),
+        ]);
+
+        return redirect()->route('borrowings.mine')
+            ->with('success', 'Pengajuan pengembalian berhasil dikirim. Menunggu verifikasi admin.');
     }
     public function index(): AnonymousResourceCollection
     {

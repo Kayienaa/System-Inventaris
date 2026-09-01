@@ -9,4 +9,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 // Cek setiap hari jam 08:00 — kirim reminder H-1 jatuh tempo
-Schedule::command('borrowings:send-due-reminders')->dailyAt('08:00');
+Schedule::command('borrowings:send-due-reminders')
+    ->dailyAt('08:00');
