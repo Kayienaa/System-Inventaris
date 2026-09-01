@@ -33,14 +33,20 @@ class DashboardController extends Controller
             'status_aset' => Asset::select('availability_status', DB::raw('count(*) as total'))
                 ->groupBy('availability_status')
                 ->pluck('total', 'availability_status'),
-            'overdue' => Borrowing::with(['borrower', 'asset'])
+            'overdue' => Borrowing::with([
+                    'borrower',
+                    'asset',
+                    'item',
+                ])
                 ->whereIn('status', [BorrowingStatus::Borrowed, BorrowingStatus::ReturnPendingVerification])
                 ->whereNull('returned_at')
                 ->where('due_at', '<', now())
                 ->get()
                 ->map(fn (Borrowing $b) => [
                     'peminjam' => $b->borrower->name,
-                    'barang' => $b->asset->name,
+                    'barang' => $b->asset?->name
+                        ?? $b->item?->nama_barang
+                        ?? '-',
                     'jatuh_tempo' => $b->due_at->format('d M Y, H:i'),
                     'terlambat_sejak' => $b->due_at->diffForHumans(),
                 ]),

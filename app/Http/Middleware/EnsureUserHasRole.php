@@ -13,7 +13,9 @@ class EnsureUserHasRole
      */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
-        if (! $request->user() || ! in_array($request->user()->role, $roles, true)) {
+        $user = $request->user();
+
+        if (! $user || ! $user->hasAnyRole($roles)) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
