@@ -22,33 +22,17 @@ class AssetCategorySeeder extends Seeder
             ],
             [
                 'id' => 2,
-                'code' => 'CAT-SMP',
-                'name' => 'Smartphone',
-                'description' => 'Perangkat telepon pintar untuk pengujian aplikasi mobile, komunikasi, dan multimedia.',
-                'is_active' => true,
-            ],
-            [
-                'id' => 3,
-                'code' => 'CAT-CAM',
-                'name' => 'Kamera',
-                'description' => 'Kamera DSLR, mirrorless, dan perlengkapan dokumentasi audio-visual.',
-                'is_active' => true,
-            ],
-            [
-                'id' => 4,
-                'code' => 'CAT-AV',
-                'name' => 'Audio & Visual',
-                'description' => 'Proyektor, microphone, speaker, mixer, dan perangkat multimedia lainnya.',
-                'is_active' => true,
-            ],
-            [
-                'id' => 5,
-                'code' => 'CAT-ACC',
-                'name' => 'Aksesoris & Peralatan',
-                'description' => 'Kabel konektor, tripod, stabilizer, adapter, dan toolkit pendukung TEFA.',
+                'code' => 'CAT-HP',
+                'name' => 'HP',
+                'description' => 'Perangkat telepon pintar (smartphone) untuk pengujian aplikasi mobile, komunikasi, dan multimedia.',
                 'is_active' => true,
             ],
         ];
+
+        // Hapus kategori di luar Laptop dan HP
+        AssetCategory::whereNotIn('id', [1, 2])
+            ->whereNotIn('code', ['CAT-LPT', 'CAT-HP'])
+            ->delete();
 
         foreach ($categories as $category) {
             AssetCategory::updateOrCreate(

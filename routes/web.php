@@ -17,7 +17,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
 Route::get('/dashboard/analytics', [DashboardController::class, 'analytics'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'role:admin'])
     ->name('dashboard.analytics');
 
 Route::get('/katalog', [AssetController::class, 'webIndex'])
@@ -55,12 +55,16 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Panel Super Admin — Audit Logs
+| Panel Super Admin — Audit Logs & Ekspor Laporan
 |--------------------------------------------------------------------------
 */
-Route::get('/admin/audit-logs', [\App\Http\Controllers\AuditLogController::class, 'webIndex'])
-    ->middleware(['auth', 'verified', 'role:admin'])
-    ->name('admin.audit-logs.index');
+Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->group(function () {
+    Route::get('/audit-logs', [\App\Http\Controllers\AuditLogController::class, 'webIndex'])->name('admin.audit-logs.index');
+    Route::get('/borrowings/export-excel', [\App\Http\Controllers\Admin\BorrowingReportController::class, 'exportCsv'])->name('admin.borrowings.export-excel');
+    Route::get('/borrowings/export-pdf', [\App\Http\Controllers\Admin\BorrowingReportController::class, 'exportPdf'])->name('admin.borrowings.export-pdf');
+    Route::get('/audit-logs/export-excel', [\App\Http\Controllers\Admin\BorrowingReportController::class, 'exportCsv'])->name('admin.audit-logs.export-excel');
+    Route::get('/audit-logs/export-pdf', [\App\Http\Controllers\Admin\BorrowingReportController::class, 'exportPdf'])->name('admin.audit-logs.export-pdf');
+});
 
 /*
 |--------------------------------------------------------------------------

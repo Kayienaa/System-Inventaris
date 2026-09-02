@@ -5,16 +5,40 @@
 @section('content')
 
             {{-- Page heading --}}
-            <div class="page-heading">
+            <div class="page-heading" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+                <div>
+                    <h1 class="brand-font">
+                        Laporan
+                    </h1>
+                    <p>
+                        Ringkasan statistik dan rekapitulasi transaksi inventaris TEFA.
+                    </p>
+                </div>
 
-                <h1 class="brand-font">
-                    Laporan
-                </h1>
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+                    <a
+                        href="{{ route('admin.borrowings.export-excel') }}"
+                        class="btn"
+                        style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 10px; background: #059669; color: #ffffff; font-size: 0.82rem; font-weight: 700; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"
+                    >
+                        <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Ekspor Excel / CSV
+                    </a>
 
-                <p>
-                    Ringkasan statistik inventaris TEFA.
-                </p>
-
+                    <a
+                        href="{{ route('admin.borrowings.export-pdf') }}"
+                        target="_blank"
+                        class="btn"
+                        style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 10px; background: #6F4E37; color: #ffffff; font-size: 0.82rem; font-weight: 700; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"
+                    >
+                        <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                        </svg>
+                        Cetak / Ekspor PDF
+                    </a>
+                </div>
             </div>
 
             {{-- Stat ringkas --}}

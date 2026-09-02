@@ -325,6 +325,50 @@
                 }
             },
 
+            applyModalWatermark(canvas, userName) {
+                const ctx = canvas.getContext('2d');
+                const width = canvas.width;
+                const height = canvas.height;
+
+                const now = new Date();
+                const pad = (n) => String(n).padStart(2, '0');
+                const year = now.getFullYear();
+                const month = pad(now.getMonth() + 1);
+                const day = pad(now.getDate());
+                const hours = pad(now.getHours());
+                const minutes = pad(now.getMinutes());
+                const seconds = pad(now.getSeconds());
+                const timestampStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds} WIB`;
+                const textStr = `Pengembalian: ${userName} | ${timestampStr}`;
+
+                const fontSize = Math.max(13, Math.floor(width / 38));
+                ctx.font = `600 ${fontSize}px sans-serif`;
+
+                const paddingX = 14;
+                const paddingY = 8;
+                const textMetrics = ctx.measureText(textStr);
+                const boxWidth = textMetrics.width + (paddingX * 2);
+                const boxHeight = fontSize + (paddingY * 2);
+
+                const x = width - boxWidth - 12;
+                const y = height - boxHeight - 12;
+
+                // Semi-transparent dark strip background
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+                if (ctx.roundRect) {
+                    ctx.beginPath();
+                    ctx.roundRect(x, y, boxWidth, boxHeight, 6);
+                    ctx.fill();
+                } else {
+                    ctx.fillRect(x, y, boxWidth, boxHeight);
+                }
+
+                // White text
+                ctx.fillStyle = '#FFFFFF';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(textStr, x + paddingX, y + (boxHeight / 2));
+            },
+
             snapModalSnapshot() {
                 const video = this.$refs.modalVideo;
                 const canvas = this.$refs.modalCanvas;
@@ -334,6 +378,9 @@
                 canvas.height = video.videoHeight || 480;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                // Tambahkan Watermark Timestamp & Nama
+                this.applyModalWatermark(canvas, "{{ auth()->user()->name }}");
 
                 this.returnCapturedPhoto = canvas.toDataURL('image/jpeg', 0.85);
                 this.closeModalCamera();
@@ -363,8 +410,18 @@
 
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    this.returnCapturedPhoto = e.target.result;
-                    this.closeModalCamera();
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = this.$refs.modalCanvas || document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        this.applyModalWatermark(canvas, "{{ auth()->user()->name }}");
+                        this.returnCapturedPhoto = canvas.toDataURL('image/jpeg', 0.85);
+                        this.closeModalCamera();
+                    };
+                    img.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
             },

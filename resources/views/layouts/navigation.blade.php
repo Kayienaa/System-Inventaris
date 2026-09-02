@@ -122,8 +122,15 @@
                 Peminjaman
             </a>
 
-            {{-- Data Pengguna / Siswa (admin only) --}}
+            {{-- ── Administrasi (Super Admin Only) ── --}}
             @hasrole('admin')
+            <div class="pt-4 pb-1 px-4">
+                <p class="text-[11px] font-bold uppercase tracking-wider text-white/40">
+                    Administrasi
+                </p>
+            </div>
+
+            {{-- Data Pengguna / Siswa (admin only) --}}
             <a href="{{ route('sipintu.students.page') }}"
                class="{{ $link }} {{ request()->routeIs('sipintu.students*') ? $active : $inactive }}">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -136,10 +143,8 @@
                 </svg>
                 Data Pengguna
             </a>
-            @endhasrole
 
             {{-- Data Guru (admin only) --}}
-            @hasrole('admin')
             <a href="{{ route('sipintu.teachers.page') }}"
                class="{{ $link }} {{ request()->routeIs('sipintu.teachers*') ? $active : $inactive }}">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -148,10 +153,8 @@
                 </svg>
                 Data Guru
             </a>
-            @endhasrole
 
             {{-- Gateway SiPintu (admin only) --}}
-            @hasrole('admin')
             <a href="{{ route('sipintu.index') }}"
                class="{{ $link }} {{ request()->routeIs('sipintu.index') ? $active : $inactive }}">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -160,10 +163,8 @@
                 </svg>
                 Gateway SiPintu
             </a>
-            @endhasrole
 
             {{-- Laporan (admin only) --}}
-            @hasrole('admin')
             <a href="{{ route('dashboard.analytics') }}"
                class="{{ $link }} {{ request()->routeIs('dashboard.analytics') ? $active : $inactive }}">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -177,10 +178,8 @@
                 </svg>
                 Laporan
             </a>
-            @endhasrole
 
             {{-- Audit Log (admin only) --}}
-            @hasrole('admin')
             <a href="{{ route('admin.audit-logs.index') }}"
                class="{{ $link }} {{ request()->routeIs('admin.audit-logs.*') ? $active : $inactive }}">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">

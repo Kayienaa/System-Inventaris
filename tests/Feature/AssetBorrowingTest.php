@@ -38,8 +38,8 @@ class AssetBorrowingTest extends TestCase
         $response = $this->actingAs($user)->get(route('assets.index'));
 
         $response->assertStatus(200);
-        $response->assertSee('Laptop Acer Aspire 5 #1');
-        $response->assertSee('AST-LPT-001');
+        $response->assertSee('Laptop');
+        $response->assertSee('LP-TEFA-001');
     }
 
     public function test_user_can_filter_katalog_by_category(): void
@@ -47,11 +47,11 @@ class AssetBorrowingTest extends TestCase
         $user = User::factory()->create();
         $user->assignRole('siswa');
 
-        $response = $this->actingAs($user)->get(route('assets.index', ['category' => 'Smartphone']));
+        $response = $this->actingAs($user)->get(route('assets.index', ['category' => 'HP']));
 
         $response->assertStatus(200);
-        $response->assertSee('Samsung Galaxy A54 5G #1');
-        $response->assertSee('AST-SMP-001');
+        $response->assertSee('Samsung Galaxy A54');
+        $response->assertSee('HP-TEFA-001');
     }
 
     public function test_user_can_view_borrow_form_for_available_asset(): void
