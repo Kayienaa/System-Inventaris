@@ -88,8 +88,8 @@
             </a>
 
             {{-- Barang --}}
-                <a href="{{ route('items.index') }}"
-                    class="{{ $link }} {{ request()->routeIs('items.*') ? $active : $inactive }}">
+            <a href="{{ route('assets.index') }}"
+               class="{{ $link }} {{ request()->routeIs('assets.*') ? $active : $inactive }}">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5

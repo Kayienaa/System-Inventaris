@@ -26,6 +26,11 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        if ($request->user()->hasAnyRole(['guru', 'siswa'])) {
+            return Redirect::route('profile.edit')
+                ->with('error', 'Data akun Anda dikelola secara terpusat melalui SiPintu dan tidak dapat diubah langsung.');
+        }
+
         $request->user()->fill($request->validated());
 
         if ($request->user()->isDirty('email')) {
@@ -42,6 +47,11 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        if ($request->user()->hasAnyRole(['guru', 'siswa'])) {
+            return Redirect::route('profile.edit')
+                ->with('error', 'Akun Anda dikelola secara terpusat melalui SiPintu.');
+        }
+
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
         ]);

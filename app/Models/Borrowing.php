@@ -19,7 +19,6 @@ class Borrowing extends Model
     protected $fillable = [
         'borrower_user_id',
         'asset_id',
-        'item_id',
         'status',
         'requested_at',
         'borrowed_at',
@@ -75,11 +74,6 @@ class Borrowing extends Model
     public function asset(): BelongsTo
     {
         return $this->belongsTo(Asset::class);
-    }
-
-    public function item(): BelongsTo
-    {
-    return $this->belongsTo(Item::class);
     }
 
     public function approvedBy(): BelongsTo

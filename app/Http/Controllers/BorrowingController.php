@@ -27,13 +27,60 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class BorrowingController extends Controller
 {
-        /**
+    /**
+     * Halaman form pengajuan peminjaman barang (web view).
+     */
+    public function create(Asset $asset)
+    {
+        abort_unless($asset->isAvailable(), 404, 'Barang ini tidak tersedia untuk dipinjam.');
+
+        return view('assets.borrow', compact('asset'));
+    }
+
+    /**
+     * Helper untuk menyimpan gambar bukti baik dari File Upload maupun Webcam (Base64).
+     */
+    private function storeEvidenceImage(\Illuminate\Http\Request $request, string $inputName, string $folder): ?string
+    {
+        // 1. Jika diunggah via form file upload biasa
+        if ($request->hasFile($inputName)) {
+            return $request->file($inputName)->store($folder, 'public');
+        }
+        if ($request->hasFile($inputName . '_file')) {
+            return $request->file($inputName . '_file')->store($folder, 'public');
+        }
+
+        // 2. Jika diunggah via Webcam Snapshot (Base64 Data URL)
+        $base64 = $request->input($inputName);
+        if (is_string($base64) && str_starts_with($base64, 'data:image/')) {
+            @[$type, $data] = explode(';', $base64);
+            @[, $data] = explode(',', $data);
+            if ($data) {
+                $decoded = base64_decode($data);
+                if ($decoded !== false) {
+                    $ext = 'jpg';
+                    if (str_contains($type, 'png')) {
+                        $ext = 'png';
+                    } elseif (str_contains($type, 'webp')) {
+                        $ext = 'webp';
+                    }
+                    $filename = $folder . '/' . \Illuminate\Support\Str::uuid() . '.' . $ext;
+                    \Illuminate\Support\Facades\Storage::disk('public')->put($filename, $decoded);
+                    return $filename;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Halaman daftar peminjaman milik user yang sedang login (web view).
      */
     public function webMine()
     {
         $borrowings = Borrowing::query()
-            ->with(['asset', 'item', 'approvedBy'])
+            ->with(['asset.category', 'approvedBy'])
             ->where('borrower_user_id', request()->user()->id)
             ->latest('requested_at')
             ->paginate(15);
@@ -41,9 +88,12 @@ class BorrowingController extends Controller
         return view('borrowings.mine', compact('borrowings'));
     }
 
-    public function requestReturn(Borrowing $borrowing)
+    /**
+     * Pengembalian barang instan dengan foto real-time dari kamera.
+     */
+    public function requestReturn(\Illuminate\Http\Request $request, Borrowing $borrowing, AuditLogService $audit)
     {
-        if ($borrowing->borrower_user_id !== request()->user()->id) {
+        if ($borrowing->borrower_user_id !== $request->user()->id && ! $request->user()->hasRole('admin')) {
             abort(403, 'Anda tidak memiliki akses ke peminjaman ini.');
         }
 
@@ -51,14 +101,31 @@ class BorrowingController extends Controller
             abort(403, 'Hanya peminjaman dengan status "Dipinjam" yang dapat diajukan pengembaliannya.');
         }
 
-        $borrowing->update([
-            'status' => BorrowingStatus::ReturnPendingVerification,
-            'return_submitted_at' => now(),
-        ]);
+        $oldAttributes = $borrowing->getAttributes();
+        $evidencePath = $this->storeEvidenceImage($request, 'return_evidence', 'return-evidence');
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($borrowing, $request, $evidencePath) {
+            $borrowing->update([
+                'status' => BorrowingStatus::Returned,
+                'returned_at' => now(),
+                'return_submitted_at' => now(),
+                'return_evidence_path' => $evidencePath,
+                'return_note' => $request->input('return_note'),
+                'return_condition' => AssetCondition::Baik,
+            ]);
+
+            // Reset status ketersediaan Asset kembali ke Tersedia
+            $borrowing->asset?->update([
+                'availability_status' => \App\Enums\AssetAvailabilityStatus::Tersedia,
+            ]);
+        });
+
+        $audit->record($request->user(), 'borrowing.returned', $borrowing, $oldAttributes, $borrowing->fresh()->getAttributes());
 
         return redirect()->route('borrowings.mine')
-            ->with('success', 'Pengajuan pengembalian berhasil dikirim. Menunggu verifikasi admin.');
+            ->with('success', 'Barang berhasil dikembalikan! Status telah selesai dan aset kini kembali tersedia.');
     }
+
     public function index(): AnonymousResourceCollection
     {
         $query = Borrowing::query()->with(['asset', 'borrower']);
@@ -69,12 +136,33 @@ class BorrowingController extends Controller
         return BorrowingResource::collection($query->paginate());
     }
 
-    public function store(StoreBorrowingRequest $request, RequestBorrowingAction $action, AuditLogService $audit): BorrowingResource
+    public function store(StoreBorrowingRequest $request, RequestBorrowingAction $action, AuditLogService $audit)
     {
-        $borrowing = $action->execute($request->user(), Asset::findOrFail($request->integer('asset_id')), $request->input('borrower_note'));
+        $asset = Asset::findOrFail($request->integer('asset_id'));
+
+        $evidencePath = $this->storeEvidenceImage($request, 'borrowing_evidence', 'borrowing-evidence');
+
+        $dueAt = $request->filled('due_at')
+            ? \Carbon\Carbon::parse($request->input('due_at'))
+            : now()->addDays(3);
+
+        $borrowing = $action->execute(
+            $request->user(),
+            $asset,
+            $request->input('borrower_note'),
+            $evidencePath,
+            $dueAt
+        );
+
         $audit->record($request->user(), 'borrowing.requested', $borrowing, null, $borrowing->getAttributes());
 
-        return new BorrowingResource($borrowing->load(['asset', 'borrower']));
+        if ($request->wantsJson()) {
+            return new BorrowingResource($borrowing->load(['asset', 'borrower']));
+        }
+
+        return redirect()
+            ->route('borrowings.mine')
+            ->with('success', 'Peminjaman berhasil dilakukan! Batas pengembalian: ' . $dueAt->format('d M Y, H:i'));
     }
 
     public function show(Borrowing $borrowing): BorrowingResource

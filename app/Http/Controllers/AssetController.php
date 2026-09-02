@@ -10,18 +10,42 @@ use App\Services\AuditLogService;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Symfony\Component\HttpFoundation\Response;
 
+use App\Models\AssetCategory;
+use Illuminate\Http\Request;
+
 class AssetController extends Controller
 {
-        /**
+    /**
      * Halaman katalog barang (web view) — dilihat oleh guru & siswa.
      */
-    public function webIndex()
+    public function webIndex(Request $request)
     {
+        $categories = AssetCategory::query()->where('is_active', true)->get();
+
         $assets = Asset::query()
             ->with(['category', 'activeBorrowing.borrower'])
-            ->paginate(12);
+            ->when($request->filled('category'), function ($query) use ($request) {
+                $categoryParam = $request->string('category')->toString();
+                $query->whereHas('category', function ($cq) use ($categoryParam) {
+                    $cq->where('name', $categoryParam)
+                       ->orWhere('code', $categoryParam);
+                });
+            })
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = '%' . $request->string('search')->trim() . '%';
+                $query->where(function ($sq) use ($search) {
+                    $sq->where('name', 'like', $search)
+                       ->orWhere('asset_code', 'like', $search)
+                       ->orWhere('brand', 'like', $search)
+                       ->orWhere('model', 'like', $search)
+                       ->orWhere('serial_number', 'like', $search);
+                });
+            })
+            ->orderBy('id', 'asc')
+            ->paginate(12)
+            ->withQueryString();
 
-        return view('assets.index', compact('assets'));
+        return view('assets.index', compact('assets', 'categories'));
     }
 
     public function index(): AnonymousResourceCollection

@@ -57,7 +57,6 @@ class DashboardController extends Controller
             'overdue' => Borrowing::with([
                     'borrower',
                     'asset',
-                    'item',
                 ])
                 ->whereIn('status', [BorrowingStatus::Borrowed, BorrowingStatus::ReturnPendingVerification])
                 ->whereNull('returned_at')
@@ -65,9 +64,7 @@ class DashboardController extends Controller
                 ->get()
                 ->map(fn (Borrowing $b) => [
                     'peminjam' => $b->borrower->name,
-                    'barang' => $b->asset?->name
-                        ?? $b->item?->nama_barang
-                        ?? '-',
+                    'barang' => $b->asset?->name ?? '-',
                     'jatuh_tempo' => $b->due_at->format('d M Y, H:i'),
                     'terlambat_sejak' => $b->due_at->diffForHumans(),
                 ]),

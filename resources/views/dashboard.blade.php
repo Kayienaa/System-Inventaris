@@ -339,23 +339,23 @@
 
                         <div class="overdue-list">
 
-                            @foreach ($overdue->take(5) as $item)
+                            @foreach ($overdue->take(5) as $entry)
 
                                 <div class="overdue-item">
 
                                     <p class="overdue-name">
-                                        {{ $item['peminjam'] }}
+                                        {{ $entry['peminjam'] }}
                                     </p>
 
                                     <p class="overdue-item-name">
-                                        {{ $item['barang'] }}
+                                        {{ $entry['barang'] }}
                                     </p>
 
                                     <div class="overdue-meta">
 
                                         <span>
                                             Jatuh tempo:
-                                            {{ $item['jatuh_tempo'] }}
+                                            {{ $entry['jatuh_tempo'] }}
                                         </span>
 
                                         <span class="overdue-badge">

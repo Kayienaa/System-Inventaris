@@ -15,11 +15,23 @@ class StoreBorrowingRequest extends FormRequest
 
     public function rules(): array
     {
-        return ['asset_id' => ['required', 'integer', Rule::exists('assets', 'id')->whereNull('deleted_at')], 'borrower_note' => ['nullable', 'string']];
+        return [
+            'asset_id' => ['required', 'integer', Rule::exists('assets', 'id')->whereNull('deleted_at')],
+            'borrower_note' => ['nullable', 'string', 'max:1000'],
+            'due_at' => ['nullable', 'date', 'after:now'],
+            'borrowing_evidence' => ['nullable'],
+            'borrowing_evidence_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+        ];
     }
 
     public function messages(): array
     {
-        return ['asset_id.exists' => 'The selected asset is unavailable.'];
+        return [
+            'asset_id.required' => 'Aset yang akan dipinjam wajib dipilih.',
+            'asset_id.exists' => 'Aset yang dipilih tidak tersedia atau tidak ditemukan.',
+            'due_at.after' => 'Waktu rencana pengembalian harus setelah waktu saat ini.',
+            'borrowing_evidence.image' => 'Bukti peminjaman harus berupa file gambar.',
+            'borrowing_evidence.max' => 'Ukuran file bukti peminjaman maksimal 5MB.',
+        ];
     }
 }

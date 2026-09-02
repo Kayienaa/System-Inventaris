@@ -61,4 +61,12 @@ class Asset extends Model
             ->whereIn('status', ['approved', 'borrowed', 'return_pending_verification'])
             ->latestOfMany();
     }
+
+    /**
+     * Cek apakah aset saat ini berstatus tersedia untuk dipinjam.
+     */
+    public function isAvailable(): bool
+    {
+        return $this->availability_status === AssetAvailabilityStatus::Tersedia;
+    }
 }

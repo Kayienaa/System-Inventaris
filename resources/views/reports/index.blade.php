@@ -165,12 +165,12 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($overdue as $item)
+                            @foreach ($overdue as $entry)
                                 <tr style="border-bottom: 1px solid var(--cream-dark);">
-                                    <td style="padding: 8px 0;">{{ $item['peminjam'] }}</td>
-                                    <td style="padding: 8px 0;">{{ $item['barang'] }}</td>
-                                    <td style="padding: 8px 0;">{{ $item['jatuh_tempo'] }}</td>
-                                    <td style="padding: 8px 0; color: #c0392b;">{{ $item['terlambat_sejak'] }}</td>
+                                    <td style="padding: 8px 0;">{{ $entry['peminjam'] }}</td>
+                                    <td style="padding: 8px 0;">{{ $entry['barang'] }}</td>
+                                    <td style="padding: 8px 0;">{{ $entry['jatuh_tempo'] }}</td>
+                                    <td style="padding: 8px 0; color: #c0392b;">{{ $entry['terlambat_sejak'] }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

@@ -15,6 +15,10 @@ class PasswordController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
+        if ($request->user()->hasAnyRole(['guru', 'siswa'])) {
+            return back()->with('error', 'Kata sandi akun Anda dikelola secara terpusat melalui SiPintu.');
+        }
+
         $validated = $request->validateWithBag('updatePassword', [
             'current_password' => ['required', 'current_password'],
             'password' => ['required', Password::defaults(), 'confirmed'],
