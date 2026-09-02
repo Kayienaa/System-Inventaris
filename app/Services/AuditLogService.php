@@ -13,7 +13,21 @@ class AuditLogService
     public function record(?User $actor, string $action, Model $entity, ?array $oldValues = null, ?array $newValues = null, ?array $metadata = null): void
     {
         try {
-            AuditLog::query()->create(['actor_user_id' => $actor?->id, 'action' => $action, 'entity_type' => $entity->getMorphClass(), 'entity_id' => $entity->getKey(), 'old_values' => $oldValues, 'new_values' => $newValues, 'metadata' => $metadata]);
+            $meta = $metadata ?? [];
+            if (request()) {
+                $meta['ip_address'] = $meta['ip_address'] ?? request()->ip();
+                $meta['user_agent'] = $meta['user_agent'] ?? request()->userAgent();
+            }
+
+            AuditLog::query()->create([
+                'actor_user_id' => $actor?->id,
+                'action' => $action,
+                'entity_type' => $entity->getMorphClass(),
+                'entity_id' => $entity->getKey(),
+                'old_values' => $oldValues,
+                'new_values' => $newValues,
+                'metadata' => $meta,
+            ]);
         } catch (Throwable) {
             report(new \RuntimeException('Audit logging failed.'));
         }

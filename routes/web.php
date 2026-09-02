@@ -55,6 +55,15 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Panel Super Admin — Audit Logs
+|--------------------------------------------------------------------------
+*/
+Route::get('/admin/audit-logs', [\App\Http\Controllers\AuditLogController::class, 'webIndex'])
+    ->middleware(['auth', 'verified', 'role:admin'])
+    ->name('admin.audit-logs.index');
+
+/*
+|--------------------------------------------------------------------------
 | SiPintu API Gateway — Data SIJUNA (Admin Only)
 |--------------------------------------------------------------------------
 */

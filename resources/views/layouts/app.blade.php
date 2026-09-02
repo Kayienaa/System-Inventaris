@@ -890,6 +890,21 @@
                 Laporan
             </a>
 
+            {{-- Audit Log (Admin Only) --}}
+            @hasrole('admin')
+            <a
+                href="{{ route('admin.audit-logs.index') }}"
+                class="menu-link {{ request()->routeIs('admin.audit-logs.*') ? 'active' : '' }}"
+            >
+                <svg class="menu-icon" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+
+                Audit Log
+            </a>
+            @endhasrole
+
             {{-- Profil --}}
             <a
                 href="{{ route('profile.edit') }}"
