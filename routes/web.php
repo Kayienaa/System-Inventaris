@@ -55,9 +55,13 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Panel Super Admin — Audit Logs & Ekspor Laporan
+| Panel Super Admin — Manajemen Master Aset, Audit Logs & Ekspor Laporan
 |--------------------------------------------------------------------------
 */
+Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
+    Route::resource('admin/assets', \App\Http\Controllers\Admin\AssetManagementController::class)->names('admin.assets');
+});
+
 Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/audit-logs', [\App\Http\Controllers\AuditLogController::class, 'webIndex'])->name('admin.audit-logs.index');
     Route::get('/borrowings/export-excel', [\App\Http\Controllers\Admin\BorrowingReportController::class, 'exportCsv'])->name('admin.borrowings.export-excel');

@@ -19,7 +19,8 @@ class SiPintuSyncController extends Controller
      */
     public function sync(Request $request): RedirectResponse
     {
-        set_time_limit(300);
+        set_time_limit(0);
+        ini_set('max_execution_time', '0');
 
         $validated = $request->validate([
             'type' => 'nullable|string|in:all,students,teachers',

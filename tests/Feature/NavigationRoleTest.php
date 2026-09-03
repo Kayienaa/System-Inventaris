@@ -26,10 +26,13 @@ class NavigationRoleTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Administrasi');
+        $response->assertSee('Kelola Aset');
         $response->assertSee('Audit Log');
         $response->assertSee('Data Pengguna');
         $response->assertSee('Data Guru');
         $response->assertSee('Gateway SiPintu');
+        $response->assertSee(route('admin.assets.index'));
+        $response->assertDontSee(route('assets.index'));
     }
 
     public function test_siswa_and_guru_only_see_main_user_menu(): void
@@ -43,10 +46,13 @@ class NavigationRoleTest extends TestCase
         // Menu utama yang wajib terlihat
         $response->assertSee('Dashboard');
         $response->assertSee('Barang');
+        $response->assertSee(route('assets.index'));
+        $response->assertDontSee(route('admin.assets.index'));
         $response->assertSee('Kategori');
         $response->assertSee('Peminjaman');
 
         // Menu administrasi tidak boleh ada di navigasi siswa
+        $response->assertDontSee('Kelola Aset');
         $response->assertDontSee('Audit Log');
         $response->assertDontSee('Gateway SiPintu');
     }
