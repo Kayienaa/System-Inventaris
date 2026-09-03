@@ -326,7 +326,17 @@
             <p>Daftar seluruh siswa SMKN 1 Bangsri terintegrasi langsung via SiPintu Identity &amp; Gateway.</p>
         </div>
 
-        <div style="display: flex; gap: 0.5rem;">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <form action="{{ route('admin.sync-sipintu') }}" method="POST" onsubmit="return confirm('Mulai sinkronisasi data SISWA ke database lokal TE-VAULT? Proses ini memerlukan beberapa saat.')">
+                @csrf
+                <input type="hidden" name="type" value="students">
+                <button type="submit" class="btn-sip-outline" style="background: var(--gold); color: #3B2610; border-color: var(--gold); font-weight: 700;">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:1rem;height:1rem;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+                    </svg>
+                    Sinkronkan ke DB Lokal
+                </button>
+            </form>
             <a href="{{ route('sipintu.teachers.page') }}" class="btn-sip-outline">
                 <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width:1rem;height:1rem;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.636 50.636 0 00-2.658-.813A59.906 59.906 0 0112 3.493a59.903 59.903 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0112 13.489a50.702 50.702 0 017.74-3.342"/>

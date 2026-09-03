@@ -194,6 +194,10 @@
         border-radius: 0.4rem;
         font-size: 0.8rem;
     }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
 </style>
 
 <div class="sip-container">
@@ -205,13 +209,77 @@
             <p>Pusat integrasi data terpadu SIJUNA (Siswa &amp; Guru) untuk TEVault Inventaris.</p>
         </div>
 
-        <div style="display: flex; gap: 0.5rem;">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
             <button onclick="pingGateway()" class="btn-gw-link" style="width: auto; background: var(--white); border: 1.5px solid var(--cream-dark); color: var(--brown);">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:1rem;height:1rem;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/>
                 </svg>
                 Uji Ping Gateway
             </button>
+        </div>
+    </div>
+
+    {{-- Synchronization Action Panel --}}
+    <div class="diag-panel" style="margin-bottom: 2rem; border-left: 4px solid var(--gold);" x-data="{ isSyncing: false, syncType: 'all' }">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem;">
+            <div>
+                <h2 style="display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.4rem;">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:1.35rem;height:1.35rem; color: var(--gold);">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/>
+                    </svg>
+                    Sinkronisasi Database Pengguna SiPintu
+                </h2>
+                <p style="margin: 0; color: var(--muted); font-size: 0.875rem; max-width: 680px; line-height: 1.5;">
+                    Sinkronkan data pengguna (Siswa &amp; Guru) dari SiPintu Gateway ke database lokal TE-VAULT secara otomatis. Kata sandi default akun baru akan disetel ke <span class="code-pill">password</span>.
+                </p>
+            </div>
+            <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;">
+                {{-- Form Sinkronisasi Semua Data --}}
+                <form action="{{ route('admin.sync-sipintu') }}" method="POST" @submit="if(confirm('Mulai sinkronisasi SELURUH data pengguna (Siswa & Guru) dari SiPintu Gateway? Proses ini mungkin memerlukan waktu beberapa saat.')){ isSyncing = true; syncType = 'all'; } else { $event.preventDefault(); }">
+                    @csrf
+                    <input type="hidden" name="type" value="all">
+                    <button type="submit" :disabled="isSyncing" class="btn-gw-link btn-gw-gold" style="width: auto; padding: 0.75rem 1.25rem; font-weight: 700; box-shadow: 0 4px 12px rgba(200, 155, 60, 0.25);">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:1.1rem;height:1.1rem;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+                        </svg>
+                        <span>Sinkronkan Semua Data</span>
+                    </button>
+                </form>
+
+                {{-- Form Sinkronisasi Siswa Saja --}}
+                <form action="{{ route('admin.sync-sipintu') }}" method="POST" @submit="if(confirm('Mulai sinkronisasi data SISWA dari SiPintu Gateway?')){ isSyncing = true; syncType = 'students'; } else { $event.preventDefault(); }">
+                    @csrf
+                    <input type="hidden" name="type" value="students">
+                    <button type="submit" :disabled="isSyncing" class="btn-gw-link" style="width: auto; background: var(--white); border: 1.5px solid var(--cream-dark); color: var(--brown); font-weight: 600;">
+                        <span>Hanya Siswa</span>
+                    </button>
+                </form>
+
+                {{-- Form Sinkronisasi Guru Saja --}}
+                <form action="{{ route('admin.sync-sipintu') }}" method="POST" @submit="if(confirm('Mulai sinkronisasi data GURU dari SiPintu Gateway?')){ isSyncing = true; syncType = 'teachers'; } else { $event.preventDefault(); }">
+                    @csrf
+                    <input type="hidden" name="type" value="teachers">
+                    <button type="submit" :disabled="isSyncing" class="btn-gw-link" style="width: auto; background: var(--white); border: 1.5px solid var(--cream-dark); color: var(--brown); font-weight: 600;">
+                        <span>Hanya Guru</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {{-- Loading Indicator saat sinkronisasi --}}
+        <div x-show="isSyncing" x-cloak style="margin-top: 1.25rem; padding: 1rem 1.25rem; border-radius: 0.75rem; background: rgba(200, 155, 60, 0.1); border: 1px dashed var(--gold); display: flex; align-items: center; gap: 1rem;">
+            <svg style="width: 1.6rem; height: 1.6rem; color: var(--brown); animation: spin 0.8s linear infinite; flex-shrink: 0;" fill="none" viewBox="0 0 24 24">
+                <circle style="opacity:.25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path style="opacity:.85" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <div>
+                <p style="margin: 0; font-weight: 700; color: var(--brown-dark); font-size: 0.9rem;">
+                    Sedang memproses sinkronisasi data pengguna dari SiPintu Gateway...
+                </p>
+                <p style="margin: 0.2rem 0 0; font-size: 0.8rem; color: var(--muted);">
+                    Mohon tunggu beberapa saat dan jangan menutup halaman ini selama proses sinkronisasi berlangsung.
+                </p>
+            </div>
         </div>
     </div>
 

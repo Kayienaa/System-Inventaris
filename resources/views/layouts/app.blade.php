@@ -1034,6 +1034,24 @@
 
         <section class="page">
 
+            @if (session('success'))
+                <div style="margin-bottom: 1.5rem; padding: 1rem 1.25rem; border-radius: 0.85rem; background: #ECFDF5; border: 1.5px solid #A7F3D0; color: #065F46; display: flex; align-items: flex-start; gap: 0.75rem; box-shadow: 0 2px 8px rgba(16,185,129,0.08);">
+                    <svg style="width: 1.35rem; height: 1.35rem; flex-shrink: 0; color: #059669; margin-top: 0.1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <div style="font-size: 0.9rem; font-weight: 500; line-height: 1.5;">{{ session('success') }}</div>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div style="margin-bottom: 1.5rem; padding: 1rem 1.25rem; border-radius: 0.85rem; background: #FEF2F2; border: 1.5px solid #FECACA; color: #991B1B; display: flex; align-items: flex-start; gap: 0.75rem; box-shadow: 0 2px 8px rgba(239,68,68,0.08);">
+                    <svg style="width: 1.35rem; height: 1.35rem; flex-shrink: 0; color: #DC2626; margin-top: 0.1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <div style="font-size: 0.9rem; font-weight: 500; line-height: 1.5;">{{ session('error') }}</div>
+                </div>
+            @endif
+
         @yield('content')
 
         {{ $slot ?? '' }}

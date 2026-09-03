@@ -2,10 +2,14 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\GuruProfile;
+use App\Models\SiswaProfile;
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -28,7 +32,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -42,13 +46,42 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $login = trim((string) $this->input('email'));
+        $password = (string) $this->input('password');
+
+        $user = null;
+
+        if (str_contains($login, '@')) {
+            // Jika input mengandung @ (format email): cari langsung di kolom email tabel users
+            $user = User::where('email', $login)->first();
+            if (! $user) {
+                $user = User::whereRaw('LOWER(email) = ?', [strtolower($login)])->first();
+            }
+        } elseif (ctype_digit($login)) {
+            // Jika input berupa angka murni (tanpa @):
+            // 1. Cek kecocokan dengan kolom nip pada tabel guru_profiles
+            $guruProfile = GuruProfile::where('nip', $login)->first();
+            if ($guruProfile && $guruProfile->user) {
+                $user = $guruProfile->user;
+            } else {
+                // 2. Cek kecocokan dengan kolom nis pada tabel siswa_profiles
+                $siswaProfile = SiswaProfile::where('nis', $login)->first();
+                if ($siswaProfile && $siswaProfile->user) {
+                    $user = $siswaProfile->user;
+                }
+            }
+        }
+
+        // Verifikasi keberadaan user dan kecocokan hash password
+        if (! $user || ! Hash::check($password, $user->password)) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
             ]);
         }
+
+        Auth::login($user, $this->boolean('remember'));
 
         RateLimiter::clear($this->throttleKey());
     }

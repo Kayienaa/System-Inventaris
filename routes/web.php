@@ -64,6 +64,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->group(fu
     Route::get('/borrowings/export-pdf', [\App\Http\Controllers\Admin\BorrowingReportController::class, 'exportPdf'])->name('admin.borrowings.export-pdf');
     Route::get('/audit-logs/export-excel', [\App\Http\Controllers\Admin\BorrowingReportController::class, 'exportCsv'])->name('admin.audit-logs.export-excel');
     Route::get('/audit-logs/export-pdf', [\App\Http\Controllers\Admin\BorrowingReportController::class, 'exportPdf'])->name('admin.audit-logs.export-pdf');
+    Route::post('/sync-sipintu', [\App\Http\Controllers\Admin\SiPintuSyncController::class, 'sync'])->name('admin.sync-sipintu');
 });
 
 /*

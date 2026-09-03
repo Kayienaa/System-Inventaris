@@ -211,9 +211,9 @@
                 <form method="POST" action="{{ route('login') }}" @submit="onSubmit()" novalidate>
                     @csrf
 
-                    <!-- Email -->
+                    <!-- Email / NIS / NIP -->
                     <div class="mb-5">
-                        <label for="email" class="block text-sm font-semibold text-slate-700 mb-1.5">Email Address</label>
+                        <label for="email" class="block text-sm font-semibold text-slate-700 mb-1.5">Email / NIS / NIP</label>
                         <div class="relative">
                             <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                                 <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
@@ -221,9 +221,10 @@
                                           d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
                                 </svg>
                             </span>
-                            <input id="email" name="email" type="email"
+                            <input id="email" name="email" type="text"
                                    autocomplete="off"
-                                   placeholder="example@gmail.com"
+                                   placeholder="Email SiPintu, NIS, atau NIP (contoh: 199301162022211000)"
+                                   value="{{ old('email') }}"
                                    required
                                    class="inp {{ $errors->has('email') ? 'inp-error' : '' }}">
                         </div>

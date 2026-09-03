@@ -102,7 +102,7 @@ class SiPintuSyncService
                             $user = User::create([
                                 'name'              => $name,
                                 'email'             => $email,
-                                'password'          => Hash::make($nis !== '' ? $nis : 'password'),
+                                'password'          => Hash::make('password'),
                                 'email_verified_at' => now(),
                             ]);
                             $created++;
@@ -215,7 +215,7 @@ class SiPintuSyncService
                             $user = User::create([
                                 'name'              => $name,
                                 'email'             => $email,
-                                'password'          => Hash::make($nip !== '' ? $nip : 'password'),
+                                'password'          => Hash::make('password'),
                                 'email_verified_at' => now(),
                             ]);
                             $created++;

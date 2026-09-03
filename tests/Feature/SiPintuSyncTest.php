@@ -182,4 +182,137 @@ class SiPintuSyncTest extends TestCase
         $this->assertEquals('Siswa Original', $siswa->name);
         $this->assertEquals('siswa@smkn1bangsri.sch.id', $siswa->email);
     }
+
+    public function test_admin_can_trigger_sync_all_via_web_interface(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $baseUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/');
+
+        Http::fake([
+            $baseUrl . '/api/v1/sijuna/students' => Http::response([
+                'success' => true,
+                'data' => [
+                    [
+                        'id' => 10,
+                        'nis' => '99001',
+                        'nama' => 'Student Sync All',
+                        'user' => ['email' => 'student.sync@test.com'],
+                    ],
+                ],
+            ], 200),
+            $baseUrl . '/api/v1/sijuna/teachers' => Http::response([
+                'success' => true,
+                'data' => [
+                    [
+                        'id' => 20,
+                        'nip' => '199001012020011001',
+                        'nama' => 'Teacher Sync All',
+                        'user' => ['email' => 'teacher.sync@test.com'],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->actingAs($admin)->post('/admin/sync-sipintu', [
+            'type' => 'all',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+        $this->assertStringContainsString('Sinkronisasi SiPintu berhasil!', session('success'));
+    }
+
+    public function test_admin_can_trigger_sync_students_via_web_interface(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $baseUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/');
+
+        Http::fake([
+            $baseUrl . '/api/v1/sijuna/students' => Http::response([
+                'success' => true,
+                'data' => [
+                    [
+                        'id' => 11,
+                        'nis' => '99002',
+                        'nama' => 'Student Sync Only',
+                        'user' => ['email' => 'student.only@test.com'],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->actingAs($admin)->post('/admin/sync-sipintu', [
+            'type' => 'students',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+        $this->assertStringContainsString('Sinkronisasi SiPintu berhasil!', session('success'));
+    }
+
+    public function test_admin_can_trigger_sync_teachers_via_web_interface(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $baseUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/');
+
+        Http::fake([
+            $baseUrl . '/api/v1/sijuna/teachers' => Http::response([
+                'success' => true,
+                'data' => [
+                    [
+                        'id' => 21,
+                        'nip' => '199001012020011002',
+                        'nama' => 'Teacher Sync Only',
+                        'user' => ['email' => 'teacher.only@test.com'],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->actingAs($admin)->post('/admin/sync-sipintu', [
+            'type' => 'teachers',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+        $this->assertStringContainsString('Sinkronisasi SiPintu berhasil!', session('success'));
+    }
+
+    public function test_non_admin_cannot_trigger_sync_via_web_interface(): void
+    {
+        $siswa = User::factory()->create();
+        $siswa->assignRole('siswa');
+
+        $response = $this->actingAs($siswa)->post('/admin/sync-sipintu', [
+            'type' => 'all',
+        ]);
+
+        $response->assertForbidden();
+    }
+
+    public function test_sync_handles_connection_failure_gracefully(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $baseUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/');
+
+        Http::fake([
+            $baseUrl . '/api/v1/sijuna/students' => Http::response('Gateway Timeout', 504),
+            $baseUrl . '/api/v1/sijuna/teachers' => Http::response('Gateway Timeout', 504),
+        ]);
+
+        $response = $this->actingAs($admin)->post('/admin/sync-sipintu', [
+            'type' => 'all',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+    }
 }
