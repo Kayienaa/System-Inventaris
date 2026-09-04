@@ -174,4 +174,52 @@ class AssetBorrowingTest extends TestCase
         // Status asset langsung kembali Tersedia
         $this->assertEquals(AssetAvailabilityStatus::Tersedia, $asset->availability_status);
     }
+
+    public function test_guru_can_borrow_asset_using_route_parameter_without_asset_id_in_body(): void
+    {
+        Storage::fake('public');
+
+        $guru = User::factory()->create();
+        $guru->assignRole('guru');
+
+        $asset = Asset::where('availability_status', AssetAvailabilityStatus::Tersedia)->first();
+        $this->assertNotNull($asset);
+
+        $base64Image = 'data:image/jpeg;base64,' . base64_encode('fake guru image binary content');
+
+        // Submit tanpa asset_id di body — harus otomatis terikat via route model {asset}
+        $response = $this->actingAs($guru)->post(route('assets.borrow.store', $asset), [
+            'borrower_note' => 'Peminjaman untuk keperluan mengajar di Lab TEFA',
+            'borrowing_evidence' => $base64Image,
+        ]);
+
+        $response->assertRedirect(route('borrowings.mine'));
+        $response->assertSessionHas('success', 'Peminjaman berhasil diajukan!');
+
+        $this->assertDatabaseHas('borrowings', [
+            'borrower_user_id' => $guru->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::Borrowed->value,
+            'borrower_note' => 'Peminjaman untuk keperluan mengajar di Lab TEFA',
+        ]);
+    }
+
+    public function test_admin_cannot_access_borrow_form_or_submit_borrowing(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $asset = Asset::where('availability_status', AssetAvailabilityStatus::Tersedia)->first();
+
+        // Admin diblokir dari form peminjaman karena role:siswa|guru
+        $this->actingAs($admin)
+            ->get(route('assets.borrow', $asset))
+            ->assertStatus(403);
+
+        $this->actingAs($admin)
+            ->post(route('assets.borrow.store', $asset), [
+                'borrower_note' => 'Admin mencoba pinjam',
+            ])
+            ->assertStatus(403);
+    }
 }

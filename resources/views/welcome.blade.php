@@ -6,6 +6,10 @@
     <meta name="description" content="Sistem Inventaris Barang SMK Negeri 1 Bangsri.">
     <title>TE-Vault — Sistem Inventaris SMK Negeri 1 Bangsri</title>
 
+    {{-- Favicon Resmi TEFA SMKN 1 Bangsri --}}
+    <link rel="icon" type="image/png" href="{{ asset('images/logo-tefa.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/logo-tefa.png') }}">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>

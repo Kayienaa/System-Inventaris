@@ -28,11 +28,11 @@ Route::get('/assets', [AssetController::class, 'webIndex'])
     ->middleware(['auth', 'verified']);
 
 Route::get('/katalog/{asset}/pinjam', [BorrowingController::class, 'create'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'role:siswa|guru'])
     ->name('assets.borrow');
 
 Route::post('/katalog/{asset}/pinjam', [BorrowingController::class, 'store'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'role:siswa|guru'])
     ->name('assets.borrow.store');
 
 Route::get('/categories', [AssetCategoryController::class, 'webIndex'])
@@ -62,10 +62,12 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     Route::resource('admin/assets', \App\Http\Controllers\Admin\AssetManagementController::class)->names('admin.assets');
 });
 
-Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->group(function () {
-    Route::get('/audit-logs', [\App\Http\Controllers\AuditLogController::class, 'webIndex'])->name('admin.audit-logs.index');
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
+    Route::get('/borrowings', [\App\Http\Controllers\Admin\BorrowingController::class, 'index'])->name('admin.borrowings.index');
     Route::get('/borrowings/export-excel', [\App\Http\Controllers\Admin\BorrowingReportController::class, 'exportCsv'])->name('admin.borrowings.export-excel');
     Route::get('/borrowings/export-pdf', [\App\Http\Controllers\Admin\BorrowingReportController::class, 'exportPdf'])->name('admin.borrowings.export-pdf');
+    Route::get('/borrowings/{borrowing}', [\App\Http\Controllers\Admin\BorrowingController::class, 'show'])->whereNumber('borrowing')->name('admin.borrowings.show');
+    Route::get('/audit-logs', [\App\Http\Controllers\AuditLogController::class, 'webIndex'])->name('admin.audit-logs.index');
     Route::get('/audit-logs/export-excel', [\App\Http\Controllers\Admin\BorrowingReportController::class, 'exportCsv'])->name('admin.audit-logs.export-excel');
     Route::get('/audit-logs/export-pdf', [\App\Http\Controllers\Admin\BorrowingReportController::class, 'exportPdf'])->name('admin.audit-logs.export-pdf');
     Route::post('/sync-sipintu', [\App\Http\Controllers\Admin\SiPintuSyncController::class, 'sync'])->name('admin.sync-sipintu');

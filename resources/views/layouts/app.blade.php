@@ -6,6 +6,10 @@
 
     <title>@yield('title', 'TE-Vault')</title>
 
+    {{-- Favicon Resmi TEFA SMKN 1 Bangsri --}}
+    <link rel="icon" type="image/png" href="{{ asset('images/logo-tefa.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/logo-tefa.png') }}">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     {{-- Google Fonts --}}
@@ -882,6 +886,19 @@
             </a>
 
             {{-- Peminjaman --}}
+            @hasrole('admin')
+            <a
+                href="{{ route('admin.borrowings.index') }}"
+                class="menu-link {{ request()->routeIs('admin.borrowings.*') ? 'active' : '' }}"
+            >
+                <svg class="menu-icon" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>
+                </svg>
+
+                Peminjaman
+            </a>
+            @else
             <a
                 href="{{ route('borrowings.mine') }}"
                 class="menu-link {{ request()->routeIs('borrowings.*') ? 'active' : '' }}"
@@ -893,6 +910,7 @@
 
                 Peminjaman
             </a>
+            @endhasrole
 
             @hasrole('admin')
             <div class="menu-label" style="margin-top:22px;">

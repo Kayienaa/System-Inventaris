@@ -7,6 +7,10 @@
     <meta name="description" content="Login Sistem Inventaris Barang SMK Negeri 1 Bangsri">
     <title>Login – Sistem Inventaris Barang | SMK Negeri 1 Bangsri</title>
 
+    {{-- Favicon Resmi TEFA SMKN 1 Bangsri --}}
+    <link rel="icon" type="image/png" href="{{ asset('images/logo-tefa.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/logo-tefa.png') }}">
+
     <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

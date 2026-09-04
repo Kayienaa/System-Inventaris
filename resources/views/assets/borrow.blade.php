@@ -88,8 +88,8 @@
 
             {{-- Form Peminjaman Langsung --}}
             <form
-                action="{{ route('assets.borrow.store', $asset) }}"
                 method="POST"
+                action="{{ route('assets.borrow.store', $asset) }}"
                 enctype="multipart/form-data"
                 class="space-y-6 p-6 sm:p-8"
                 x-data="borrowWebcamHandler()"

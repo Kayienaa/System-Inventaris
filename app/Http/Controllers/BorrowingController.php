@@ -136,9 +136,18 @@ class BorrowingController extends Controller
         return BorrowingResource::collection($query->paginate());
     }
 
-    public function store(StoreBorrowingRequest $request, RequestBorrowingAction $action, AuditLogService $audit)
-    {
-        $asset = Asset::findOrFail($request->integer('asset_id'));
+    public function store(
+        StoreBorrowingRequest $request,
+        ?Asset $asset = null,
+        ?RequestBorrowingAction $action = null,
+        ?AuditLogService $audit = null
+    ) {
+        $action ??= app(RequestBorrowingAction::class);
+        $audit ??= app(AuditLogService::class);
+
+        $targetAsset = ($asset && $asset->exists)
+            ? $asset
+            : Asset::findOrFail($request->integer('asset_id'));
 
         $evidencePath = $this->storeEvidenceImage($request, 'borrowing_evidence', 'borrowing-evidence');
 
@@ -148,7 +157,7 @@ class BorrowingController extends Controller
 
         $borrowing = $action->execute(
             $request->user(),
-            $asset,
+            $targetAsset,
             $request->input('borrower_note'),
             $evidencePath,
             $dueAt
@@ -162,7 +171,7 @@ class BorrowingController extends Controller
 
         return redirect()
             ->route('borrowings.mine')
-            ->with('success', 'Peminjaman berhasil dilakukan! Batas pengembalian: ' . $dueAt->format('d M Y, H:i'));
+            ->with('success', 'Peminjaman berhasil diajukan!');
     }
 
     public function show(Borrowing $borrowing): BorrowingResource

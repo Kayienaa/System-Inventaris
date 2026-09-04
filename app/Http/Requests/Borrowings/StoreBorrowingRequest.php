@@ -13,6 +13,17 @@ class StoreBorrowingRequest extends FormRequest
         return $this->user()?->can('create', Borrowing::class) ?? false;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->route('asset')) {
+            $routeAsset = $this->route('asset');
+            $assetId = $routeAsset instanceof \App\Models\Asset ? $routeAsset->id : $routeAsset;
+            $this->merge([
+                'asset_id' => $this->input('asset_id') ?: $assetId,
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [
