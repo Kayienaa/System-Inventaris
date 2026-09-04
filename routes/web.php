@@ -28,27 +28,20 @@ Route::get('/katalog', [AssetController::class, 'webIndex'])
 Route::get('/assets', [AssetController::class, 'webIndex'])
     ->middleware(['auth', 'verified']);
 
-Route::get('/katalog/{asset}/pinjam', [BorrowingController::class, 'create'])
-    ->middleware(['auth', 'role:siswa|guru'])
-    ->name('assets.borrow');
-
-Route::post('/katalog/{asset}/pinjam', [BorrowingController::class, 'store'])
-    ->middleware(['auth', 'role:siswa|guru'])
-    ->name('assets.borrow.store');
-
 Route::get('/categories', [AssetCategoryController::class, 'webIndex'])
     ->middleware(['auth', 'verified'])
     ->name('categories.index');
 
-Route::get('/borrowings/mine', [BorrowingController::class, 'webMine'])
-    ->middleware(['auth', 'verified'])
-    ->name('borrowings.mine');
-
-Route::post('/borrowings/{borrowing}/return-request', [BorrowingController::class, 'requestReturn'])
-    ->middleware(['auth', 'verified'])
-    ->name('borrowings.return-request');
-
 Route::middleware('auth')->group(function () {
+    Route::get('/katalog/{asset}/pinjam', [BorrowingController::class, 'create'])->name('assets.borrow');
+    Route::post('/katalog/{asset}/pinjam', [BorrowingController::class, 'store'])->name('assets.borrow.store');
+
+    Route::get('/peminjaman/riwayat', [BorrowingController::class, 'webMine'])->name('borrowings.mine');
+    Route::get('/borrowings/mine', [BorrowingController::class, 'webMine']);
+
+    Route::post('/borrowings/{borrowing}/return-request', [BorrowingController::class, 'requestReturn'])
+        ->name('borrowings.return-request');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

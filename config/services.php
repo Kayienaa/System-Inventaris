@@ -42,4 +42,10 @@ return [
         'portal_url' => env('SIPINTU_PORTAL_URL', 'https://sipintu.smkn1bangsri.sch.id'),
     ],
 
+    'whatsapp' => [
+        'admin_number' => env('TEFA_ADMIN_WHATSAPP', '6281234567890'),
+        'api_token'    => env('WHATSAPP_API_TOKEN', ''),
+        'api_url'      => env('WHATSAPP_API_URL', 'https://api.fonnte.com/send'),
+    ],
+
 ];

@@ -188,7 +188,12 @@ class SiPintuSyncTest extends TestCase
 
     public function test_admin_can_trigger_sync_all_via_web_interface(): void
     {
-        Queue::fake();
+        $baseUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/');
+
+        Http::fake([
+            $baseUrl . '/api/v1/sijuna/students' => Http::response(['success' => true, 'data' => []], 200),
+            $baseUrl . '/api/v1/sijuna/teachers' => Http::response(['success' => true, 'data' => []], 200),
+        ]);
 
         $admin = User::factory()->create();
         $admin->assignRole('admin');
@@ -198,13 +203,19 @@ class SiPintuSyncTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $response->assertSessionHas('success', 'Sinkronisasi data akun SiPintu sedang diproses di latar belakang.');
-        Queue::assertPushed(SyncSiPintuJob::class, fn ($job) => $job->type === 'all');
+        $response->assertSessionHas('success', 'Sinkronisasi berhasil! Data nomor telepon terbaru telah diperbarui dari SiPintu.');
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'sipintu.synced',
+        ]);
     }
 
     public function test_admin_can_trigger_sync_students_via_web_interface(): void
     {
-        Queue::fake();
+        $baseUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/');
+
+        Http::fake([
+            $baseUrl . '/api/v1/sijuna/students' => Http::response(['success' => true, 'data' => []], 200),
+        ]);
 
         $admin = User::factory()->create();
         $admin->assignRole('admin');
@@ -214,13 +225,16 @@ class SiPintuSyncTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $response->assertSessionHas('success', 'Sinkronisasi data akun SiPintu sedang diproses di latar belakang.');
-        Queue::assertPushed(SyncSiPintuJob::class, fn ($job) => $job->type === 'students');
+        $response->assertSessionHas('success', 'Sinkronisasi berhasil! Data nomor telepon terbaru telah diperbarui dari SiPintu.');
     }
 
     public function test_admin_can_trigger_sync_teachers_via_web_interface(): void
     {
-        Queue::fake();
+        $baseUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/');
+
+        Http::fake([
+            $baseUrl . '/api/v1/sijuna/teachers' => Http::response(['success' => true, 'data' => []], 200),
+        ]);
 
         $admin = User::factory()->create();
         $admin->assignRole('admin');
@@ -230,8 +244,7 @@ class SiPintuSyncTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $response->assertSessionHas('success', 'Sinkronisasi data akun SiPintu sedang diproses di latar belakang.');
-        Queue::assertPushed(SyncSiPintuJob::class, fn ($job) => $job->type === 'teachers');
+        $response->assertSessionHas('success', 'Sinkronisasi berhasil! Data nomor telepon terbaru telah diperbarui dari SiPintu.');
     }
 
     public function test_non_admin_cannot_trigger_sync_via_web_interface(): void

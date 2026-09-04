@@ -108,9 +108,11 @@ class BorrowingController extends Controller
 
         $role = $borrowing->borrower?->roles->pluck('name')->first() ?? 'User';
         $isOverdue = $borrowing->isOverdue();
-
         $statusValue = $borrowing->status->value ?? (string) $borrowing->status;
         $displayStatus = $isOverdue ? 'overdue' : $statusValue;
+
+        $canSendWhatsApp = $isOverdue || $statusValue === BorrowingStatus::Borrowed->value;
+        $waUrl = $canSendWhatsApp ? \App\Services\WhatsAppNotificationService::getWhatsAppUrl($borrowing) : null;
 
         return [
             'id' => $borrowing->id,
@@ -120,7 +122,8 @@ class BorrowingController extends Controller
                 'email' => $borrowing->borrower?->email ?? '-',
                 'role' => ucfirst($role),
                 'identity' => $identity,
-                'phone' => $borrowing->borrower?->siswaProfile?->phone ?? $borrowing->borrower?->guruProfile?->phone ?? '-',
+                'phone' => $borrowing->borrower?->siswaProfile?->phone ?? $borrowing->borrower?->guruProfile?->phone ?? $borrowing->borrower?->phone ?? '-',
+                'formatted_phone' => \App\Services\WhatsAppNotificationService::formatDisplayPhoneNumber($borrowing->borrower?->siswaProfile?->phone ?? $borrowing->borrower?->guruProfile?->phone ?? $borrowing->borrower?->phone),
                 'class_name' => $borrowing->borrower?->siswaProfile?->class_name ?? null,
             ],
             'asset' => [
@@ -144,6 +147,7 @@ class BorrowingController extends Controller
             'return_note' => $borrowing->return_note ?: null,
             'borrowing_evidence_url' => $borrowing->borrowing_evidence_path ? asset('storage/' . $borrowing->borrowing_evidence_path) : null,
             'return_evidence_url' => $borrowing->return_evidence_path ? asset('storage/' . $borrowing->return_evidence_path) : null,
+            'wa_url' => $waUrl,
         ];
     }
 }

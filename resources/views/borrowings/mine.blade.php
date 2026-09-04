@@ -350,7 +350,7 @@
                 const textStr = `Pengembalian: ${userName} | ${timestampStr}`;
 
                 const fontSize = Math.max(13, Math.floor(width / 38));
-                ctx.font = `600 ${fontSize}px sans-serif`;
+                ctx.font = `bold ${fontSize}px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
 
                 const paddingX = 14;
                 const paddingY = 8;
@@ -358,11 +358,11 @@
                 const boxWidth = textMetrics.width + (paddingX * 2);
                 const boxHeight = fontSize + (paddingY * 2);
 
-                const x = width - boxWidth - 12;
-                const y = height - boxHeight - 12;
+                const x = width - boxWidth - 14;
+                const y = height - boxHeight - 14;
 
-                // Semi-transparent dark strip background
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+                // Kontras tinggi: strip gelap pekat agar teks terbaca tajam dan tidak pecah
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
                 if (ctx.roundRect) {
                     ctx.beginPath();
                     ctx.roundRect(x, y, boxWidth, boxHeight, 6);
@@ -382,15 +382,31 @@
                 const canvas = this.$refs.modalCanvas;
                 if (!video || !canvas) return;
 
-                canvas.width = video.videoWidth || 640;
-                canvas.height = video.videoHeight || 480;
+                const maxDim = 1280;
+                let w = video.videoWidth || 640;
+                let h = video.videoHeight || 480;
+
+                // Batasi dimensi maksimal canvas 1280px dengan menjaga aspect ratio
+                if (w > maxDim || h > maxDim) {
+                    if (w >= h) {
+                        h = Math.round((h * maxDim) / w);
+                        w = maxDim;
+                    } else {
+                        w = Math.round((w * maxDim) / h);
+                        h = maxDim;
+                    }
+                }
+
+                canvas.width = w;
+                canvas.height = h;
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                ctx.drawImage(video, 0, 0, w, h);
 
                 // Tambahkan Watermark Timestamp & Nama
                 this.applyModalWatermark(canvas, "{{ auth()->user()->name }}");
 
-                this.returnCapturedPhoto = canvas.toDataURL('image/jpeg', 0.85);
+                // Konversi Base64 dengan quality 0.68 (rentang 0.65 - 0.70) agar ukuran file awal di 100-200 KB
+                this.returnCapturedPhoto = canvas.toDataURL('image/jpeg', 0.68);
                 this.closeModalCamera();
             },
 
@@ -421,12 +437,26 @@
                     const img = new Image();
                     img.onload = () => {
                         const canvas = this.$refs.modalCanvas || document.createElement('canvas');
-                        canvas.width = img.width;
-                        canvas.height = img.height;
+                        const maxDim = 1280;
+                        let w = img.width;
+                        let h = img.height;
+
+                        if (w > maxDim || h > maxDim) {
+                            if (w >= h) {
+                                h = Math.round((h * maxDim) / w);
+                                w = maxDim;
+                            } else {
+                                w = Math.round((w * maxDim) / h);
+                                h = maxDim;
+                            }
+                        }
+
+                        canvas.width = w;
+                        canvas.height = h;
                         const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0);
+                        ctx.drawImage(img, 0, 0, w, h);
                         this.applyModalWatermark(canvas, "{{ auth()->user()->name }}");
-                        this.returnCapturedPhoto = canvas.toDataURL('image/jpeg', 0.85);
+                        this.returnCapturedPhoto = canvas.toDataURL('image/jpeg', 0.68);
                         this.closeModalCamera();
                     };
                     img.src = e.target.result;

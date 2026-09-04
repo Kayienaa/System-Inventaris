@@ -32,46 +32,19 @@ class BorrowingController extends Controller
      */
     public function create(Asset $asset)
     {
+        $this->authorize('create', Borrowing::class);
+
         abort_unless($asset->isAvailable(), 404, 'Barang ini tidak tersedia untuk dipinjam.');
 
         return view('assets.borrow', compact('asset'));
     }
 
     /**
-     * Helper untuk menyimpan gambar bukti baik dari File Upload maupun Webcam (Base64).
+     * Helper untuk menyimpan dan mengompres gambar bukti baik dari File Upload maupun Webcam (Base64).
      */
     private function storeEvidenceImage(\Illuminate\Http\Request $request, string $inputName, string $folder): ?string
     {
-        // 1. Jika diunggah via form file upload biasa
-        if ($request->hasFile($inputName)) {
-            return $request->file($inputName)->store($folder, 'public');
-        }
-        if ($request->hasFile($inputName . '_file')) {
-            return $request->file($inputName . '_file')->store($folder, 'public');
-        }
-
-        // 2. Jika diunggah via Webcam Snapshot (Base64 Data URL)
-        $base64 = $request->input($inputName);
-        if (is_string($base64) && str_starts_with($base64, 'data:image/')) {
-            @[$type, $data] = explode(';', $base64);
-            @[, $data] = explode(',', $data);
-            if ($data) {
-                $decoded = base64_decode($data);
-                if ($decoded !== false) {
-                    $ext = 'jpg';
-                    if (str_contains($type, 'png')) {
-                        $ext = 'png';
-                    } elseif (str_contains($type, 'webp')) {
-                        $ext = 'webp';
-                    }
-                    $filename = $folder . '/' . \Illuminate\Support\Str::uuid() . '.' . $ext;
-                    \Illuminate\Support\Facades\Storage::disk('public')->put($filename, $decoded);
-                    return $filename;
-                }
-            }
-        }
-
-        return null;
+        return app(\App\Services\ImageCompressionService::class)->compressAndStoreEvidence($request, $inputName, $folder);
     }
 
     /**
@@ -147,7 +120,8 @@ class BorrowingController extends Controller
 
         $targetAsset = ($asset && $asset->exists)
             ? $asset
-            : Asset::findOrFail($request->integer('asset_id'));
+            : Asset::find($request->input('asset_id'))
+                ?? Asset::where('asset_code', $request->input('asset_id'))->firstOrFail();
 
         $evidencePath = $this->storeEvidenceImage($request, 'borrowing_evidence', 'borrowing-evidence');
 

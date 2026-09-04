@@ -69,4 +69,14 @@ class Asset extends Model
     {
         return $this->availability_status === AssetAvailabilityStatus::Tersedia;
     }
+
+    /**
+     * Retrieve the model for a bound value (by id or asset_code).
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->where($field ?? 'id', $value)
+            ->orWhere('asset_code', $value)
+            ->first() ?? abort(404);
+    }
 }

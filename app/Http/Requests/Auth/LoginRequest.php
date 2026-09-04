@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Auth;
 
 use App\Models\GuruProfile;
-use App\Models\SiswaProfile;
 use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -51,24 +50,18 @@ class LoginRequest extends FormRequest
 
         $user = null;
 
-        if (str_contains($login, '@')) {
-            // Jika input mengandung @ (format email): cari langsung di kolom email tabel users
+        if (filter_var($login, FILTER_VALIDATE_EMAIL) || str_contains($login, '@')) {
+            // 1. Format Email: Autentikasi langsung menggunakan kolom email pada tabel users
+            // (mencakup akun siswa berformat nis@smkn1bangsri.sch.id serta akun admin)
             $user = User::where('email', $login)->first();
             if (! $user) {
                 $user = User::whereRaw('LOWER(email) = ?', [strtolower($login)])->first();
             }
         } elseif (ctype_digit($login)) {
-            // Jika input berupa angka murni (tanpa @):
-            // 1. Cek kecocokan dengan kolom nip pada tabel guru_profiles
+            // 2. Format Angka / NIP: Jika input bukan email melainkan deretan angka, cocokkan hanya ke relasi guruProfile (nip)
             $guruProfile = GuruProfile::where('nip', $login)->first();
             if ($guruProfile && $guruProfile->user) {
                 $user = $guruProfile->user;
-            } else {
-                // 2. Cek kecocokan dengan kolom nis pada tabel siswa_profiles
-                $siswaProfile = SiswaProfile::where('nis', $login)->first();
-                if ($siswaProfile && $siswaProfile->user) {
-                    $user = $siswaProfile->user;
-                }
             }
         }
 
@@ -77,7 +70,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'email' => __('Email, NIP, atau kata sandi yang Anda masukkan salah.'),
             ]);
         }
 

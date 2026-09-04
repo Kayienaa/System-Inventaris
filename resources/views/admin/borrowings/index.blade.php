@@ -200,7 +200,7 @@
                         <th class="px-5 py-4">Waktu Pinjam</th>
                         <th class="px-5 py-4">Target Kembali</th>
                         <th class="px-5 py-4 text-center">Status</th>
-                        <th class="px-5 py-4 text-center w-28">Aksi</th>
+                        <th class="px-5 py-4 text-center w-36">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -217,6 +217,9 @@
                                 $identityText = 'NIP: ' . $b->borrower->guruProfile->nip;
                             }
 
+                            $canSendWhatsApp = $isOverdue || $statusVal === 'borrowed';
+                            $waUrl = $canSendWhatsApp ? \App\Services\WhatsAppNotificationService::getWhatsAppUrl($b) : null;
+
                             // Prepare structured payload for Alpine.js Detail modal
                             $detailPayload = [
                                 'id' => $b->id,
@@ -226,7 +229,8 @@
                                     'email' => $b->borrower?->email ?? '-',
                                     'role' => ucfirst($borrowerRole),
                                     'identity' => $identityText,
-                                    'phone' => $b->borrower?->siswaProfile?->phone ?? $b->borrower?->guruProfile?->phone ?? '-',
+                                    'phone' => $b->borrower?->siswaProfile?->phone ?? $b->borrower?->guruProfile?->phone ?? $b->borrower?->phone ?? '-',
+                                    'formatted_phone' => \App\Services\WhatsAppNotificationService::formatDisplayPhoneNumber($b->borrower?->siswaProfile?->phone ?? $b->borrower?->guruProfile?->phone ?? $b->borrower?->phone),
                                     'class_name' => $b->borrower?->siswaProfile?->class_name ?? null,
                                 ],
                                 'asset' => [
@@ -250,6 +254,7 @@
                                 'return_note' => $b->return_note ?: null,
                                 'borrowing_evidence_url' => $b->borrowing_evidence_path ? asset('storage/' . $b->borrowing_evidence_path) : null,
                                 'return_evidence_url' => $b->return_evidence_path ? asset('storage/' . $b->return_evidence_path) : null,
+                                'wa_url' => $waUrl,
                             ];
                         @endphp
                         <tr class="hover:bg-amber-50/30 transition">
@@ -368,19 +373,46 @@
                                 @endif
                             </td>
 
-                            {{-- Aksi Detail --}}
+                            {{-- Aksi --}}
                             <td class="px-5 py-4 text-center">
-                                <button
-                                    type="button"
-                                    @click="openDetail({{ Js::from($detailPayload) }})"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-[#6F4E37] text-gray-700 hover:text-white font-semibold text-xs transition active:scale-95 border border-gray-300 hover:border-[#6F4E37] shadow-sm"
-                                >
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                    </svg>
-                                    Detail
-                                </button>
+                                <div class="inline-flex items-center justify-center gap-1.5">
+                                    @if($canSendWhatsApp && $waUrl)
+                                        <a
+                                            href="{{ $waUrl }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white transition active:scale-95 border border-emerald-200 hover:border-emerald-600 shadow-sm"
+                                            title="Kirim Pengingat WhatsApp ke Peminjam"
+                                        >
+                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                            </svg>
+                                        </a>
+                                    @elseif($canSendWhatsApp && !$waUrl)
+                                        <button
+                                            type="button"
+                                            disabled
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200 shadow-sm opacity-60"
+                                            title="Nomor WhatsApp peminjam belum terdaftar di profil"
+                                        >
+                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                            </svg>
+                                        </button>
+                                    @endif
+
+                                    <button
+                                        type="button"
+                                        @click="openDetail({{ Js::from($detailPayload) }})"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-[#6F4E37] text-gray-700 hover:text-white font-semibold text-xs transition active:scale-95 border border-gray-300 hover:border-[#6F4E37] shadow-sm"
+                                    >
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                        Detail
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -510,6 +542,10 @@
                             <div class="flex items-center justify-between">
                                 <span class="text-gray-400 text-[11px]">Email:</span>
                                 <span class="text-gray-600 truncate max-w-[150px]" x-text="selectedBorrowing?.borrower.email"></span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-400 text-[11px]">No. Telepon / HP:</span>
+                                <span class="font-mono text-gray-700" x-text="selectedBorrowing?.borrower.formatted_phone || selectedBorrowing?.borrower.phone || '-'"></span>
                             </div>
                         </div>
                     </div>
@@ -701,13 +737,42 @@
             {{-- Modal Footer --}}
             <div class="bg-gray-50 px-6 py-3.5 border-t border-gray-200 flex items-center justify-between">
                 <span class="text-[11px] text-gray-400 font-mono" x-text="'ID Transaksi: #' + selectedBorrowing?.id"></span>
-                <button
-                    type="button"
-                    @click="closeDetail()"
-                    class="px-5 py-2 rounded-xl bg-[#6F4E37] text-white text-xs font-bold hover:bg-[#5a3f2c] transition shadow-sm"
-                >
-                    Tutup Rincian
-                </button>
+                <div class="flex items-center gap-2">
+                    <template x-if="selectedBorrowing?.wa_url">
+                        <a
+                            :href="selectedBorrowing?.wa_url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm active:scale-95"
+                            title="Kirim Pengingat WhatsApp ke Peminjam"
+                        >
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                            </svg>
+                            Kirim Pengingat WhatsApp
+                        </a>
+                    </template>
+                    <template x-if="!selectedBorrowing?.wa_url && (selectedBorrowing?.is_overdue || selectedBorrowing?.status === 'borrowed')">
+                        <button
+                            type="button"
+                            disabled
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gray-100 text-gray-400 text-xs font-semibold border border-gray-200 cursor-not-allowed opacity-75 shadow-sm"
+                            title="Nomor WhatsApp peminjam belum terdaftar di profil"
+                        >
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                            </svg>
+                            Nomor WA Belum Terdaftar
+                        </button>
+                    </template>
+                    <button
+                        type="button"
+                        @click="closeDetail()"
+                        class="px-5 py-2 rounded-xl bg-[#6F4E37] text-white text-xs font-bold hover:bg-[#5a3f2c] transition shadow-sm"
+                    >
+                        Tutup Rincian
+                    </button>
+                </div>
             </div>
         </div>
     </div>

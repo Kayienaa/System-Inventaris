@@ -18,8 +18,9 @@ class AuthenticationTest extends TestCase
         $response = $this->get('/login');
 
         $response->assertStatus(200);
-        $response->assertSee('Email / NIS / NIP');
-        $response->assertSee('Email SiPintu, NIS, atau NIP (contoh: 199301162022211000)');
+        $response->assertSee('Email Siswa / NIP Guru');
+        $response->assertSee('contoh: 1234@smkn1bangsri.sch.id atau NIP Guru');
+        $response->assertSee('Siswa wajib masuk menggunakan');
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void
@@ -92,11 +93,11 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(route('dashboard', absolute: false));
     }
 
-    public function test_siswa_can_authenticate_using_nis_and_default_password(): void
+    public function test_siswa_can_not_authenticate_using_nis_numeric(): void
     {
         $siswa = User::create([
             'name' => 'Siswa Penguji',
-            'email' => 'siswa@smkn1bangsri.sch.id',
+            'email' => '4710@smkn1bangsri.sch.id',
             'password' => Hash::make('password'),
         ]);
 
@@ -112,11 +113,11 @@ class AuthenticationTest extends TestCase
             'password' => 'password',
         ]);
 
-        $this->assertAuthenticatedAs($siswa);
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertGuest();
+        $response->assertSessionHasErrors(['email' => 'Email, NIP, atau kata sandi yang Anda masukkan salah.']);
     }
 
-    public function test_siswa_can_authenticate_using_sipintu_email_and_default_password(): void
+    public function test_siswa_can_authenticate_using_official_school_email_and_default_password(): void
     {
         $siswa = User::create([
             'name' => 'Siswa Penguji',
@@ -137,12 +138,13 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->post('/login', [
+        $response = $this->post('/login', [
             'email' => $user->email,
             'password' => 'wrong-password',
         ]);
 
         $this->assertGuest();
+        $response->assertSessionHasErrors(['email' => 'Email, NIP, atau kata sandi yang Anda masukkan salah.']);
     }
 
     public function test_guru_can_not_authenticate_with_invalid_password_via_nip(): void
@@ -158,43 +160,41 @@ class AuthenticationTest extends TestCase
             'nip' => '199301162022211000',
         ]);
 
-        $this->post('/login', [
+        $response = $this->post('/login', [
             'email' => '199301162022211000',
             'password' => 'wrong-password',
         ]);
 
         $this->assertGuest();
+        $response->assertSessionHasErrors(['email' => 'Email, NIP, atau kata sandi yang Anda masukkan salah.']);
     }
 
-    public function test_siswa_can_not_authenticate_with_invalid_password_via_nis(): void
+    public function test_siswa_can_not_authenticate_with_invalid_password_via_email(): void
     {
         $siswa = User::create([
             'name' => 'Siswa Penguji',
-            'email' => 'siswa@smkn1bangsri.sch.id',
+            'email' => '4710@smkn1bangsri.sch.id',
             'password' => Hash::make('password'),
         ]);
 
-        SiswaProfile::create([
-            'user_id' => $siswa->id,
-            'nis' => '4710',
-        ]);
-
-        $this->post('/login', [
-            'email' => '4710',
+        $response = $this->post('/login', [
+            'email' => '4710@smkn1bangsri.sch.id',
             'password' => 'wrong-password',
         ]);
 
         $this->assertGuest();
+        $response->assertSessionHasErrors(['email' => 'Email, NIP, atau kata sandi yang Anda masukkan salah.']);
     }
 
     public function test_can_not_authenticate_with_unregistered_numeric_identity(): void
     {
-        $this->post('/login', [
+        $response = $this->post('/login', [
             'email' => '9999999999',
             'password' => 'password',
         ]);
 
         $this->assertGuest();
+        $response->assertSessionHasErrors(['email' => 'Email, NIP, atau kata sandi yang Anda masukkan salah.']);
     }
 
     public function test_users_can_logout(): void

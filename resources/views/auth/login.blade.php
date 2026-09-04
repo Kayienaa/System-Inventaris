@@ -221,9 +221,9 @@
                 <form method="POST" action="{{ route('login') }}" @submit="onSubmit()" novalidate>
                     @csrf
 
-                    <!-- Email / NIS / NIP -->
+                    <!-- Email Siswa / NIP Guru -->
                     <div class="mb-5">
-                        <label for="email" class="block text-sm font-semibold text-slate-700 mb-1.5">Email / NIS / NIP</label>
+                        <label for="email" class="block text-sm font-semibold text-slate-700 mb-1.5">Email Siswa / NIP Guru</label>
                         <div class="relative">
                             <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                                 <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
@@ -233,7 +233,7 @@
                             </span>
                             <input id="email" name="email" type="text"
                                    autocomplete="off"
-                                   placeholder="Email SiPintu, NIS, atau NIP (contoh: 199301162022211000)"
+                                   placeholder="contoh: 1234@smkn1bangsri.sch.id atau NIP Guru"
                                    value="{{ old('email') }}"
                                    required
                                    class="inp {{ $errors->has('email') ? 'inp-error' : '' }}">
@@ -309,6 +309,16 @@
                             <span>Sedang masuk…</span>
                         </span>
                     </button>
+
+                    <!-- Panduan Bantuan Akun Resmi Sekolah -->
+                    <div class="mt-6 pt-5 border-t border-slate-100 flex items-start gap-2.5 text-xs text-slate-500 leading-relaxed">
+                        <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
+                        </svg>
+                        <p>
+                            <strong>Panduan Akun:</strong> Siswa wajib masuk menggunakan <strong>akun Email Sekolah resmi</strong> (contoh: <span class="font-mono text-slate-700 font-semibold">1234@smkn1bangsri.sch.id</span>). Guru dapat masuk menggunakan <strong>NIP</strong> atau <strong>Email</strong>.
+                        </p>
+                    </div>
 
                 </form>
 
