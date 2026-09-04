@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SiPintuController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 Route::get('/', function () {
     return view('welcome');
@@ -88,5 +89,19 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('sipintu')->group(
     Route::get('/api/teachers', [SiPintuController::class, 'teachers'])->name('sipintu.teachers');
     Route::get('/api/status', [SiPintuController::class, 'connectionStatus'])->name('sipintu.status');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Public Storage Caching Route (Cache-Control Header)
+|--------------------------------------------------------------------------
+*/
+Route::get('/storage/{path}', function (string $path) {
+    $disk = Storage::disk('public');
+    abort_unless($disk->exists($path), 404);
+
+    return response()->file($disk->path($path), [
+        'Cache-Control' => 'public, max-age=86400',
+    ]);
+})->where('path', '.*')->name('storage.local');
 
 require __DIR__.'/auth.php';

@@ -34,20 +34,27 @@
                     <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
 
                         {{-- Foto Barang --}}
-                        <div class="aspect-[4/3] bg-gray-100 overflow-hidden">
+                        <div class="aspect-[4/3] bg-stone-100 dark:bg-stone-800 overflow-hidden relative">
 
-                            @if ($asset->photo_path)
+                            @if ($asset->photo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($asset->photo_path))
 
                                 <img
                                     src="{{ asset('storage/' . $asset->photo_path) }}"
                                     alt="{{ $asset->name }}"
-                                    class="w-full h-full object-cover"
+                                    width="400"
+                                    height="300"
+                                    loading="lazy"
+                                    decoding="async"
+                                    class="w-full h-full object-cover aspect-[4/3]"
                                 >
 
                             @else
 
-                                <div class="w-full h-full flex items-center justify-center text-gray-400">
-                                    Tidak ada foto
+                                <div class="w-full h-full flex flex-col items-center justify-center text-stone-400 dark:text-stone-300 gap-1">
+                                    <svg class="w-6 h-6 text-stone-300 dark:text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span class="text-xs">Foto tidak tersedia</span>
                                 </div>
 
                             @endif

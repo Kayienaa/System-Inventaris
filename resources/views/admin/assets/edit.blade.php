@@ -280,11 +280,19 @@
                         <template x-if="!photoPreview">
                             <div>
                                 @if ($existingPhoto)
-                                    <img src="{{ asset('storage/' . $asset->photo_path) }}" alt="{{ $asset->name }}" class="w-full h-48 md:h-56 object-cover rounded-lg">
+                                    <img
+                                        src="{{ asset('storage/' . $asset->photo_path) }}"
+                                        alt="{{ $asset->name }}"
+                                        width="384"
+                                        height="224"
+                                        loading="lazy"
+                                        decoding="async"
+                                        class="w-full h-48 md:h-56 object-cover rounded-lg bg-stone-100 dark:bg-stone-800"
+                                    >
                                     <p class="text-[11px] text-gray-400 text-center mt-2">Foto Saat Ini</p>
                                 @else
-                                    <div class="w-full h-48 md:h-56 rounded-lg bg-gray-100 flex flex-col items-center justify-center text-gray-400">
-                                        <svg class="w-10 h-10 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="w-full h-48 md:h-56 rounded-lg bg-stone-100 dark:bg-stone-800 flex flex-col items-center justify-center text-stone-400 dark:text-stone-300">
+                                        <svg class="w-10 h-10 text-stone-300 dark:text-stone-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                         </svg>
                                         <span class="text-xs">Belum ada foto unit</span>

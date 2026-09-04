@@ -56,6 +56,7 @@ class DashboardAnalyticsTest extends TestCase
         $response->assertSee('Top 5 Peminjam Teraktif');
         $response->assertSee($asset->name);
         $response->assertSee('Siswa Aktif');
+        $response->assertSee('Integrasi SiPintu Gateway &amp; SIJUNA', false);
 
         // Verify view data
         $response->assertViewHas('chart_labels');
@@ -65,5 +66,20 @@ class DashboardAnalyticsTest extends TestCase
         $response->assertViewHas('total_aset');
         $response->assertViewHas('barang_tersedia');
         $response->assertViewHas('barang_dipinjam');
+    }
+
+    public function test_non_admin_does_not_see_sipintu_gateway_widget_on_dashboard(): void
+    {
+        $siswa = User::factory()->create(['name' => 'Siswa Test']);
+        $siswa->assignRole('siswa');
+
+        $response = $this->actingAs($siswa)->get(route('dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Ringkasan Inventaris');
+        $response->assertDontSee('Integrasi SiPintu Gateway &amp; SIJUNA', false);
+        $response->assertDontSee('DATA PENGGUNA (SISWA)');
+        $response->assertDontSee('DATA GURU');
+        $response->assertDontSee('GATEWAY STATUS');
     }
 }

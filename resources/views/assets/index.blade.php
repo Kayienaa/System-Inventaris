@@ -89,23 +89,26 @@
 
                         <div>
                             {{-- Foto Aset --}}
-                            <div class="aspect-[4/3] w-full overflow-hidden bg-gray-100 relative">
+                            <div class="aspect-[4/3] w-full overflow-hidden bg-stone-100 dark:bg-stone-800 relative">
 
                                 @if ($photoExists)
                                     <img
                                         src="{{ asset('storage/' . $asset->photo_path) }}"
                                         alt="{{ $asset->name }}"
-                                        class="h-full w-full object-cover transition duration-300 {{ $statusValue !== 'tersedia' ? 'filter grayscale contrast-125 opacity-75' : '' }}"
+                                        width="400"
+                                        height="300"
                                         loading="lazy"
+                                        decoding="async"
+                                        class="h-full w-full object-cover aspect-[4/3] transition duration-300 {{ $statusValue !== 'tersedia' ? 'filter grayscale contrast-125 opacity-75' : '' }}"
                                     >
                                 @else
-                                    <div class="flex h-full flex-col items-center justify-center gap-2 text-gray-400 bg-gradient-to-br from-gray-50 to-gray-150">
-                                        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/80 border border-gray-200 shadow-sm">
-                                            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="flex h-full w-full aspect-[4/3] flex-col items-center justify-center gap-2 text-stone-400 bg-stone-100 dark:bg-stone-800">
+                                        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/80 dark:bg-stone-700/80 border border-stone-200 dark:border-stone-600 shadow-sm">
+                                            <svg class="w-6 h-6 text-stone-400 dark:text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                             </svg>
                                         </div>
-                                        <span class="text-xs font-medium text-gray-400">
+                                        <span class="text-xs font-medium text-stone-400 dark:text-stone-300">
                                             Foto belum tersedia
                                         </span>
                                     </div>

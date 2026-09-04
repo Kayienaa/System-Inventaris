@@ -258,6 +258,7 @@
     {{-- =========================================
          SIPINTU API GATEWAY & DATA SIJUNA SECTION
     ========================================== --}}
+    @role('admin')
     @if (isset($sipintu_summary))
     <div class="section-heading" style="margin-top: 2.25rem;">
         <h2>
@@ -340,6 +341,7 @@
         </a>
     </div>
     @endif
+    @endrole
 
     {{-- =========================
          LOWER PANELS (KATEGORI & OVERDUE)

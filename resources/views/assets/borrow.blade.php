@@ -31,7 +31,7 @@
             <div class="border-b border-gray-100 bg-gradient-to-r from-amber-50/60 to-orange-50/40 p-6">
                 <div class="flex flex-col gap-5 sm:flex-row sm:items-center">
 
-                    <div class="h-36 w-full overflow-hidden rounded-xl bg-gray-100 sm:w-48 shrink-0 border border-gray-200 shadow-sm relative">
+                    <div class="h-36 w-full overflow-hidden rounded-xl bg-stone-100 dark:bg-stone-800 sm:w-48 shrink-0 border border-gray-200 shadow-sm relative aspect-[4/3]">
                         @php
                             $photoExists = $asset->photo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($asset->photo_path);
                         @endphp
@@ -40,11 +40,15 @@
                             <img
                                 src="{{ asset('storage/' . $asset->photo_path) }}"
                                 alt="{{ $asset->name }}"
-                                class="h-full w-full object-cover"
+                                width="192"
+                                height="144"
+                                loading="lazy"
+                                decoding="async"
+                                class="h-full w-full object-cover aspect-[4/3]"
                             >
                         @else
-                            <div class="flex h-full flex-col items-center justify-center text-xs text-gray-400 bg-gray-50">
-                                <svg class="w-8 h-8 text-gray-300 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="flex h-full w-full flex-col items-center justify-center text-xs text-stone-400 dark:text-stone-300 bg-stone-100 dark:bg-stone-800">
+                                <svg class="w-8 h-8 text-stone-300 dark:text-stone-500 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                 </svg>
                                 Foto tidak tersedia

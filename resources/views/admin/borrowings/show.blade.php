@@ -217,13 +217,17 @@
 
                         @if($detail['borrowing_evidence_url'])
                             <div
-                                class="relative aspect-video rounded-xl overflow-hidden bg-gray-950 border border-gray-200 shadow-sm cursor-pointer group"
+                                class="relative aspect-video rounded-xl overflow-hidden bg-stone-100 dark:bg-stone-800 border border-gray-200 shadow-sm cursor-pointer group"
                                 @click="previewImage = '{{ $detail['borrowing_evidence_url'] }}'"
                             >
                                 <img
                                     src="{{ $detail['borrowing_evidence_url'] }}"
                                     alt="Foto Bukti Peminjaman"
-                                    class="w-full h-full object-cover transition group-hover:scale-105"
+                                    width="480"
+                                    height="270"
+                                    loading="lazy"
+                                    decoding="async"
+                                    class="w-full h-full object-cover aspect-video transition group-hover:scale-105"
                                 >
                                 <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-semibold gap-1">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -233,8 +237,8 @@
                                 </div>
                             </div>
                         @else
-                            <div class="aspect-video rounded-xl bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 text-xs p-4 text-center">
-                                <svg class="w-7 h-7 text-gray-300 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="aspect-video rounded-xl bg-stone-100 dark:bg-stone-800 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-stone-400 text-xs p-4 text-center">
+                                <svg class="w-7 h-7 text-stone-300 dark:text-stone-500 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                 </svg>
                                 <span>Tidak ada foto bukti serah terima peminjaman</span>
@@ -251,13 +255,17 @@
 
                         @if($detail['return_evidence_url'])
                             <div
-                                class="relative aspect-video rounded-xl overflow-hidden bg-gray-950 border border-gray-200 shadow-sm cursor-pointer group"
+                                class="relative aspect-video rounded-xl overflow-hidden bg-stone-100 dark:bg-stone-800 border border-gray-200 shadow-sm cursor-pointer group"
                                 @click="previewImage = '{{ $detail['return_evidence_url'] }}'"
                             >
                                 <img
                                     src="{{ $detail['return_evidence_url'] }}"
                                     alt="Foto Bukti Pengembalian"
-                                    class="w-full h-full object-cover transition group-hover:scale-105"
+                                    width="480"
+                                    height="270"
+                                    loading="lazy"
+                                    decoding="async"
+                                    class="w-full h-full object-cover aspect-video transition group-hover:scale-105"
                                 >
                                 <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-semibold gap-1">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -267,8 +275,8 @@
                                 </div>
                             </div>
                         @else
-                            <div class="aspect-video rounded-xl bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 text-xs p-4 text-center">
-                                <svg class="w-7 h-7 text-gray-300 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="aspect-video rounded-xl bg-stone-100 dark:bg-stone-800 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-stone-400 text-xs p-4 text-center">
+                                <svg class="w-7 h-7 text-stone-300 dark:text-stone-500 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                                 <span>{{ $detail['dates']['returned_at'] ? 'Tidak ada foto bukti pengembalian' : 'Barang belum dikembalikan' }}</span>
