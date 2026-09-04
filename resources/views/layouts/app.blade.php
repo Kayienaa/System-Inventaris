@@ -192,6 +192,16 @@
             flex: 1;
             padding: 18px 12px;
             overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .menu::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .menu::-webkit-scrollbar-thumb {
+            background: rgba(139, 90, 43, 0.4);
+            border-radius: 9999px;
         }
 
         .menu-label {
@@ -761,31 +771,42 @@
 
         <div class="brand-area">
 
-            <div class="brand-logo">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m16.5 0H3.75m16.5 0c.621 0 1.125-.504 1.125-1.125V6c0-.621-.504-1.125-1.125-1.125H3.75C3.129 4.875 2.625 5.379 2.625 6v.375c0 .621.504 1.125 1.125 1.125"
-                    />
-                </svg>
+            <div class="bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-2.5 mx-auto max-w-[80px] flex items-center justify-center shadow-sm mb-2">
+                @if (file_exists(public_path('images/logo-tefa.png')))
+                    <img src="{{ asset('images/logo-tefa.png') }}" alt="Logo TEFA SMKN 1 Bangsri" class="h-10 w-auto object-contain">
+                @else
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        style="width: 28px; height: 28px; color: white;"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m16.5 0H3.75m16.5 0c.621 0 1.125-.504 1.125-1.125V6c0-.621-.504-1.125-1.125-1.125H3.75C3.129 4.875 2.625 5.379 2.625 6v.375c0 .621.504 1.125 1.125 1.125"
+                        />
+                    </svg>
+                @endif
             </div>
 
             <h1 class="brand-font brand-name">TE-Vault</h1>
 
             <p class="brand-subtitle">
-                Sistem Inventaris
+                SISTEM INVENTARIS
             </p>
 
-            <span class="admin-badge">
-                Administrator
-            </span>
+            @if(auth()->user()?->hasRole('admin'))
+                <span class="admin-badge">
+                    Administrator
+                </span>
+            @else
+                <span class="admin-badge" style="background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.85); border-color: rgba(255,255,255,0.2);">
+                    Peminjam
+                </span>
+            @endif
 
         </div>
 
@@ -801,13 +822,13 @@
                 </p>
 
                 <p class="user-role">
-                    Administrator
+                    {{ auth()->user()?->hasRole('admin') ? 'Administrator' : 'Peminjam' }}
                 </p>
             </div>
 
         </div>
 
-        <nav class="menu">
+        <nav class="menu overflow-y-auto scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-[#8B5A2B]/40 [&::-webkit-scrollbar-thumb]:rounded-full">
 
             <div class="menu-label">
                 Menu Utama

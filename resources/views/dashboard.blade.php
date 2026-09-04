@@ -17,7 +17,7 @@
     {{-- Welcome Card --}}
     <div class="welcome-card">
         <p class="welcome-small">
-            {{ auth()->user()->hasRole('admin') ? 'Administrator Panel' : 'User Panel' }}
+            {{ auth()->user()->hasRole('admin') ? 'Administrator Panel' : 'Panel Peminjam' }}
         </p>
         <h2 class="brand-font welcome-title">
             Selamat datang kembali, {{ auth()->user()->name }}.
@@ -209,7 +209,7 @@
                     @endforeach
                 </div>
             @else
-                <p class="text-xs text-gray-400 py-6 text-center">Belum ada data peminjaman aset.</p>
+                <p class="text-xs text-gray-400 py-6 text-center">Belum ada aktivitas peminjaman minggu ini.</p>
             @endif
         </div>
 
@@ -250,7 +250,7 @@
                     @endforeach
                 </div>
             @else
-                <p class="text-xs text-gray-400 py-6 text-center">Belum ada data aktivitas peminjam.</p>
+                <p class="text-xs text-gray-400 py-6 text-center">Belum ada aktivitas peminjaman minggu ini.</p>
             @endif
         </div>
     </div>

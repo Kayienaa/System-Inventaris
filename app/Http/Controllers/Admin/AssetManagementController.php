@@ -11,6 +11,7 @@ use App\Http\Requests\Admin\UpdateAssetRequest;
 use App\Models\Asset;
 use App\Models\AssetCategory;
 use App\Services\AuditLogService;
+use App\Services\ImageCompressionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -20,6 +21,10 @@ use Illuminate\View\View;
 
 class AssetManagementController extends Controller implements HasMiddleware
 {
+    public function __construct(
+        protected ImageCompressionService $imageCompression
+    ) {}
+
     /**
      * Get the middleware that should be assigned to the controller.
      */
@@ -104,7 +109,7 @@ class AssetManagementController extends Controller implements HasMiddleware
         $data = $request->validated();
 
         if ($request->hasFile('photo')) {
-            $data['photo_path'] = $request->file('photo')->store('assets', 'public');
+            $data['photo_path'] = $this->imageCompression->compressAndStore($request->file('photo'), 'assets');
         }
         unset($data['photo']);
 
@@ -156,7 +161,7 @@ class AssetManagementController extends Controller implements HasMiddleware
             if ($asset->photo_path && Storage::disk('public')->exists($asset->photo_path)) {
                 Storage::disk('public')->delete($asset->photo_path);
             }
-            $data['photo_path'] = $request->file('photo')->store('assets', 'public');
+            $data['photo_path'] = $this->imageCompression->compressAndStore($request->file('photo'), 'assets');
         }
         unset($data['photo']);
 

@@ -19,17 +19,25 @@ class ImageCompressionService
      */
     public function compressAndStore(UploadedFile $file, string $folder): string
     {
-        $image = Image::read($file)->scaleDown(width: self::MAX_WIDTH);
+        try {
+            if (extension_loaded('gd') || extension_loaded('imagick')) {
+                $image = Image::read($file)->scaleDown(width: self::MAX_WIDTH);
 
-        $quality = self::START_QUALITY;
-        do {
-            $encoded = $image->toJpeg($quality);
-            $quality -= 10;
-        } while (strlen((string) $encoded) > self::MAX_SIZE_KB * 1024 && $quality > 30);
+                $quality = self::START_QUALITY;
+                do {
+                    $encoded = $image->toJpeg($quality);
+                    $quality -= 10;
+                } while (strlen((string) $encoded) > self::MAX_SIZE_KB * 1024 && $quality > 30);
 
-        $filename = $folder.'/'.now()->format('Ymd_His').'_'.Str::random(8).'.jpg';
-        Storage::disk('public')->put($filename, (string) $encoded);
+                $filename = $folder.'/'.now()->format('Ymd_His').'_'.Str::random(8).'.jpg';
+                Storage::disk('public')->put($filename, (string) $encoded);
 
-        return $filename;
+                return $filename;
+            }
+        } catch (\Throwable) {
+            // Fallback ke penyimpanan default jika proses kompresi mengalami kendala driver
+        }
+
+        return $file->store($folder, 'public');
     }
 }

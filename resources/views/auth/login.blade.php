@@ -160,13 +160,19 @@
 
                 <!-- ── Brand ── -->
                 <div class="flex flex-col items-center text-center mb-8">
-                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-white mb-4 logo-glow"
-     style="background: linear-gradient(145deg,#70482D,#A97832);">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                        </svg>
-                    </div>
+                    @if (file_exists(public_path('images/logo-tefa.png')))
+                        <div class="mb-4">
+                            <img src="{{ asset('images/logo-tefa.png') }}" alt="Logo TEFA SMKN 1 Bangsri" class="h-16 w-auto object-contain drop-shadow-md">
+                        </div>
+                    @else
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-white mb-4 logo-glow"
+                             style="background: linear-gradient(145deg,#70482D,#A97832);">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                            </svg>
+                        </div>
+                    @endif
                     <h1 class="text-base font-extrabold text-slate-900 tracking-tight leading-snug">
                         Sistem Inventaris Barang
                     </h1>
@@ -278,24 +284,25 @@
                     <!-- Submit Button -->
                     <button type="submit"
                             :disabled="loading"
-                            style="border-radius:12px; background:linear-gradient(135deg,#70482D,#A97832); color:#fff; width:100%; padding:0.875rem 1.5rem; font-size:1rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; border:none; cursor:pointer; box-shadow:0 4px 16px rgba(112,72,45,0.30); transition:background 0.15s,transform 0.1s,box-shadow 0.15s;"
-onmouseover="if(!this.disabled){this.style.background='linear-gradient(135deg,#5A3A24,#805827)';this.style.boxShadow='0 6px 20px rgba(112,72,45,0.38)';this.style.transform='translateY(-1px)';}"
-onmouseout="this.style.background='linear-gradient(135deg,#70482D,#A97832)';this.style.boxShadow='0 4px 16px rgba(112,72,45,0.30)';this.style.transform='translateY(0)';">
+                            class="w-full flex items-center justify-center gap-2.5 leading-none py-3 px-4 font-bold text-white rounded-xl shadow-md transition"
+                            style="background:linear-gradient(135deg,#70482D,#A97832); border:none; cursor:pointer; box-shadow:0 4px 16px rgba(112,72,45,0.30);"
+                            onmouseover="if(!this.disabled){this.style.background='linear-gradient(135deg,#5A3A24,#805827)';this.style.boxShadow='0 6px 20px rgba(112,72,45,0.38)';this.style.transform='translateY(-1px)';}"
+                            onmouseout="this.style.background='linear-gradient(135deg,#70482D,#A97832)';this.style.boxShadow='0 4px 16px rgba(112,72,45,0.30)';this.style.transform='translateY(0)';">
                         <!-- Normal -->
-                        <span x-show="!loading" style="display:flex;align-items:center;gap:8px;">
-                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <span x-show="!loading" class="flex items-center justify-center gap-2.5 leading-none">
+                            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                       d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/>
                             </svg>
-                            Masuk
+                            <span>Masuk</span>
                         </span>
                         <!-- Loading -->
-                        <span x-show="loading" x-cloak style="display:flex;align-items:center;gap:8px;">
-                            <svg class="spinner" width="20" height="20" fill="none" viewBox="0 0 24 24">
+                        <span x-show="loading" x-cloak class="flex items-center justify-center gap-2.5 leading-none">
+                            <svg class="spinner w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24">
                                 <circle style="opacity:.25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                                 <path style="opacity:.8" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                             </svg>
-                            Sedang masuk…
+                            <span>Sedang masuk…</span>
                         </span>
                     </button>
 

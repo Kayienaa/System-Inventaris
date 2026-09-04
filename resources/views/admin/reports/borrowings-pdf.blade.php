@@ -291,10 +291,18 @@
     <div class="report-page">
         
         {{-- Formal Kop Surat --}}
-        <div class="kop-surat">
-            <div class="kop-instansi">Pemerintah Provinsi Jawa Tengah &bull; Dinas Pendidikan dan Kebudayaan</div>
-            <div class="kop-unit">SMK Negeri 1 Bangsri &bull; Teaching Factory (TEFA)</div>
-            <div class="kop-alamat">Jl. Raya Bangsri - Krasak Km. 1, Bangsri, Kabupaten Jepara, Jawa Tengah 59453 &bull; Telp: (0291) 771234</div>
+        <div class="kop-surat" style="display: flex; align-items: center; justify-content: center; gap: 18px;">
+            @php
+                $tefaLogoPath = public_path('images/logo-tefa.png');
+            @endphp
+            @if (file_exists($tefaLogoPath))
+                <img src="{{ asset('images/logo-tefa.png') }}" data-local-path="{{ $tefaLogoPath }}" alt="Logo TEFA SMKN 1 Bangsri" style="height: 68px; width: auto; object-fit: contain; flex-shrink: 0;">
+            @endif
+            <div style="text-align: center;">
+                <div class="kop-instansi">Pemerintah Provinsi Jawa Tengah &bull; Dinas Pendidikan dan Kebudayaan</div>
+                <div class="kop-unit">SMK Negeri 1 Bangsri &bull; Teaching Factory (TEFA)</div>
+                <div class="kop-alamat">Jl. Raya Bangsri - Krasak Km. 1, Bangsri, Kabupaten Jepara, Jawa Tengah 59453 &bull; Telp: (0291) 771234</div>
+            </div>
         </div>
 
         {{-- Document Header --}}

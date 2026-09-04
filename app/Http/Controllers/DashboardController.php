@@ -57,15 +57,31 @@ class DashboardController extends Controller
             $chartData[] = $count;
         }
 
-        // Leaderboard Aset Populer (Top 5)
+        // Filter Peminjaman Rentang Minggu Aktif
+        $startOfWeek = now()->startOfWeek();
+        $endOfWeek = now()->endOfWeek();
+
+        $weeklyFilter = function ($q) use ($startOfWeek, $endOfWeek) {
+            $q->where(function ($sub) use ($startOfWeek, $endOfWeek) {
+                $sub->whereBetween('requested_at', [$startOfWeek, $endOfWeek])
+                    ->orWhere(function ($fallback) use ($startOfWeek, $endOfWeek) {
+                        $fallback->whereNull('requested_at')
+                            ->whereBetween('created_at', [$startOfWeek, $endOfWeek]);
+                    });
+            });
+        };
+
+        // Leaderboard Aset Populer Mingguan (Top 5 dengan transaksi aktif > 0)
         $popularAssets = Asset::with(['category'])
-            ->withCount('borrowings')
+            ->withCount(['borrowings' => $weeklyFilter])
+            ->whereHas('borrowings', $weeklyFilter)
             ->orderByDesc('borrowings_count')
             ->take(5)
             ->get();
 
-        // Leaderboard Peminjam Teraktif (Top 5)
-        $activeBorrowers = \App\Models\User::withCount('borrowings')
+        // Leaderboard Peminjam Teraktif Mingguan (Top 5 dengan transaksi aktif > 0)
+        $activeBorrowers = \App\Models\User::withCount(['borrowings' => $weeklyFilter])
+            ->whereHas('borrowings', $weeklyFilter)
             ->orderByDesc('borrowings_count')
             ->take(5)
             ->get();

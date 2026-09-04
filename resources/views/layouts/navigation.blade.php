@@ -31,25 +31,28 @@
     >
         {{-- ── Brand / Logo ── --}}
         <div class="flex flex-col items-center py-7 px-5 border-b" style="border-color: rgba(255,255,255,0.12);">
-            {{-- Logo placeholder TEFA --}}
-            <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-3 shadow-lg"
-                 style="background-color: #C89B3C;">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-9 h-9 text-white" fill="none"
-                     viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5
-                             M10 11.25h4
-                             M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-.375
-                             c0-.621-.504-1.125-1.125-1.125H3.375
-                             c-.621 0-1.125.504-1.125 1.125v.375
-                             c0 .621.504 1.125 1.125 1.125z"/>
-                </svg>
+            {{-- Logo Resmi TEFA SMKN 1 Bangsri --}}
+            <div class="bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-2.5 mx-auto max-w-[80px] flex items-center justify-center shadow-sm mb-2">
+                @if (file_exists(public_path('images/logo-tefa.png')))
+                    <img src="{{ asset('images/logo-tefa.png') }}" alt="Logo TEFA SMKN 1 Bangsri" class="h-10 w-auto object-contain">
+                @else
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none"
+                         viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5
+                                 M10 11.25h4
+                                 M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-.375
+                                 c0-.621-.504-1.125-1.125-1.125H3.375
+                                 c-.621 0-1.125.504-1.125 1.125v.375
+                                 c0 .621.504 1.125 1.125 1.125z"/>
+                    </svg>
+                @endif
             </div>
 
             {{-- Brand name --}}
-            <span class="brand-font text-2xl tracking-wide" style="color: #F8F6F2;">TEVault</span>
-            <span class="text-xs font-medium mt-0.5 text-center leading-tight" style="color: rgba(248,246,242,0.65);">
-                Sistem Inventaris Barang
+            <span class="brand-font text-2xl tracking-wide" style="color: #F8F6F2;">TE-Vault</span>
+            <span class="text-xs font-medium mt-0.5 text-center leading-tight uppercase tracking-wider" style="color: rgba(248,246,242,0.65);">
+                SISTEM INVENTARIS
             </span>
         </div>
 
@@ -61,12 +64,12 @@
             </div>
             <div class="overflow-hidden">
                 <p class="text-sm font-semibold truncate" style="color: #F8F6F2;">{{ Auth::user()->name }}</p>
-                <p class="text-xs truncate" style="color: rgba(248,246,242,0.55);">{{ Auth::user()->email }}</p>
+                <p class="text-xs truncate font-medium" style="color: rgba(248,246,242,0.65);">{{ Auth::user()->hasRole('admin') ? 'Administrator' : 'Peminjam' }}</p>
             </div>
         </div>
 
         {{-- ── Navigation Menu ── --}}
-        <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
+        <nav class="flex-1 overflow-y-auto scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-[#8B5A2B]/40 [&::-webkit-scrollbar-thumb]:rounded-full px-3 py-4 space-y-0.5">
 
             @php
                 $active = 'bg-white/10 text-white font-semibold';
