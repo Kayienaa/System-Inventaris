@@ -143,8 +143,8 @@
                     Jumlah transaksi peminjaman barang per hari selama 7 hari terakhir.
                 </p>
             </div>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
-                <span class="w-2 h-2 rounded-full bg-[#6F4E37]"></span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-neon-glowamber border border-amber-200 dark:border-amber-500/30">
+                <span class="w-2 h-2 rounded-full bg-[#6F4E37] dark:bg-neon-glowamber"></span>
                 Vintage Analytics
             </span>
         </div>
@@ -168,17 +168,17 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {{-- Top 5 Aset Populer --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+        <div class="bg-white/95 dark:bg-[#131B2A]/90 backdrop-blur-md border border-stone-200/70 dark:border-stone-800/80 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] p-6">
+            <div class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-stone-800 mb-4">
                 <div class="flex items-center gap-2.5">
-                    <div class="p-2 rounded-xl bg-amber-50 text-amber-700">
+                    <div class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-neon-glowamber border border-amber-200/40 dark:border-amber-500/30">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
                         </svg>
                     </div>
                     <div>
-                        <h3 class="font-bold text-gray-800 text-base">Top 5 Aset Paling Sering Dipinjam</h3>
-                        <p class="text-xs text-gray-500">Aset dengan frekuensi transaksi tertinggi</p>
+                        <h3 class="font-bold text-gray-800 dark:text-stone-100 text-base">Top 5 Aset Paling Sering Dipinjam</h3>
+                        <p class="text-xs text-gray-500 dark:text-stone-400">Aset dengan frekuensi transaksi tertinggi</p>
                     </div>
                 </div>
             </div>
@@ -186,45 +186,45 @@
             @if(isset($popular_assets) && $popular_assets->count())
                 <div class="space-y-3">
                     @foreach($popular_assets as $index => $asset)
-                        <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50/70 border border-gray-100 hover:bg-amber-50/30 transition">
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50/70 dark:bg-stone-900/60 border border-gray-100 dark:border-stone-800/80 hover:bg-amber-50/30 dark:hover:bg-cyan-500/10 transition">
                             <div class="flex items-center gap-3">
                                 <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0
-                                    {{ $index === 0 ? 'bg-amber-400 text-white shadow-sm' : ($index === 1 ? 'bg-gray-300 text-gray-700' : ($index === 2 ? 'bg-amber-700 text-white' : 'bg-gray-100 text-gray-600')) }}">
+                                    {{ $index === 0 ? 'bg-amber-400 text-white shadow-sm' : ($index === 1 ? 'bg-gray-300 dark:bg-stone-700 text-gray-700 dark:text-stone-200' : ($index === 2 ? 'bg-amber-700 text-white' : 'bg-gray-100 dark:bg-stone-800 text-gray-600 dark:text-stone-400')) }}">
                                     #{{ $index + 1 }}
                                 </span>
                                 <div>
-                                    <p class="text-sm font-bold text-gray-800 line-clamp-1">{{ $asset->name }}</p>
+                                    <p class="text-sm font-bold text-gray-800 dark:text-stone-100 line-clamp-1">{{ $asset->name }}</p>
                                     <div class="flex items-center gap-2 mt-0.5">
-                                        <span class="text-[10px] font-mono text-gray-500">{{ $asset->asset_code }}</span>
+                                        <span class="text-[10px] font-mono text-gray-500 dark:text-stone-400">{{ $asset->asset_code }}</span>
                                         @if($asset->category)
-                                            <span class="text-[10px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-100">{{ $asset->category->name }}</span>
+                                            <span class="text-[10px] font-semibold text-amber-700 dark:text-neon-glowamber bg-amber-50 dark:bg-amber-950/50 px-1.5 py-0.2 rounded border border-amber-100 dark:border-amber-500/30">{{ $asset->category->name }}</span>
                                         @endif
                                     </div>
                                 </div>
                             </div>
-                            <span class="px-3 py-1 rounded-full text-xs font-bold bg-[#6F4E37]/10 text-[#6F4E37] border border-[#6F4E37]/20 shrink-0">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold bg-[#6F4E37]/10 dark:bg-cyan-950/50 text-[#6F4E37] dark:text-neon-cyan border border-[#6F4E37]/20 dark:border-cyan-500/30 shrink-0">
                                 {{ $asset->borrowings_count }}x dipinjam
                             </span>
                         </div>
                     @endforeach
                 </div>
             @else
-                <p class="text-xs text-gray-400 py-6 text-center">Belum ada aktivitas peminjaman minggu ini.</p>
+                <p class="text-xs text-gray-400 dark:text-stone-500 py-6 text-center">Belum ada aktivitas peminjaman minggu ini.</p>
             @endif
         </div>
 
         {{-- Top 5 Peminjam Teraktif --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+        <div class="bg-white/95 dark:bg-[#131B2A]/90 backdrop-blur-md border border-stone-200/70 dark:border-stone-800/80 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] p-6">
+            <div class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-stone-800 mb-4">
                 <div class="flex items-center gap-2.5">
-                    <div class="p-2 rounded-xl bg-blue-50 text-blue-700">
+                    <div class="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-neon-cyan border border-blue-200/40 dark:border-cyan-500/30">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                         </svg>
                     </div>
                     <div>
-                        <h3 class="font-bold text-gray-800 text-base">Top 5 Peminjam Teraktif</h3>
-                        <p class="text-xs text-gray-500">Pengguna dengan transaksi peminjaman terbanyak</p>
+                        <h3 class="font-bold text-gray-800 dark:text-stone-100 text-base">Top 5 Peminjam Teraktif</h3>
+                        <p class="text-xs text-gray-500 dark:text-stone-400">Pengguna dengan transaksi peminjaman terbanyak</p>
                     </div>
                 </div>
             </div>
@@ -232,25 +232,25 @@
             @if(isset($active_borrowers) && $active_borrowers->count())
                 <div class="space-y-3">
                     @foreach($active_borrowers as $index => $user)
-                        <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50/70 border border-gray-100 hover:bg-blue-50/30 transition">
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50/70 dark:bg-stone-900/60 border border-gray-100 dark:border-stone-800/80 hover:bg-blue-50/30 dark:hover:bg-cyan-500/10 transition">
                             <div class="flex items-center gap-3">
                                 <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0
-                                    {{ $index === 0 ? 'bg-blue-600 text-white shadow-sm' : ($index === 1 ? 'bg-gray-300 text-gray-700' : ($index === 2 ? 'bg-amber-700 text-white' : 'bg-gray-100 text-gray-600')) }}">
+                                    {{ $index === 0 ? 'bg-blue-600 text-white shadow-sm' : ($index === 1 ? 'bg-gray-300 dark:bg-stone-700 text-gray-700 dark:text-stone-200' : ($index === 2 ? 'bg-amber-700 text-white' : 'bg-gray-100 dark:bg-stone-800 text-gray-600 dark:text-stone-400')) }}">
                                     #{{ $index + 1 }}
                                 </span>
                                 <div>
-                                    <p class="text-sm font-bold text-gray-800 line-clamp-1">{{ $user->name }}</p>
-                                    <p class="text-[11px] text-gray-500">{{ $user->email }}</p>
+                                    <p class="text-sm font-bold text-gray-800 dark:text-stone-100 line-clamp-1">{{ $user->name }}</p>
+                                    <p class="text-[11px] text-gray-500 dark:text-stone-400">{{ $user->email }}</p>
                                 </div>
                             </div>
-                            <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 dark:bg-cyan-950/50 text-blue-700 dark:text-neon-cyan border border-blue-200 dark:border-cyan-500/30 shrink-0">
                                 {{ $user->borrowings_count }} transaksi
                             </span>
                         </div>
                     @endforeach
                 </div>
             @else
-                <p class="text-xs text-gray-400 py-6 text-center">Belum ada aktivitas peminjaman minggu ini.</p>
+                <p class="text-xs text-gray-400 dark:text-stone-500 py-6 text-center">Belum ada aktivitas peminjaman minggu ini.</p>
             @endif
         </div>
     </div>
@@ -433,16 +433,36 @@
             const labels = @json($chart_labels ?? []);
             const dataValues = @json($chart_data ?? []);
 
-            new Chart(ctx, {
+            function isDarkMode() {
+                return document.documentElement.classList.contains('dark');
+            }
+
+            function getThemeColors() {
+                const dark = isDarkMode();
+                return {
+                    barBg: dark ? '#F59E0B' : 'rgba(111, 78, 55, 0.85)',
+                    barHoverBg: dark ? '#FBBF24' : '#8B5A2B',
+                    barBorder: dark ? '#F59E0B' : '#6F4E37',
+                    textColor: dark ? '#94A3B8' : '#666666',
+                    gridColor: dark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
+                    tooltipBg: dark ? '#0F172A' : '#2C1810',
+                    tooltipTitle: dark ? '#F8FAFC' : '#F5EBE6',
+                    tooltipBorder: dark ? '#06B6D4' : '#8B5A2B',
+                };
+            }
+
+            const initialColors = getThemeColors();
+
+            const chartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [{
                         label: 'Transaksi Peminjaman',
                         data: dataValues,
-                        backgroundColor: 'rgba(111, 78, 55, 0.85)',
-                        hoverBackgroundColor: '#8B5A2B',
-                        borderColor: '#6F4E37',
+                        backgroundColor: initialColors.barBg,
+                        hoverBackgroundColor: initialColors.barHoverBg,
+                        borderColor: initialColors.barBorder,
                         borderWidth: 1,
                         borderRadius: 8,
                         borderSkipped: false,
@@ -457,10 +477,10 @@
                             display: false
                         },
                         tooltip: {
-                            backgroundColor: '#2C1810',
-                            titleColor: '#F5EBE6',
+                            backgroundColor: initialColors.tooltipBg,
+                            titleColor: initialColors.tooltipTitle,
                             bodyColor: '#FFFFFF',
-                            borderColor: '#8B5A2B',
+                            borderColor: initialColors.tooltipBorder,
                             borderWidth: 1,
                             padding: 10,
                             displayColors: false,
@@ -474,31 +494,31 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            suggestedMax: 5, // Batas minimal 5 jika transaksi tertinggi masih antara 1-5
+                            suggestedMax: 5,
                             ticks: {
                                 stepSize: 5,
                                 precision: 0,
-                                color: '#666666',
+                                color: initialColors.textColor,
                                 font: {
                                     family: "'DM Sans', sans-serif",
                                     size: 11
                                 },
                                 callback: function(value) {
-                                    // Hanya tampilkan label bilangan bulat kelipatan 5
                                     return Number.isInteger(value) && value % 5 === 0 ? value : '';
                                 }
                             },
                             grid: {
-                                color: 'rgba(0, 0, 0, 0.05)',
+                                color: initialColors.gridColor,
                                 drawBorder: false
                             }
                         },
                         x: {
                             grid: {
-                                display: false
+                                display: false,
+                                color: initialColors.gridColor
                             },
                             ticks: {
-                                color: '#666666',
+                                color: initialColors.textColor,
                                 font: {
                                     family: "'DM Sans', sans-serif",
                                     size: 11
@@ -507,6 +527,23 @@
                         }
                     }
                 }
+            });
+
+            window.addEventListener('theme-changed', function() {
+                const colors = getThemeColors();
+                chartInstance.data.datasets[0].backgroundColor = colors.barBg;
+                chartInstance.data.datasets[0].hoverBackgroundColor = colors.barHoverBg;
+                chartInstance.data.datasets[0].borderColor = colors.barBorder;
+                chartInstance.options.scales.y.ticks.color = colors.textColor;
+                chartInstance.options.scales.y.grid.color = colors.gridColor;
+                chartInstance.options.scales.x.ticks.color = colors.textColor;
+                chartInstance.options.scales.x.grid.color = colors.gridColor;
+                if (chartInstance.options.plugins && chartInstance.options.plugins.tooltip) {
+                    chartInstance.options.plugins.tooltip.backgroundColor = colors.tooltipBg;
+                    chartInstance.options.plugins.tooltip.titleColor = colors.tooltipTitle;
+                    chartInstance.options.plugins.tooltip.borderColor = colors.tooltipBorder;
+                }
+                chartInstance.update();
             });
         });
     </script>

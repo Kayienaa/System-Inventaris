@@ -54,6 +54,53 @@
         .flatpickr-time .flatpickr-am-pm:focus {
             background: #EDE4DC !important;
         }
+
+        /* Dark mode Flatpickr overrides */
+        html.dark .flatpickr-calendar {
+            background: #131B2A !important;
+            border-color: #1E293B !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important;
+            color: #F1F5F9 !important;
+        }
+        html.dark .flatpickr-months {
+            background: #0E1420 !important;
+        }
+        html.dark .flatpickr-current-month,
+        html.dark .flatpickr-monthDropdown-months,
+        html.dark .numInputWrapper span {
+            color: #F1F5F9 !important;
+        }
+        html.dark span.flatpickr-weekday {
+            color: #94A3B8 !important;
+        }
+        html.dark .flatpickr-day {
+            color: #E2E8F0 !important;
+        }
+        html.dark .flatpickr-day:hover {
+            background: #1E293B !important;
+        }
+        html.dark .flatpickr-day.selected,
+        html.dark .flatpickr-day.startRange,
+        html.dark .flatpickr-day.endRange {
+            background: #06B6D4 !important;
+            border-color: #06B6D4 !important;
+            color: #0B0F17 !important;
+            font-weight: 700 !important;
+        }
+        html.dark .flatpickr-time {
+            background: #0E1420 !important;
+            border-top-color: #1E293B !important;
+        }
+        html.dark .flatpickr-time input,
+        html.dark .flatpickr-time .flatpickr-am-pm {
+            color: #F1F5F9 !important;
+        }
+        html.dark .flatpickr-time input:hover,
+        html.dark .flatpickr-time .flatpickr-am-pm:hover,
+        html.dark .flatpickr-time input:focus,
+        html.dark .flatpickr-time .flatpickr-am-pm:focus {
+            background: #1E293B !important;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
@@ -63,7 +110,7 @@
         <div class="mb-8">
             <a
                 href="{{ route('assets.index') }}"
-                class="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-800 transition"
+                class="inline-flex items-center gap-2 text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition"
             >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -71,22 +118,22 @@
                 Kembali ke Katalog
             </a>
 
-            <h1 class="mt-4 text-3xl font-bold text-gray-800">
+            <h1 class="mt-4 text-3xl font-bold text-stone-800 dark:text-stone-100">
                 Peminjaman Aset (Instant Borrow)
             </h1>
 
-            <p class="mt-1 text-gray-500">
+            <p class="mt-1 text-stone-500 dark:text-stone-400">
                 Ambil foto serah terima secara real-time via kamera untuk langsung memproses peminjaman.
             </p>
         </div>
 
-        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div class="overflow-hidden rounded-2xl border border-stone-200/70 dark:border-stone-800/80 bg-white/95 dark:bg-[#131B2A]/90 backdrop-blur-md shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)]">
 
             {{-- Informasi Aset yang Dipilih --}}
-            <div class="border-b border-gray-100 bg-gradient-to-r from-amber-50/60 to-orange-50/40 p-6">
+            <div class="border-b border-stone-200/70 dark:border-stone-800 bg-gradient-to-r from-amber-50/60 to-orange-50/40 dark:from-stone-900/80 dark:to-[#131B2A]/80 p-6">
                 <div class="flex flex-col gap-5 sm:flex-row sm:items-center">
 
-                    <div class="h-36 w-full overflow-hidden rounded-xl bg-stone-100 dark:bg-stone-800 sm:w-48 shrink-0 border border-gray-200 shadow-sm relative aspect-[4/3]">
+                    <div class="h-36 w-full overflow-hidden rounded-xl bg-stone-100 dark:bg-stone-800 sm:w-48 shrink-0 border border-stone-200 dark:border-stone-700 shadow-sm relative aspect-[4/3]">
                         @php
                             $photoExists = $asset->photo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($asset->photo_path);
                         @endphp
@@ -113,30 +160,30 @@
 
                     <div class="flex-1">
                         @if ($asset->category)
-                            <span class="inline-block text-[11px] font-semibold uppercase tracking-wider text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-md border border-amber-200 mb-1.5">
+                            <span class="inline-block text-[11px] font-semibold uppercase tracking-wider text-amber-700 dark:text-neon-glowamber bg-amber-100/80 dark:bg-amber-950/50 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-500/30 mb-1.5">
                                 {{ $asset->category->name }}
                             </span>
                         @endif
 
-                        <h2 class="text-xl font-bold text-gray-800">
+                        <h2 class="text-xl font-bold text-stone-800 dark:text-stone-100">
                             {{ $asset->name }}
                         </h2>
 
-                        <div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-600">
-                            <div><span class="text-gray-400">Kode Aset:</span> <span class="font-mono font-semibold text-gray-800">{{ $asset->asset_code }}</span></div>
+                        <div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-stone-600 dark:text-stone-300">
+                            <div><span class="text-stone-400 dark:text-stone-500">Kode Aset:</span> <span class="font-mono font-semibold text-stone-800 dark:text-stone-200">{{ $asset->asset_code }}</span></div>
                             @if ($asset->brand)
-                                <div><span class="text-gray-400">Merk:</span> <span class="font-medium text-gray-800">{{ $asset->brand }}</span></div>
+                                <div><span class="text-stone-400 dark:text-stone-500">Merk:</span> <span class="font-medium text-stone-800 dark:text-stone-200">{{ $asset->brand }}</span></div>
                             @endif
                             @if ($asset->model)
-                                <div><span class="text-gray-400">Model:</span> <span class="font-medium text-gray-800">{{ $asset->model }}</span></div>
+                                <div><span class="text-stone-400 dark:text-stone-500">Model:</span> <span class="font-medium text-stone-800 dark:text-stone-200">{{ $asset->model }}</span></div>
                             @endif
                             @if ($asset->serial_number)
-                                <div><span class="text-gray-400">Serial No:</span> <span class="font-mono text-gray-800">{{ $asset->serial_number }}</span></div>
+                                <div><span class="text-stone-400 dark:text-stone-500">Serial No:</span> <span class="font-mono text-stone-800 dark:text-stone-200">{{ $asset->serial_number }}</span></div>
                             @endif
                         </div>
 
                         <div class="mt-3 flex items-center gap-2">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-neon-emerald border border-emerald-200 dark:border-emerald-500/30">
                                 ● Status: Siap Dipinjam
                             </span>
                         </div>
@@ -158,28 +205,28 @@
                 <input type="hidden" name="asset_id" value="{{ $asset->id }}">
 
                 {{-- Alert Info Instant Borrow --}}
-                <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-4 flex items-start gap-3">
-                    <svg class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-500/30 p-4 flex items-start gap-3">
+                    <svg class="w-5 h-5 text-emerald-600 dark:text-neon-emerald shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <div class="text-xs text-emerald-800 leading-relaxed">
-                        <span class="font-bold">Instant Borrowing Active:</span> Setelah disubmit dengan foto bukti, peminjaman langsung aktif dengan status <strong>Dipinjam</strong> dan tenggat otomatis <strong>H+3</strong>.
+                    <div class="text-xs text-emerald-800 dark:text-stone-200 leading-relaxed">
+                        <span class="font-bold text-emerald-900 dark:text-neon-emerald">Instant Borrowing Active:</span> Setelah disubmit dengan foto bukti, peminjaman langsung aktif dengan status <strong>Dipinjam</strong> dan tenggat otomatis <strong>H+3</strong>.
                     </div>
                 </div>
 
                 {{-- Modul Kamera Real-time Webcam --}}
                 <div>
                     <div class="flex items-center justify-between mb-1.5">
-                        <label class="block text-sm font-semibold text-gray-800">
+                        <label class="block text-sm font-semibold text-stone-800 dark:text-stone-100">
                             Foto Bukti Serah Terima Real-Time <span class="text-rose-500">*</span>
                         </label>
-                        <span class="text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <span class="text-xs font-medium text-amber-800 dark:text-neon-glowamber bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-500/30 px-2 py-0.5 rounded-md flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-neon-emerald"></span>
                             Wajib Kamera Real-Time
                         </span>
                     </div>
 
-                    <div class="rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 transition hover:border-gray-400">
+                    <div class="rounded-2xl border-2 border-dashed border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-900/50 p-4 transition hover:border-stone-400 dark:hover:border-stone-600">
 
                         {{-- Viewport Kamera Bersih 100% --}}
                         <div class="relative aspect-video w-full overflow-hidden rounded-xl bg-gray-950 flex items-center justify-center shadow-inner">
@@ -239,14 +286,14 @@
                                 <button
                                     type="button"
                                     @click="openCamera()"
-                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#6F4E37] text-white text-sm font-semibold hover:bg-[#5a3f2c] transition shadow-md active:scale-95 cursor-pointer"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber text-sm font-semibold transition-all duration-200 shadow-md active:scale-95 cursor-pointer"
                                 >
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                                     </svg>
                                     <span>Buka Kamera</span>
                                 </button>
-                                <p class="text-xs text-gray-500 text-center sm:text-right">
+                                <p class="text-xs text-stone-500 dark:text-stone-400 text-center sm:text-right">
                                     Izinkan izin kamera pada peramban untuk melanjutkan.
                                 </p>
                             </div>
@@ -257,7 +304,7 @@
                                 <button
                                     type="button"
                                     @click="snapSnapshot()"
-                                    class="w-14 h-14 rounded-full border-4 border-[#6F4E37] bg-white shadow-md active:scale-95 flex items-center justify-center mx-auto hover:scale-105 transition-all text-[#6F4E37] ring-4 ring-black/10 cursor-pointer"
+                                    class="w-14 h-14 rounded-full border-4 border-[#6F4E37] dark:border-neon-glowamber bg-white shadow-md active:scale-95 flex items-center justify-center mx-auto hover:scale-105 transition-all text-[#6F4E37] ring-4 ring-black/10 dark:ring-amber-500/20 cursor-pointer"
                                     title="Ambil Foto"
                                 >
                                     <svg class="w-6 h-6 text-[#6F4E37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,10 +317,10 @@
                                 <button
                                     type="button"
                                     @click="switchFacingMode()"
-                                    class="absolute right-2 sm:right-6 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 text-xs font-medium transition shadow-xs active:scale-95 cursor-pointer"
+                                    class="absolute right-2 sm:right-6 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 text-xs font-medium transition shadow-xs active:scale-95 cursor-pointer"
                                     title="Ganti Kamera Depan/Belakang"
                                 >
-                                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 text-stone-600 dark:text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                                     </svg>
                                     <span class="hidden sm:inline">Ganti Kamera</span>
@@ -282,8 +329,8 @@
 
                             {{-- State 3: Foto Siap Disimpan (Tombol Bersih di Bawah Kanvas) --}}
                             <div x-show="capturedPhoto" class="flex flex-col sm:flex-row items-center justify-between gap-3 p-2">
-                                <div class="text-xs text-emerald-700 font-medium flex items-center gap-1.5">
-                                    <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div class="text-xs text-emerald-700 dark:text-neon-emerald font-medium flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-emerald-600 dark:text-neon-emerald shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
                                     <span>Foto serah terima berhasil diambil dan bersih tanpa tertutupi tombol.</span>
@@ -292,9 +339,9 @@
                                 <button
                                     type="button"
                                     @click="retakeSnapshot()"
-                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 text-xs font-semibold shadow-xs transition active:scale-95 cursor-pointer"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold shadow-xs transition active:scale-95 cursor-pointer"
                                 >
-                                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 text-amber-600 dark:text-neon-glowamber" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                                     </svg>
                                     <span>Ambil Ulang Foto</span>
@@ -308,7 +355,7 @@
                     </div>
 
                     @error('borrowing_evidence')
-                        <p class="mt-1.5 text-xs font-medium text-rose-600">
+                        <p class="mt-1.5 text-xs font-medium text-rose-600 dark:text-rose-400">
                             {{ $message }}
                         </p>
                     @enderror
@@ -319,26 +366,26 @@
                     <div class="flex items-center justify-between mb-1">
                         <label
                             for="due_at_picker"
-                            class="block text-sm font-semibold text-gray-800"
+                            class="block text-sm font-semibold text-stone-800 dark:text-stone-100"
                         >
                             Tenggat Waktu Pengembalian <span class="text-rose-500">*</span>
                         </label>
-                        <span class="text-xs text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md font-medium">
+                        <span class="text-xs text-amber-800 dark:text-neon-glowamber bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-500/30 px-2 py-0.5 rounded-md font-medium">
                             Fleksibel & Otomatis
                         </span>
                     </div>
 
-                    <p class="text-xs text-gray-500 mb-2.5">
+                    <p class="text-xs text-stone-500 dark:text-stone-400 mb-2.5">
                         Pilih batas waktu pengembalian barang. Gunakan tombol pilihan cepat atau tentukan tanggal & waktu pada kalender.
                     </p>
 
                     {{-- Tombol Preset Cepat --}}
                     <div class="mb-2.5 flex flex-wrap items-center gap-2">
-                        <span class="text-xs text-gray-500 font-medium mr-1">Pilihan Cepat:</span>
+                        <span class="text-xs text-stone-500 dark:text-stone-400 font-medium mr-1">Pilihan Cepat:</span>
                         <button
                             type="button"
                             @click="setDuePreset(1)"
-                            :class="activePreset === 1 ? 'bg-[#6F4E37] text-white border-[#6F4E37] shadow-sm ring-2 ring-[#6F4E37]/30' : 'bg-stone-100 text-stone-700 hover:bg-stone-200 border-stone-200'"
+                            :class="activePreset === 1 ? 'bg-[#6F4E37] text-white border-[#6F4E37] shadow-sm ring-2 ring-[#6F4E37]/30 dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:shadow-neon-amber dark:border-amber-500' : 'bg-stone-100 dark:bg-stone-900/80 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-800 border-stone-200 dark:border-stone-700'"
                             class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition active:scale-95 flex items-center gap-1.5 cursor-pointer"
                         >
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -349,7 +396,7 @@
                         <button
                             type="button"
                             @click="setDuePreset(3)"
-                            :class="activePreset === 3 ? 'bg-[#6F4E37] text-white border-[#6F4E37] shadow-sm ring-2 ring-[#6F4E37]/30' : 'bg-stone-100 text-stone-700 hover:bg-stone-200 border-stone-200'"
+                            :class="activePreset === 3 ? 'bg-[#6F4E37] text-white border-[#6F4E37] shadow-sm ring-2 ring-[#6F4E37]/30 dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:shadow-neon-amber dark:border-amber-500' : 'bg-stone-100 dark:bg-stone-900/80 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-800 border-stone-200 dark:border-stone-700'"
                             class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition active:scale-95 flex items-center gap-1.5 cursor-pointer"
                         >
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -360,7 +407,7 @@
                         <button
                             type="button"
                             @click="setDuePreset(5)"
-                            :class="activePreset === 5 ? 'bg-[#6F4E37] text-white border-[#6F4E37] shadow-sm ring-2 ring-[#6F4E37]/30' : 'bg-stone-100 text-stone-700 hover:bg-stone-200 border-stone-200'"
+                            :class="activePreset === 5 ? 'bg-[#6F4E37] text-white border-[#6F4E37] shadow-sm ring-2 ring-[#6F4E37]/30 dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:shadow-neon-amber dark:border-amber-500' : 'bg-stone-100 dark:bg-stone-900/80 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-800 border-stone-200 dark:border-stone-700'"
                             class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition active:scale-95 flex items-center gap-1.5 cursor-pointer"
                         >
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -379,17 +426,17 @@
                             step="60"
                             value="{{ old('due_at') ? \Carbon\Carbon::parse(old('due_at'))->format('Y-m-d\TH:i') : now()->addDays(3)->format('Y-m-d\TH:i') }}"
                             placeholder="Pilih tanggal dan waktu tenggat..."
-                            class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 pr-11 text-sm font-medium text-gray-800 shadow-sm focus:border-[#6F4E37] focus:outline-none focus:ring-2 focus:ring-[#6F4E37]/20 cursor-pointer"
+                            class="mt-1 block w-full rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] px-4 py-3 pr-11 text-sm font-medium text-stone-800 dark:text-stone-100 shadow-sm focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-neon-cyan focus:border-transparent outline-none cursor-pointer"
                         >
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400">
-                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-stone-400 dark:text-stone-500">
+                            <svg class="w-5 h-5 text-stone-400 dark:text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
                         </div>
                     </div>
 
                     @error('due_at')
-                        <p class="mt-1.5 text-xs font-medium text-rose-600">
+                        <p class="mt-1.5 text-xs font-medium text-rose-600 dark:text-rose-400">
                             {{ $message }}
                         </p>
                     @enderror
@@ -399,10 +446,10 @@
                 <div>
                     <label
                         for="borrower_note"
-                        class="block text-sm font-semibold text-gray-800"
+                        class="block text-sm font-semibold text-stone-800 dark:text-stone-100"
                     >
                         Catatan Keperluan
-                        <span class="font-normal text-gray-400">(opsional)</span>
+                        <span class="font-normal text-stone-400 dark:text-stone-500">(opsional)</span>
                     </label>
 
                     <textarea
@@ -411,28 +458,28 @@
                         rows="2"
                         maxlength="1000"
                         placeholder="Contoh: Praktikum Mobile App TEFA di Ruang 2..."
-                        class="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm shadow-sm focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600"
+                        class="mt-2 block w-full rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] px-4 py-3 text-sm text-stone-900 dark:text-stone-100 shadow-sm focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-neon-cyan focus:border-transparent outline-none"
                     >{{ old('borrower_note') }}</textarea>
 
                     @error('borrower_note')
-                        <p class="mt-1.5 text-xs font-medium text-rose-600">
+                        <p class="mt-1.5 text-xs font-medium text-rose-600 dark:text-rose-400">
                             {{ $message }}
                         </p>
                     @enderror
                 </div>
 
                 {{-- Tombol Submit --}}
-                <div class="flex flex-col-reverse gap-3 pt-4 border-t border-gray-100 sm:flex-row sm:justify-end">
+                <div class="flex flex-col-reverse gap-3 pt-4 border-t border-stone-100 dark:border-stone-800 sm:flex-row sm:justify-end">
                     <a
                         href="{{ route('assets.index') }}"
-                        class="rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-center text-sm font-medium text-gray-700 hover:bg-gray-50 transition shadow-sm"
+                        class="rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#131B2A] px-5 py-2.5 text-center text-sm font-medium text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 transition shadow-sm"
                     >
                         Batal
                     </a>
 
                     <button
                         type="submit"
-                        class="rounded-xl bg-[#6F4E37] px-7 py-2.5 text-sm font-bold text-white hover:bg-[#5a3f2c] transition shadow-md active:scale-[0.98] flex items-center justify-center gap-2"
+                        class="rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber font-medium rounded-xl transition-all duration-200 px-7 py-2.5 text-sm font-bold shadow-md active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -468,7 +515,7 @@
                                 dateFormat: "Y-m-d\\TH:i",
                                 altInput: true,
                                 altFormat: "d/m/Y H:i",
-                                altInputClass: "mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 pr-11 text-sm font-medium text-gray-800 shadow-sm focus:border-[#6F4E37] focus:outline-none focus:ring-2 focus:ring-[#6F4E37]/20 cursor-pointer transition",
+                                altInputClass: "mt-1 block w-full rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] px-4 py-3 pr-11 text-sm font-medium text-stone-800 dark:text-stone-100 shadow-sm focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-neon-cyan focus:border-transparent outline-none cursor-pointer transition",
                                 defaultDate: defaultDateValue,
                                 minDate: "today",
                                 minuteIncrement: 1,

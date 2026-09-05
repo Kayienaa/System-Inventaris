@@ -8,10 +8,10 @@
         {{-- Header & Search --}}
         <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">
+                <h1 class="text-3xl font-bold text-stone-800 dark:text-stone-100">
                     Katalog Inventaris
                 </h1>
-                <p class="mt-1 text-gray-500">
+                <p class="mt-1 text-stone-500 dark:text-stone-400">
                     Daftar alat dan perangkat inventaris TEFA SMKN 1 Bangsri
                 </p>
             </div>
@@ -27,15 +27,15 @@
                         name="search"
                         value="{{ request('search') }}"
                         placeholder="Cari nama, kode, atau merk..."
-                        class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 pl-10 text-sm shadow-sm focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600"
+                        class="w-full rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] px-4 py-2.5 pl-10 text-sm text-stone-900 dark:text-stone-100 shadow-sm focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-neon-cyan focus:border-transparent outline-none transition"
                     >
-                    <svg class="absolute left-3.5 top-3 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="absolute left-3.5 top-3 h-4 w-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
                 </div>
                 <button
                     type="submit"
-                    class="rounded-xl bg-[#6F4E37] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#5a3f2c] transition shadow-sm"
+                    class="rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber px-4 py-2.5 text-sm font-medium transition-all duration-200 shadow-sm shrink-0"
                 >
                     Cari
                 </button>
@@ -48,8 +48,8 @@
                 href="{{ route('assets.index', array_filter(['search' => request('search')])) }}"
                 class="rounded-xl px-4 py-2 text-sm font-medium transition shadow-sm
                     {{ !request('category')
-                        ? 'bg-[#6F4E37] text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200' }}"
+                        ? 'bg-[#6F4E37] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:shadow-neon-amber'
+                        : 'bg-white/95 dark:bg-[#131B2A]/90 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200/70 dark:border-stone-800/80' }}"
             >
                 Semua Kategori
             </a>
@@ -62,8 +62,8 @@
                     href="{{ route('assets.index', array_filter(['category' => $cat->name, 'search' => request('search')])) }}"
                     class="rounded-xl px-4 py-2 text-sm font-medium transition shadow-sm
                         {{ $isActive
-                            ? 'bg-[#6F4E37] text-white'
-                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200' }}"
+                            ? 'bg-[#6F4E37] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:shadow-neon-amber'
+                            : 'bg-white/95 dark:bg-[#131B2A]/90 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200/70 dark:border-stone-800/80' }}"
                 >
                     {{ $cat->name }}
                 </a>
@@ -83,8 +83,7 @@
                     @endphp
 
                     <article
-                        class="flex flex-col justify-between overflow-hidden rounded-2xl border shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md
-                            {{ $statusValue === 'tersedia' ? 'border-gray-200 bg-white' : ($statusValue === 'dipinjam' ? 'border-rose-200 bg-rose-50/20' : 'border-gray-200 bg-gray-50/40') }}"
+                        class="flex flex-col justify-between overflow-hidden bg-white/95 dark:bg-[#131B2A]/90 backdrop-blur-md border border-stone-200/70 dark:border-stone-800/80 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] hover:border-[#6F4E37] dark:hover:border-cyan-500/50 dark:hover:shadow-neon-sm transition-all duration-300 hover:-translate-y-1"
                     >
 
                         <div>
@@ -109,7 +108,7 @@
                                             </svg>
                                         </div>
                                         <span class="text-xs font-medium text-stone-400 dark:text-stone-300">
-                                            Foto belum tersedia
+                                             Foto belum tersedia
                                         </span>
                                     </div>
                                 @endif
@@ -117,23 +116,23 @@
                                 {{-- Status Badge Overlay --}}
                                 <div class="absolute top-3 right-3">
                                     @if ($statusValue === 'tersedia')
-                                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 shadow-sm border border-emerald-200">
+                                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-neon-emerald dark:border dark:border-emerald-500/30 shadow-sm border border-emerald-200">
                                             ● Tersedia
                                         </span>
                                     @elseif ($statusValue === 'dipesan')
-                                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 shadow-sm border border-amber-200">
+                                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-neon-glowamber dark:border dark:border-amber-500/30 shadow-sm border border-amber-200">
                                             ● Dipesan
                                         </span>
                                     @elseif ($statusValue === 'dipinjam')
-                                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-rose-100 text-rose-800 shadow-sm border border-rose-200">
+                                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-neon-glowamber dark:border dark:border-amber-500/30 shadow-sm border border-amber-200">
                                             ● Dipinjam
                                         </span>
                                     @elseif ($statusValue === 'perbaikan')
-                                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 shadow-sm border border-yellow-200">
+                                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 dark:border dark:border-rose-500/40 shadow-sm border border-rose-200">
                                             ● Perbaikan
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700 shadow-sm border border-gray-200">
+                                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-stone-100 text-stone-700 dark:bg-stone-900/60 dark:text-stone-300 shadow-sm border border-stone-200 dark:border-stone-800">
                                             ● Tidak Tersedia
                                         </span>
                                     @endif
@@ -146,32 +145,32 @@
 
                                 <div class="mb-2">
                                     @if ($asset->category)
-                                        <span class="inline-block text-[11px] font-semibold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">
+                                        <span class="inline-block text-[11px] font-semibold uppercase tracking-wider text-amber-700 dark:text-neon-glowamber bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded-md border border-amber-100 dark:border-amber-500/30">
                                             {{ $asset->category->name }}
                                         </span>
                                     @endif
                                 </div>
 
-                                <h2 class="text-base font-bold text-gray-800 line-clamp-1" title="{{ $asset->name }}">
+                                <h2 class="text-base font-bold text-stone-800 dark:text-stone-100 line-clamp-1" title="{{ $asset->name }}">
                                     {{ $asset->name }}
                                 </h2>
 
-                                <p class="mt-1 text-xs font-mono text-gray-500">
+                                <p class="mt-1 text-xs font-mono text-stone-500 dark:text-stone-400">
                                     {{ $asset->asset_code }}
                                 </p>
 
                                 @if ($asset->notes)
-                                    <p class="mt-2 text-xs text-gray-500 line-clamp-2" title="{{ $asset->notes }}">
+                                    <p class="mt-2 text-xs text-stone-500 dark:text-stone-400 line-clamp-2" title="{{ $asset->notes }}">
                                         {{ $asset->notes }}
                                     </p>
                                 @endif
 
                                 {{-- Jika sedang dipinjam, tampilkan info peminjam --}}
                                 @if ($statusValue === 'dipinjam' && $asset->activeBorrowing)
-                                    <div class="mt-3 p-2.5 bg-rose-50 border border-rose-100 rounded-xl text-xs text-rose-700">
+                                    <div class="mt-3 p-2.5 bg-amber-50/70 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/40 rounded-xl text-xs text-amber-800 dark:text-amber-200">
                                         <p class="font-medium">Dipinjam oleh: {{ $asset->activeBorrowing->borrower->name ?? 'User' }}</p>
                                         @if ($asset->activeBorrowing->due_at)
-                                            <p class="text-[11px] text-rose-500 mt-0.5">Kembali: {{ $asset->activeBorrowing->due_at->format('d M Y, H:i') }}</p>
+                                            <p class="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5">Kembali: {{ $asset->activeBorrowing->due_at->format('d M Y, H:i') }}</p>
                                         @endif
                                     </div>
                                 @endif
@@ -184,7 +183,7 @@
                             @if ($statusValue === 'tersedia')
                                 <a
                                     href="{{ route('assets.borrow', $asset) }}"
-                                    class="block w-full rounded-xl bg-[#6F4E37] px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[#5a3f2c] shadow-sm active:scale-[0.98]"
+                                    class="block w-full rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber px-4 py-2.5 text-center text-sm font-semibold transition-all duration-200 shadow-sm active:scale-[0.98]"
                                 >
                                     Pinjam Barang
                                 </a>
@@ -192,7 +191,7 @@
                                 <button
                                     type="button"
                                     disabled
-                                    class="w-full cursor-not-allowed rounded-xl bg-gray-100 border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-400"
+                                    class="w-full cursor-not-allowed rounded-xl bg-stone-100 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800 px-4 py-2.5 text-sm font-medium text-stone-400 dark:text-stone-500"
                                 >
                                     {{ $statusValue === 'dipinjam' ? 'Sedang Dipinjam' : ($statusValue === 'dipesan' ? 'Sedang Dipesan' : 'Tidak Tersedia') }}
                                 </button>
@@ -213,24 +212,24 @@
         @else
 
             {{-- Tidak ada aset --}}
-            <div class="rounded-2xl border border-gray-200 bg-white p-12 text-center shadow-sm">
-                <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-700 border border-amber-100">
+            <div class="rounded-2xl border border-stone-200/70 dark:border-stone-800/80 bg-white/95 dark:bg-[#131B2A]/90 p-12 text-center shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)]">
+                <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-neon-glowamber border border-amber-100 dark:border-amber-500/30">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
                     </svg>
                 </div>
 
-                <h3 class="text-lg font-bold text-gray-800">
+                <h3 class="text-lg font-bold text-stone-800 dark:text-stone-100">
                     Tidak Ada Aset Ditemukan
                 </h3>
-                <p class="mt-1 text-sm text-gray-500">
+                <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
                     Tidak ada barang inventaris yang sesuai dengan filter atau pencarian saat ini.
                 </p>
 
                 <div class="mt-6">
                     <a
                         href="{{ route('assets.index') }}"
-                        class="inline-flex items-center gap-2 rounded-xl bg-[#6F4E37] px-4 py-2 text-sm font-medium text-white hover:bg-[#5a3f2c] transition shadow-sm"
+                        class="inline-flex items-center gap-2 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber px-4 py-2 text-sm font-medium transition-all duration-200 shadow-sm"
                     >
                         Reset Filter
                     </a>

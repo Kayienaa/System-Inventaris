@@ -33,17 +33,37 @@ class SiPintuController extends Controller
      */
     public function studentsPage(Request $request)
     {
-        $search = $request->query('search', '');
-        $nis = $request->query('nis', '');
-        $studentsResult = $this->sipintu->getStudents(['search' => $search, 'nis' => $nis]);
-        $pingResult = $this->sipintu->ping();
+        @ini_set('max_execution_time', 300);
+        @set_time_limit(300);
 
-        return view('sipintu.students', [
-            'students'   => $studentsResult,
-            'connection' => $pingResult,
-            'search'     => $search,
-            'nis'        => $nis,
-        ]);
+        try {
+            $search = $request->query('search', '');
+            $nis = $request->query('nis', '');
+            $studentsResult = $this->sipintu->getStudents(['search' => $search, 'nis' => $nis]);
+            $pingResult = $this->sipintu->ping();
+
+            return view('sipintu.students', [
+                'students'   => $studentsResult,
+                'connection' => $pingResult,
+                'search'     => $search,
+                'nis'        => $nis,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('SiPintu studentsPage error: ' . $e->getMessage());
+
+            return view('sipintu.students', [
+                'students'   => [
+                    'success' => false,
+                    'total'   => 0,
+                    'count'   => 0,
+                    'data'    => [],
+                    'message' => 'Gagal memuat data siswa dari SiPintu Gateway: ' . $e->getMessage(),
+                ],
+                'connection' => ['connected' => false, 'error' => $e->getMessage()],
+                'search'     => $request->query('search', ''),
+                'nis'        => $request->query('nis', ''),
+            ])->with('error', 'Gagal memuat data dari SiPintu: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -51,17 +71,37 @@ class SiPintuController extends Controller
      */
     public function teachersPage(Request $request)
     {
-        $search = $request->query('search', '');
-        $nip = $request->query('nip', '');
-        $teachersResult = $this->sipintu->getTeachers(['search' => $search, 'nip' => $nip]);
-        $pingResult = $this->sipintu->ping();
+        @ini_set('max_execution_time', 300);
+        @set_time_limit(300);
 
-        return view('sipintu.teachers', [
-            'teachers'   => $teachersResult,
-            'connection' => $pingResult,
-            'search'     => $search,
-            'nip'        => $nip,
-        ]);
+        try {
+            $search = $request->query('search', '');
+            $nip = $request->query('nip', '');
+            $teachersResult = $this->sipintu->getTeachers(['search' => $search, 'nip' => $nip]);
+            $pingResult = $this->sipintu->ping();
+
+            return view('sipintu.teachers', [
+                'teachers'   => $teachersResult,
+                'connection' => $pingResult,
+                'search'     => $search,
+                'nip'        => $nip,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('SiPintu teachersPage error: ' . $e->getMessage());
+
+            return view('sipintu.teachers', [
+                'teachers'   => [
+                    'success' => false,
+                    'total'   => 0,
+                    'count'   => 0,
+                    'data'    => [],
+                    'message' => 'Gagal memuat data guru dari SiPintu Gateway: ' . $e->getMessage(),
+                ],
+                'connection' => ['connected' => false, 'error' => $e->getMessage()],
+                'search'     => $request->query('search', ''),
+                'nip'        => $request->query('nip', ''),
+            ])->with('error', 'Gagal memuat data dari SiPintu: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -69,12 +109,25 @@ class SiPintuController extends Controller
      */
     public function students(Request $request): JsonResponse
     {
-        $params = $request->only(['nis', 'search']);
-        $forceRefresh = $request->boolean('refresh', false);
+        @ini_set('max_execution_time', 300);
+        @set_time_limit(300);
 
-        $result = $this->sipintu->getStudents($params, $forceRefresh);
+        try {
+            $params = $request->only(['nis', 'search']);
+            $forceRefresh = $request->boolean('refresh', false);
 
-        return response()->json($result);
+            $result = $this->sipintu->getStudents($params, $forceRefresh);
+
+            return response()->json($result);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('SiPintu students AJAX error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memuat data siswa: ' . $e->getMessage(),
+                'data'    => [],
+            ], 500);
+        }
     }
 
     /**
@@ -82,12 +135,25 @@ class SiPintuController extends Controller
      */
     public function teachers(Request $request): JsonResponse
     {
-        $params = $request->only(['nip', 'search']);
-        $forceRefresh = $request->boolean('refresh', false);
+        @ini_set('max_execution_time', 300);
+        @set_time_limit(300);
 
-        $result = $this->sipintu->getTeachers($params, $forceRefresh);
+        try {
+            $params = $request->only(['nip', 'search']);
+            $forceRefresh = $request->boolean('refresh', false);
 
-        return response()->json($result);
+            $result = $this->sipintu->getTeachers($params, $forceRefresh);
+
+            return response()->json($result);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('SiPintu teachers AJAX error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memuat data guru: ' . $e->getMessage(),
+                'data'    => [],
+            ], 500);
+        }
     }
 
     /**

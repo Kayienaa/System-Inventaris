@@ -26,11 +26,10 @@
     ══════════════════════════════════ --}}
     <aside
         :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-        class="fixed inset-y-0 left-0 z-30 w-64 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0"
-        style="background-color: #6F4E37;"
+        class="fixed inset-y-0 left-0 z-30 w-64 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 bg-[#3D2817] dark:bg-[#0E1420] border-r border-[#5a3f2c]/40 dark:border-stone-800"
     >
         {{-- ── Brand / Logo ── --}}
-        <div class="flex flex-col items-center py-7 px-5 border-b" style="border-color: rgba(255,255,255,0.12);">
+        <div class="flex flex-col items-center py-7 px-5 border-b border-white/10 dark:border-stone-800">
             {{-- Logo Resmi TEFA SMKN 1 Bangsri --}}
             <div class="bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-2.5 mx-auto max-w-[80px] flex items-center justify-center shadow-sm mb-2">
                 @if (file_exists(public_path('images/logo-tefa.png')))
@@ -50,30 +49,41 @@
             </div>
 
             {{-- Brand name --}}
-            <span class="brand-font text-2xl tracking-wide" style="color: #F8F6F2;">TE-Vault</span>
-            <span class="text-xs font-medium mt-0.5 text-center leading-tight uppercase tracking-wider" style="color: rgba(248,246,242,0.65);">
+            <span class="brand-font text-2xl tracking-wide text-[#F8F6F2] dark:text-stone-100">TE-Vault</span>
+            <span class="text-xs font-medium mt-0.5 text-center leading-tight uppercase tracking-wider text-white/60 dark:text-stone-400">
                 SISTEM INVENTARIS
             </span>
         </div>
 
-        {{-- ── User Info ── --}}
-        <div class="flex items-center gap-3 px-5 py-4 border-b" style="border-color: rgba(255,255,255,0.10);">
-            <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                 style="background-color: #C89B3C; color: #3B2610;">
-                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+        {{-- ── User Info & Theme Toggle ── --}}
+        <div class="flex items-center justify-between px-5 py-4 border-b border-white/10 dark:border-stone-800">
+            <div class="flex items-center gap-3 overflow-hidden">
+                <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 bg-[#C89B3C] text-[#3B2610]">
+                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                </div>
+                <div class="overflow-hidden">
+                    <p class="text-sm font-semibold truncate text-[#F8F6F2] dark:text-stone-100">{{ Auth::user()->name }}</p>
+                    <p class="text-xs truncate font-medium text-white/60 dark:text-stone-400">{{ Auth::user()->hasRole('admin') ? 'Administrator' : 'Peminjam' }}</p>
+                </div>
             </div>
-            <div class="overflow-hidden">
-                <p class="text-sm font-semibold truncate" style="color: #F8F6F2;">{{ Auth::user()->name }}</p>
-                <p class="text-xs truncate font-medium" style="color: rgba(248,246,242,0.65);">{{ Auth::user()->hasRole('admin') ? 'Administrator' : 'Peminjam' }}</p>
-            </div>
+            <button id="theme-toggle" type="button" 
+                    class="p-2 rounded-xl text-stone-300 hover:text-white bg-white/10 hover:bg-white/20 dark:bg-stone-900/90 dark:text-neon-glowcyan dark:hover:text-neon-cyan dark:border dark:border-cyan-500/30 dark:shadow-neon-sm transition-all duration-200 cursor-pointer"
+                    title="Ubah Mode Tampilan">
+                <svg id="theme-toggle-light-icon" class="hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <svg id="theme-toggle-dark-icon" class="hidden w-4 h-4 text-stone-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
         </div>
 
         {{-- ── Navigation Menu ── --}}
         <nav class="flex-1 overflow-y-auto scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-[#8B5A2B]/40 [&::-webkit-scrollbar-thumb]:rounded-full px-3 py-4 space-y-0.5">
 
             @php
-                $active = 'bg-white/10 text-white font-semibold';
-                $inactive = 'text-white/70 hover:bg-white/10 hover:text-white font-medium';
+                $active = 'bg-white/10 text-white font-semibold dark:bg-cyan-500/10 dark:text-neon-cyan dark:border-r-2 dark:border-neon-cyan';
+                $inactive = 'text-white/70 hover:bg-white/10 hover:text-white font-medium dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-white/5';
                 $link = 'flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all duration-150';
             @endphp
 
@@ -260,22 +270,32 @@
     {{-- ══════════════════════════════════
          TOPBAR MOBILE (hamburger)
     ══════════════════════════════════ --}}
-    <div class="lg:hidden fixed top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 shadow-sm"
-         style="background-color: #6F4E37;">
+    <div class="lg:hidden fixed top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 shadow-sm bg-[#3D2817] dark:bg-[#0E1420] border-b border-[#5a3f2c]/40 dark:border-stone-800">
 
         <button @click="sidebarOpen = !sidebarOpen"
-                class="p-1.5 rounded-lg focus:outline-none transition"
-                style="color: #F8F6F2;">
+                class="p-1.5 rounded-lg focus:outline-none transition text-[#F8F6F2]">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
             </svg>
         </button>
 
-        <span class="brand-font text-lg tracking-wide" style="color: #F8F6F2;">TEVault</span>
+        <span class="brand-font text-lg tracking-wide text-[#F8F6F2]">TE-Vault</span>
 
-        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-             style="background-color: #C89B3C; color: #3B2610;">
-            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+        <div class="flex items-center gap-2">
+            <button id="theme-toggle-mobile" type="button" 
+                    class="p-1.5 rounded-lg text-white/80 hover:text-white bg-white/10 hover:bg-white/20 dark:text-neon-glowcyan dark:hover:text-neon-cyan dark:border dark:border-cyan-500/30 transition-all duration-200 cursor-pointer"
+                    title="Ubah Mode Tampilan">
+                <svg id="theme-toggle-light-icon-mobile" class="hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <svg id="theme-toggle-dark-icon-mobile" class="hidden w-4 h-4 text-stone-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-[#C89B3C] text-[#3B2610]">
+                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+            </div>
         </div>
     </div>
 

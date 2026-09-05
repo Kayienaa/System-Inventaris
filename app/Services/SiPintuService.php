@@ -105,6 +105,10 @@ class SiPintuService
      */
     public function getAllStudentsRaw(bool $forceRefresh = false): array
     {
+        @ini_set('max_execution_time', 300);
+        @set_time_limit(300);
+        @ini_set('memory_limit', '512M');
+
         $cacheKey = 'sipintu_all_students_raw';
 
         if (!$forceRefresh && $this->cacheStore()->has($cacheKey)) {
@@ -118,9 +122,10 @@ class SiPintuService
                 $json = $response->json();
                 $rawList = $json['data'] ?? (is_array($json) ? $json : []);
 
-                // Compact data to save memory and file space
-                $compactList = array_map(function ($s) {
-                    return [
+                // Compact data using foreach to save memory and avoid duplicate array allocations
+                $compactList = [];
+                foreach ($rawList as $s) {
+                    $compactList[] = [
                         'id'     => $s['id'] ?? null,
                         'nis'    => $s['nis'] ?? null,
                         'nisn'   => $s['nisn'] ?? null,
@@ -133,7 +138,8 @@ class SiPintuService
                             'name'  => $s['user']['name'] ?? null,
                         ],
                     ];
-                }, $rawList);
+                }
+                unset($rawList);
 
                 $result = [
                     'success' => true,
@@ -220,6 +226,10 @@ class SiPintuService
      */
     public function getAllTeachersRaw(bool $forceRefresh = false): array
     {
+        @ini_set('max_execution_time', 300);
+        @set_time_limit(300);
+        @ini_set('memory_limit', '512M');
+
         $cacheKey = 'sipintu_all_teachers_raw';
 
         if (!$forceRefresh && $this->cacheStore()->has($cacheKey)) {
@@ -227,14 +237,15 @@ class SiPintuService
         }
 
         try {
-            $response = $this->client(30)->get('/api/v1/sijuna/teachers');
+            $response = $this->client(60)->get('/api/v1/sijuna/teachers');
 
             if ($response->successful()) {
                 $json = $response->json();
                 $rawList = $json['data'] ?? (is_array($json) ? $json : []);
 
-                $compactList = array_map(function ($t) {
-                    return [
+                $compactList = [];
+                foreach ($rawList as $t) {
+                    $compactList[] = [
                         'id'             => $t['id'] ?? null,
                         'nip'            => $t['nip'] ?? null,
                         'kode'           => $t['kode'] ?? '-',
@@ -249,7 +260,8 @@ class SiPintuService
                             'name'  => $t['user']['name'] ?? null,
                         ],
                     ];
-                }, $rawList);
+                }
+                unset($rawList);
 
                 $result = [
                     'success' => true,

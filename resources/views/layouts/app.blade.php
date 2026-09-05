@@ -10,6 +10,15 @@
     <link rel="icon" type="image/png" href="{{ asset('images/logo-tefa.png') }}">
     <link rel="shortcut icon" type="image/png" href="{{ asset('images/logo-tefa.png') }}">
 
+    {{-- Anti-Flicker Script --}}
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     {{-- Google Fonts --}}
@@ -33,6 +42,192 @@
             --text: #30251F;
             --muted: #8A817A;
             --white: #FFFFFF;
+        }
+
+        html.dark {
+            --brown-dark: #FBBF24;
+            --brown: #8B5A2B;
+            --brown-light: #A07855;
+            --gold: #F59E0B;
+            --gold-light: #FBBF24;
+            --cream: #0B0F17;
+            --cream-dark: #131B2A;
+            --text: #F3F4F6;
+            --muted: #94A3B8;
+            --white: #131B2A;
+        }
+
+        html.dark body {
+            background-color: #0B0F17 !important;
+            color: #F3F4F6 !important;
+        }
+
+        html.dark .sidebar {
+            background: #0E1420 !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 8px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        html.dark .topbar {
+            background: rgba(19, 27, 42, 0.92) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            backdrop-filter: blur(12px);
+        }
+
+        html.dark .topbar-title {
+            color: #94A3B8 !important;
+        }
+
+        html.dark .topbar-date {
+            color: #22D3EE !important;
+        }
+
+        html.dark .mobile-topbar {
+            background: #0E1420 !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
+        html.dark .page-heading h1 {
+            color: #F8FAFC !important;
+        }
+
+        html.dark .page-heading p {
+            color: #94A3B8 !important;
+        }
+
+        html.dark .menu-link.active {
+            background: rgba(6, 182, 212, 0.12) !important;
+            color: #22D3EE !important;
+            box-shadow: inset 3px 0 0 #06B6D4 !important;
+        }
+
+        html.dark .menu-link:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.06) !important;
+            color: #FFFFFF !important;
+        }
+
+        html.dark .welcome-card {
+            background: linear-gradient(120deg, #131B2A 0%, #1E293B 60%, #0F172A 100%) !important;
+            border: 1px solid rgba(6, 182, 212, 0.25) !important;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 15px -2px rgba(6, 182, 212, 0.15) !important;
+        }
+
+        html.dark .stat-card {
+            background: rgba(19, 27, 42, 0.9) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.5) !important;
+            transition: all 0.3s ease;
+        }
+
+        html.dark .stat-card:hover {
+            border-color: rgba(6, 182, 212, 0.5) !important;
+            box-shadow: 0 0 8px 0 rgba(6, 182, 212, 0.35) !important;
+        }
+
+        html.dark .stat-icon {
+            background: rgba(255, 255, 255, 0.05) !important;
+            color: #22D3EE !important;
+        }
+
+        html.dark .stat-label {
+            color: #94A3B8 !important;
+        }
+
+        html.dark .stat-value {
+            color: #F8FAFC !important;
+        }
+
+        html.dark .panel, html.dark .category-card, html.dark .overdue-card {
+            background: rgba(19, 27, 42, 0.9) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        html.dark .panel-title, html.dark .section-heading h2 {
+            color: #F8FAFC !important;
+        }
+
+        html.dark .panel-subtitle, html.dark .section-heading span {
+            color: #94A3B8 !important;
+        }
+
+        html.dark .category-name {
+            color: #CBD5E1 !important;
+        }
+
+        html.dark .category-bar {
+            background: #1E293B !important;
+        }
+
+        html.dark .category-count {
+            color: #F59E0B !important;
+        }
+
+        html.dark .overdue-item {
+            background: rgba(30, 41, 59, 0.5) !important;
+            border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        }
+
+        html.dark .overdue-name {
+            color: #F8FAFC !important;
+        }
+
+        html.dark .overdue-item-name {
+            color: #94A3B8 !important;
+        }
+
+        html.dark .overdue-meta {
+            color: #64748B !important;
+        }
+
+        html.dark .overdue-badge {
+            background: rgba(244, 63, 94, 0.15) !important;
+            color: #FB7185 !important;
+            border: 1px solid rgba(244, 63, 94, 0.3) !important;
+        }
+
+        /* Global dark mode styling for form inputs & tables */
+        html.dark input[type="text"],
+        html.dark input[type="search"],
+        html.dark input[type="number"],
+        html.dark input[type="email"],
+        html.dark input[type="password"],
+        html.dark input[type="datetime-local"],
+        html.dark select,
+        html.dark textarea {
+            background-color: #0B0F17 !important;
+            border-color: #334155 !important;
+            color: #F1F5F9 !important;
+        }
+
+        html.dark input::placeholder,
+        html.dark textarea::placeholder {
+            color: #64748B !important;
+        }
+
+        html.dark input:focus,
+        html.dark select:focus,
+        html.dark textarea:focus {
+            border-color: #06B6D4 !important;
+            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.25) !important;
+        }
+
+        html.dark table thead {
+            background-color: #0E1420 !important;
+        }
+
+        html.dark table thead th {
+            color: #94A3B8 !important;
+            border-color: #1E293B !important;
+        }
+
+        html.dark table tbody td {
+            border-color: #1E293B !important;
+            color: #CBD5E1 !important;
+        }
+
+        html.dark table tbody tr:hover {
+            background-color: rgba(6, 182, 212, 0.04) !important;
         }
 
         * {
@@ -750,7 +945,7 @@
     </style>
 </head>
 
-<body>
+<body class="bg-[#FDFBF7] text-stone-800 dark:bg-[#0B0F17] dark:text-stone-100 transition-colors duration-300 antialiased font-sans">
 
 <div class="dashboard-wrapper" x-data="{ sidebarOpen: false }">
 
@@ -1060,8 +1255,22 @@
             </span>
         </div>
 
-        <div class="mobile-user">
-            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+        <div class="flex items-center gap-3">
+            {{-- Tombol Toggle Dark/Light Mode Mobile --}}
+            <button id="theme-toggle-mobile" type="button" 
+                    class="p-2 rounded-xl text-white/80 hover:text-white bg-white/10 hover:bg-white/20 dark:text-neon-glowcyan dark:hover:text-neon-cyan dark:border dark:border-cyan-500/30 transition-all duration-200 cursor-pointer"
+                    title="Ubah Mode Tampilan">
+                <svg id="theme-toggle-light-icon-mobile" class="hidden w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <svg id="theme-toggle-dark-icon-mobile" class="hidden w-5 h-5 text-stone-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+
+            <div class="mobile-user">
+                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+            </div>
         </div>
 
     </div>
@@ -1080,8 +1289,24 @@
                 </p>
             </div>
 
-            <div class="topbar-date">
-                {{ now()->translatedFormat('l, d F Y') }}
+            <div class="flex items-center gap-4">
+                {{-- Tombol Toggle Switch Dark/Light Mode --}}
+                <button id="theme-toggle" type="button" 
+                        class="p-2 rounded-xl text-stone-500 hover:text-stone-900 bg-stone-100/80 hover:bg-stone-200/80 dark:bg-stone-900/90 dark:text-neon-glowcyan dark:hover:text-neon-cyan dark:border dark:border-cyan-500/30 dark:shadow-neon-sm transition-all duration-200 cursor-pointer"
+                        title="Ubah Mode Tampilan">
+                    <!-- Ikon Matahari (Tampil saat Dark Mode aktif) -->
+                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <!-- Ikon Bulan (Tampil saat Light Mode aktif) -->
+                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5 text-stone-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
+
+                <div class="topbar-date">
+                    {{ now()->translatedFormat('l, d F Y') }}
+                </div>
             </div>
 
         </header>
@@ -1116,6 +1341,44 @@
     </main>
 
 </div>
+
+{{-- Script Pengatur Dark Mode --}}
+<script>
+    function syncThemeIcons() {
+        const isDark = document.documentElement.classList.contains('dark');
+        document.querySelectorAll('[id^="theme-toggle-light-icon"]').forEach(el => {
+            if (isDark) {
+                el.classList.remove('hidden');
+            } else {
+                el.classList.add('hidden');
+            }
+        });
+        document.querySelectorAll('[id^="theme-toggle-dark-icon"]').forEach(el => {
+            if (isDark) {
+                el.classList.add('hidden');
+            } else {
+                el.classList.remove('hidden');
+            }
+        });
+    }
+    syncThemeIcons();
+
+    function toggleTheme() {
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('color-theme', 'light');
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('color-theme', 'dark');
+        }
+        syncThemeIcons();
+        window.dispatchEvent(new CustomEvent('theme-changed'));
+    }
+
+    document.querySelectorAll('#theme-toggle, #theme-toggle-mobile, [id="theme-toggle"]').forEach(btn => {
+        btn.addEventListener('click', toggleTheme);
+    });
+</script>
 
 </body>
 </html>
