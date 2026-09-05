@@ -173,85 +173,128 @@
 
                 {{-- Modul Kamera Real-time Webcam --}}
                 <div>
-                    <label class="block text-xs font-semibold text-gray-800 mb-1.5">
-                        Foto Bukti Pengembalian Real-Time <span class="text-rose-500">*</span>
-                    </label>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-xs font-semibold text-gray-800">
+                            Foto Bukti Pengembalian Real-Time <span class="text-rose-500">*</span>
+                        </label>
+                        <span class="text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            Wajib Kamera Real-Time
+                        </span>
+                    </div>
 
                     <div class="rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-3">
-                        <div class="relative aspect-video w-full overflow-hidden rounded-lg bg-gray-950 flex items-center justify-center">
+                        <div class="relative aspect-video w-full overflow-hidden rounded-lg bg-gray-950 flex items-center justify-center shadow-inner">
                             
                             {{-- Live Video Stream --}}
-                            <video x-ref="modalVideo" autoplay playsinline class="w-full aspect-video object-cover rounded-lg bg-gray-900 overflow-hidden" :class="{ 'hidden': returnCapturedPhoto || !isModalCameraOpen }"></video>
+                            <video x-ref="modalVideo" autoplay playsinline class="h-full w-full object-cover" :class="{ 'hidden': (capturedImage || returnCapturedPhoto) || !(isCameraOpen || isModalCameraOpen) }"></video>
 
                             {{-- Captured Photo Preview --}}
-                            <img x-show="returnCapturedPhoto" :src="returnCapturedPhoto" class="w-full aspect-video object-contain bg-gray-100 rounded-lg" alt="Foto Pengembalian">
+                            <img x-show="capturedImage || returnCapturedPhoto" :src="capturedImage || returnCapturedPhoto" class="h-full w-full object-cover" alt="Foto Pengembalian">
 
                             {{-- Hidden Canvas --}}
                             <canvas x-ref="modalCanvas" class="hidden"></canvas>
 
-                            {{-- Placeholder --}}
-                            <div x-show="!isModalCameraOpen && !returnCapturedPhoto" class="flex flex-col items-center justify-center p-4 text-center text-gray-400">
-                                <svg class="w-8 h-8 text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                </svg>
+                            {{-- Placeholder jika kamera belum aktif --}}
+                            <div x-show="!(isCameraOpen || isModalCameraOpen) && !(capturedImage || returnCapturedPhoto)" class="flex flex-col items-center justify-center p-4 text-center text-gray-400">
+                                <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-2 text-gray-300 shadow-inner">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                </div>
                                 <span class="text-xs text-white font-medium">Kamera Belum Aktif</span>
+                                <p class="text-[11px] text-gray-400 mt-1 max-w-xs">Tekan tombol "Buka Kamera" di bawah untuk mulai mengambil foto pengembalian.</p>
                             </div>
 
-                            {{-- Flip Camera Button --}}
-                            <button
-                                type="button"
-                                x-show="isModalCameraOpen && !returnCapturedPhoto"
-                                @click="switchModalFacingMode()"
-                                class="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition"
-                            >
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            {{-- Live Badge Overlay --}}
+                            <div x-show="(isCameraOpen || isModalCameraOpen) && !(capturedImage || returnCapturedPhoto)" class="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-black/60 backdrop-blur-md text-white text-[11px] px-2.5 py-0.5 rounded-full pointer-events-none z-10">
+                                <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                                <span class="font-medium">Live</span>
+                            </div>
+
+                            {{-- Captured Success Badge --}}
+                            <div x-show="capturedImage || returnCapturedPhoto" class="absolute top-2.5 left-2.5 flex items-center gap-1 bg-emerald-600/90 text-white text-[11px] px-2.5 py-0.5 rounded-full shadow backdrop-blur-sm pointer-events-none z-10">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                 </svg>
-                            </button>
+                                <span>Foto Siap Disimpan</span>
+                            </div>
+
                         </div>
 
-                        {{-- Action Buttons Kamera Modal --}}
-                        <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
-                            <div class="flex items-center gap-2">
+                        {{-- Bar Kontrol Khusus di Bawah Kotak Kamera --}}
+                        <div>
+                            {{-- State 1: Kamera Belum Aktif --}}
+                            <div x-show="!(isCameraOpen || isModalCameraOpen) && !(capturedImage || returnCapturedPhoto)" class="mt-3 flex flex-col sm:flex-row items-center justify-between gap-2.5 p-1.5">
                                 <button
                                     type="button"
-                                    x-show="!isModalCameraOpen && !returnCapturedPhoto"
                                     @click="openModalCamera()"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#6F4E37] text-white text-xs font-semibold hover:bg-[#5a3f2c] transition"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2 rounded-xl bg-[#6F4E37] text-white text-xs font-semibold hover:bg-[#5a3f2c] transition shadow-md active:scale-95 cursor-pointer"
                                 >
-                                    Buka Kamera
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span>Buka Kamera</span>
+                                </button>
+                                <p class="text-[11px] text-gray-500 text-center sm:text-right">
+                                    Izinkan akses kamera pada browser untuk verifikasi barang.
+                                </p>
+                            </div>
+
+                            {{-- State 2: Kamera Aktif (Live Camera Control Bar) --}}
+                            <div x-show="(isCameraOpen || isModalCameraOpen) && !(capturedImage || returnCapturedPhoto)" class="mt-3 flex items-center justify-center gap-4">
+                                {{-- Tombol Shutter Kamera Utama Selalu Ter-render di Tengah --}}
+                                <button 
+                                    type="button" 
+                                    @click="takeSnapshot()" 
+                                    class="w-14 h-14 rounded-full border-4 border-[#6F4E37] bg-white shadow-lg active:scale-95 transition-transform flex items-center justify-center hover:bg-stone-50 cursor-pointer"
+                                    title="Ambil Foto Bukti">
+                                    <div class="w-10 h-10 rounded-full bg-[#6F4E37] flex items-center justify-center text-white">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                    </div>
                                 </button>
 
+                                {{-- Tombol Flip Kamera di Sebelah Kanan Tombol Shutter --}}
                                 <button
                                     type="button"
-                                    x-show="isModalCameraOpen && !returnCapturedPhoto"
-                                    @click="snapModalSnapshot()"
-                                    class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition"
+                                    @click="switchCamera()"
+                                    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 text-xs font-medium transition shadow-xs active:scale-95 cursor-pointer"
+                                    title="Ganti Kamera Depan/Belakang"
                                 >
-                                    Ambil Foto
-                                </button>
-
-                                <button
-                                    type="button"
-                                    x-show="returnCapturedPhoto"
-                                    @click="retakeModalSnapshot()"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-700 text-white text-xs font-medium hover:bg-gray-800 transition"
-                                >
-                                    Ambil Ulang
+                                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                    <span class="hidden sm:inline">Ganti Kamera</span>
                                 </button>
                             </div>
 
-                            <input
-                                type="file"
-                                name="return_evidence_file"
-                                accept="image/*"
-                                @change="onModalFileChosen($event)"
-                                class="text-xs file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-gray-200 file:text-gray-700 text-gray-500"
-                            >
+                            {{-- State 3: Foto Siap Disimpan (Tombol Bersih di Bawah Kanvas) --}}
+                            <div x-show="capturedImage || returnCapturedPhoto" class="mt-3 flex flex-col sm:flex-row items-center justify-between gap-2.5 p-1.5">
+                                <div class="text-xs text-emerald-700 font-medium flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <span>Foto bukti fisik barang berhasil diambil.</span>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    @click="retakePhoto()"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 text-xs font-semibold shadow-xs transition active:scale-95 cursor-pointer"
+                                >
+                                    <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                    <span>Ambil Ulang Foto</span>
+                                </button>
+                            </div>
                         </div>
 
-                        <input type="hidden" name="return_evidence" :value="returnCapturedPhoto">
+                        <input type="hidden" name="return_evidence" :value="capturedImage || returnCapturedPhoto">
                     </div>
                 </div>
 
@@ -293,7 +336,9 @@
             activeBorrowingId: null,
             activeAssetName: '',
             activeAssetCode: '',
+            isCameraOpen: false,
             isModalCameraOpen: false,
+            capturedImage: null,
             returnCapturedPhoto: null,
             modalMediaStream: null,
             modalFacingMode: 'environment',
@@ -302,6 +347,7 @@
                 this.activeBorrowingId = borrowingId;
                 this.activeAssetName = name;
                 this.activeAssetCode = code;
+                this.capturedImage = null;
                 this.returnCapturedPhoto = null;
                 this.modalOpen = true;
                 this.openModalCamera();
@@ -326,7 +372,9 @@
                         audio: false
                     });
                     this.$refs.modalVideo.srcObject = this.modalMediaStream;
+                    this.isCameraOpen = true;
                     this.isModalCameraOpen = true;
+                    this.capturedImage = null;
                     this.returnCapturedPhoto = null;
                 } catch (err) {
                     console.error("Modal camera access error:", err);
@@ -377,6 +425,10 @@
                 ctx.fillText(textStr, x + paddingX, y + (boxHeight / 2));
             },
 
+            takeSnapshot() {
+                this.snapModalSnapshot();
+            },
+
             snapModalSnapshot() {
                 const video = this.$refs.modalVideo;
                 const canvas = this.$refs.modalCanvas;
@@ -406,13 +458,24 @@
                 this.applyModalWatermark(canvas, "{{ auth()->user()->name }}");
 
                 // Konversi Base64 dengan quality 0.68 (rentang 0.65 - 0.70) agar ukuran file awal di 100-200 KB
-                this.returnCapturedPhoto = canvas.toDataURL('image/jpeg', 0.68);
+                const base64 = canvas.toDataURL('image/jpeg', 0.68);
+                this.capturedImage = base64;
+                this.returnCapturedPhoto = base64;
                 this.closeModalCamera();
             },
 
+            retakePhoto() {
+                this.retakeModalSnapshot();
+            },
+
             retakeModalSnapshot() {
+                this.capturedImage = null;
                 this.returnCapturedPhoto = null;
                 this.openModalCamera();
+            },
+
+            switchCamera() {
+                this.switchModalFacingMode();
             },
 
             switchModalFacingMode() {
@@ -425,46 +488,16 @@
                     this.modalMediaStream.getTracks().forEach(t => t.stop());
                     this.modalMediaStream = null;
                 }
+                this.isCameraOpen = false;
                 this.isModalCameraOpen = false;
             },
 
-            onModalFileChosen(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = this.$refs.modalCanvas || document.createElement('canvas');
-                        const maxDim = 1280;
-                        let w = img.width;
-                        let h = img.height;
-
-                        if (w > maxDim || h > maxDim) {
-                            if (w >= h) {
-                                h = Math.round((h * maxDim) / w);
-                                w = maxDim;
-                            } else {
-                                w = Math.round((w * maxDim) / h);
-                                h = maxDim;
-                            }
-                        }
-
-                        canvas.width = w;
-                        canvas.height = h;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, w, h);
-                        this.applyModalWatermark(canvas, "{{ auth()->user()->name }}");
-                        this.returnCapturedPhoto = canvas.toDataURL('image/jpeg', 0.68);
-                        this.closeModalCamera();
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            },
-
             onReturnSubmit(e) {
+                if (!this.capturedImage && !this.returnCapturedPhoto) {
+                    e.preventDefault();
+                    alert('Silakan ambil foto bukti fisik pengembalian barang via kamera real-time terlebih dahulu.');
+                    return;
+                }
                 this.closeModalCamera();
             }
         }

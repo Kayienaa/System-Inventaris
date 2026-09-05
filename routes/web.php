@@ -89,6 +89,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('sipintu')->group(
 |--------------------------------------------------------------------------
 */
 Route::get('/storage/{path}', function (string $path) {
+    abort_if(str_contains($path, '..'), 400);
+
     $disk = Storage::disk('public');
     abort_unless($disk->exists($path), 404);
 

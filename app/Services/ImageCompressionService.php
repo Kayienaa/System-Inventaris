@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
@@ -40,8 +41,9 @@ class ImageCompressionService
 
                 return $filename;
             }
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
             // Fallback ke penyimpanan default jika proses kompresi terkendala driver / format
+            Log::warning('Gagal kompresi file upload pada ImageCompressionService: ' . $e->getMessage());
         }
 
         return $file->store($folder, 'public');
@@ -93,14 +95,12 @@ class ImageCompressionService
 
                 return $finalFilename;
             }
-        } catch (\Throwable) {
-            // Fallback jika bukan valid image payload (misal fake test string)
+        } catch (\Throwable $e) {
+            Log::warning('Gagal decode gambar base64 pada ImageCompressionService: ' . $e->getMessage());
+            return null;
         }
 
-        // Fallback langsung simpan decoded binary data
-        Storage::disk('public')->put($filename, $data);
-
-        return $filename;
+        return null;
     }
 
     /**

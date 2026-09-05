@@ -17,7 +17,7 @@ return [
 
     'client_id' => env('SIPINTU_CLIENT_ID', 'app_1p03mtss7tbl'),
 
-    'client_secret' => env('SIPINTU_CLIENT_SECRET', 'sec_BVKkUc6wG7NbBwP6SD3kGN8DZHiSodCo'),
+    'client_secret' => env('SIPINTU_CLIENT_SECRET'),
 
     /*
     |--------------------------------------------------------------------------

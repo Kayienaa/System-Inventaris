@@ -16,7 +16,7 @@ class SendBorrowingDueReminders extends Command
 
     public function handle(): int
     {
-        $borrowings = Borrowing::with(['borrower', 'asset', 'item'])
+        $borrowings = Borrowing::with(['borrower', 'asset'])
             ->where('status', BorrowingStatus::Borrowed)
             ->whereBetween('due_at', [now(), now()->addDay()])
             ->whereNull('due_reminder_sent_at')
@@ -29,9 +29,9 @@ class SendBorrowingDueReminders extends Command
 
                 $borrowing->update([
                     'due_reminder_sent_at' => now(),
-        ]);
-    }
-}
+                ]);
+            }
+        }
 
         $this->info("Berhasil mengirim {$borrowings->count()} email pengingat.");
 

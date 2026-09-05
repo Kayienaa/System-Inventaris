@@ -152,7 +152,12 @@ class AssetBorrowingTest extends TestCase
         ]);
         $asset->update(['availability_status' => AssetAvailabilityStatus::Dipinjam]);
 
-        $base64ReturnPhoto = 'data:image/jpeg;base64,' . base64_encode('fake return image binary content');
+        $gdImage = imagecreatetruecolor(100, 100);
+        ob_start();
+        imagejpeg($gdImage);
+        $jpegData = ob_get_clean();
+        imagedestroy($gdImage);
+        $base64ReturnPhoto = 'data:image/jpeg;base64,' . base64_encode($jpegData);
 
         // Student submits return with webcam photo
         $response = $this->actingAs($user)->post(route('borrowings.return-request', $borrowing), [

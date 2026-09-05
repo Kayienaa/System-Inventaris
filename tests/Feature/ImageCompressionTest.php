@@ -72,4 +72,17 @@ class ImageCompressionTest extends TestCase
         $imageInfo = getimagesizefromstring($storedContent);
         $this->assertLessThanOrEqual(1280, $imageInfo[0]);
     }
+
+    public function test_corrupted_base64_returns_null_and_does_not_store_file(): void
+    {
+        Storage::fake('public');
+
+        $corruptedBase64 = 'data:image/jpeg;base64,invalid-not-a-real-image-payload';
+
+        $service = app(ImageCompressionService::class);
+        $path = $service->compressAndStoreBase64($corruptedBase64, 'test-evidence');
+
+        $this->assertNull($path);
+        $this->assertEmpty(Storage::disk('public')->allFiles());
+    }
 }

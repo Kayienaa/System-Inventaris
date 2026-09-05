@@ -472,6 +472,27 @@
                         }
                     },
                     scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: 5, // Batas minimal 5 jika transaksi tertinggi masih antara 1-5
+                            ticks: {
+                                stepSize: 5,
+                                precision: 0,
+                                color: '#666666',
+                                font: {
+                                    family: "'DM Sans', sans-serif",
+                                    size: 11
+                                },
+                                callback: function(value) {
+                                    // Hanya tampilkan label bilangan bulat kelipatan 5
+                                    return Number.isInteger(value) && value % 5 === 0 ? value : '';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)',
+                                drawBorder: false
+                            }
+                        },
                         x: {
                             grid: {
                                 display: false
@@ -482,21 +503,6 @@
                                     family: "'DM Sans', sans-serif",
                                     size: 11
                                 }
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1,
-                                color: '#666666',
-                                font: {
-                                    family: "'DM Sans', sans-serif",
-                                    size: 11
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)',
-                                drawBorder: false
                             }
                         }
                     }

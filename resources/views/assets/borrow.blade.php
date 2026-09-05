@@ -3,6 +3,61 @@
 @section('title', 'Form Peminjaman Barang | TE-Vault')
 
 @section('content')
+    {{-- Flatpickr Stylesheet & Vintage Brown Theme --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .flatpickr-calendar {
+            border-radius: 1rem !important;
+            box-shadow: 0 20px 25px -5px rgba(74, 48, 34, 0.12), 0 10px 10px -5px rgba(74, 48, 34, 0.06) !important;
+            border: 1px solid #E7E0DA !important;
+            overflow: hidden;
+            font-family: inherit !important;
+        }
+        .flatpickr-months {
+            background: #FAF7F4 !important;
+            padding-top: 0.6rem !important;
+        }
+        .flatpickr-current-month {
+            font-weight: 700 !important;
+            color: #4A3022 !important;
+        }
+        .flatpickr-day.selected, 
+        .flatpickr-day.startRange, 
+        .flatpickr-day.endRange, 
+        .flatpickr-day.selected.inRange, 
+        .flatpickr-day.selected:focus, 
+        .flatpickr-day.selected:hover, 
+        .flatpickr-day.selected.prevMonthDay, 
+        .flatpickr-day.selected.nextMonthDay {
+            background: #6F4E37 !important;
+            border-color: #6F4E37 !important;
+            color: #FFFFFF !important;
+            font-weight: 600 !important;
+        }
+        .flatpickr-day:hover {
+            background: #F4EBE4 !important;
+        }
+        .flatpickr-day.today {
+            border-color: #C89B3C !important;
+        }
+        .flatpickr-day.today:hover {
+            background: #F4EBE4 !important;
+        }
+        .flatpickr-time {
+            border-top: 1px solid #F0E8E1 !important;
+            background: #FAF7F4 !important;
+            padding: 6px 0 !important;
+        }
+        .flatpickr-time input:hover, 
+        .flatpickr-time .flatpickr-am-pm:hover, 
+        .flatpickr-time input:focus, 
+        .flatpickr-time .flatpickr-am-pm:focus {
+            background: #EDE4DC !important;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
+
     <div class="max-w-3xl mx-auto px-6 py-8">
 
         <div class="mb-8">
@@ -118,12 +173,15 @@
                         <label class="block text-sm font-semibold text-gray-800">
                             Foto Bukti Serah Terima Real-Time <span class="text-rose-500">*</span>
                         </label>
-                        <span class="text-xs text-gray-500">Kamera Device / Webcam</span>
+                        <span class="text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            Wajib Kamera Real-Time
+                        </span>
                     </div>
 
                     <div class="rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 transition hover:border-gray-400">
 
-                        {{-- Viewport Kamera --}}
+                        {{-- Viewport Kamera Bersih 100% --}}
                         <div class="relative aspect-video w-full overflow-hidden rounded-xl bg-gray-950 flex items-center justify-center shadow-inner">
                             
                             {{-- Live Video Stream --}}
@@ -148,37 +206,24 @@
 
                             {{-- Placeholder jika kamera belum aktif dan belum ada foto --}}
                             <div x-show="!isCameraOpen && !capturedPhoto" class="flex flex-col items-center justify-center p-6 text-center text-gray-400">
-                                <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-2.5 text-gray-300">
+                                <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-3 text-gray-300 shadow-inner">
                                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
                                     </svg>
                                 </div>
                                 <p class="text-sm font-semibold text-white">Kamera Belum Aktif</p>
-                                <p class="text-xs text-gray-400 mt-1 max-w-xs">Klik tombol "Buka Kamera" untuk mengaktifkan webcam atau kamera HP.</p>
+                                <p class="text-xs text-gray-400 mt-1 max-w-xs">Tekan tombol "Buka Kamera" di bawah untuk mulai mengambil foto serah terima.</p>
                             </div>
 
                             {{-- Live Badge Overlay --}}
-                            <div x-show="isCameraOpen && !capturedPhoto" class="absolute top-3 left-3 flex items-center gap-2 bg-black/60 backdrop-blur-md text-white text-xs px-3 py-1 rounded-full">
+                            <div x-show="isCameraOpen && !capturedPhoto" class="absolute top-3 left-3 flex items-center gap-2 bg-black/60 backdrop-blur-md text-white text-xs px-3 py-1 rounded-full pointer-events-none z-10">
                                 <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
                                 <span class="font-medium">Live Camera</span>
                             </div>
 
-                            {{-- Flip Camera Button --}}
-                            <button
-                                type="button"
-                                x-show="isCameraOpen && !capturedPhoto"
-                                @click="switchFacingMode()"
-                                class="absolute top-3 right-3 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 transition backdrop-blur-md"
-                                title="Ganti Kamera Depan/Belakang"
-                            >
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                                </svg>
-                            </button>
-
                             {{-- Captured Success Badge --}}
-                            <div x-show="capturedPhoto" class="absolute bottom-3 left-3 flex items-center gap-1.5 bg-emerald-600/90 text-white text-xs px-3 py-1 rounded-full shadow-md backdrop-blur-sm">
+                            <div x-show="capturedPhoto" class="absolute top-3 left-3 flex items-center gap-1.5 bg-emerald-600/90 text-white text-xs px-3 py-1 rounded-full shadow-md backdrop-blur-sm pointer-events-none z-10">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                 </svg>
@@ -187,56 +232,73 @@
 
                         </div>
 
-                        {{-- Action Buttons Kamera --}}
-                        <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
-                            <div class="flex items-center gap-2">
+                        {{-- Bar Kontrol Khusus di Bawah Kotak Kamera --}}
+                        <div class="mt-4">
+                            {{-- State 1: Kamera Belum Aktif --}}
+                            <div x-show="!isCameraOpen && !capturedPhoto" class="flex flex-col sm:flex-row items-center justify-between gap-3 p-2">
                                 <button
                                     type="button"
-                                    x-show="!isCameraOpen && !capturedPhoto"
                                     @click="openCamera()"
-                                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#6F4E37] text-white text-xs font-semibold hover:bg-[#5a3f2c] transition shadow-sm active:scale-95"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#6F4E37] text-white text-sm font-semibold hover:bg-[#5a3f2c] transition shadow-md active:scale-95 cursor-pointer"
                                 >
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                                     </svg>
-                                    Buka Kamera
+                                    <span>Buka Kamera</span>
                                 </button>
+                                <p class="text-xs text-gray-500 text-center sm:text-right">
+                                    Izinkan izin kamera pada peramban untuk melanjutkan.
+                                </p>
+                            </div>
 
+                            {{-- State 2: Kamera Aktif (Live Camera Control Bar) --}}
+                            <div x-show="isCameraOpen && !capturedPhoto" class="relative flex items-center justify-center py-2 px-2">
+                                {{-- Tombol Lingkaran Shutter Putih Ring Ganda di Tengah --}}
                                 <button
                                     type="button"
-                                    x-show="isCameraOpen && !capturedPhoto"
                                     @click="snapSnapshot()"
-                                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition shadow-sm active:scale-95 ring-2 ring-emerald-400/50"
+                                    class="w-14 h-14 rounded-full border-4 border-[#6F4E37] bg-white shadow-md active:scale-95 flex items-center justify-center mx-auto hover:scale-105 transition-all text-[#6F4E37] ring-4 ring-black/10 cursor-pointer"
+                                    title="Ambil Foto"
                                 >
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-6 h-6 text-[#6F4E37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
                                     </svg>
-                                    Ambil Foto
                                 </button>
 
+                                {{-- Tombol Flip Kamera di Samping --}}
                                 <button
                                     type="button"
-                                    x-show="capturedPhoto"
-                                    @click="retakeSnapshot()"
-                                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700 text-white text-xs font-medium hover:bg-gray-800 transition"
+                                    @click="switchFacingMode()"
+                                    class="absolute right-2 sm:right-6 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 text-xs font-medium transition shadow-xs active:scale-95 cursor-pointer"
+                                    title="Ganti Kamera Depan/Belakang"
                                 >
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                                     </svg>
-                                    Ambil Ulang
+                                    <span class="hidden sm:inline">Ganti Kamera</span>
                                 </button>
                             </div>
 
-                            {{-- Alternatif File Upload --}}
-                            <div class="text-xs text-gray-500">
-                                Atau pilih file: 
-                                <input
-                                    type="file"
-                                    name="borrowing_evidence_file"
-                                    accept="image/*"
-                                    @change="onFileChosen($event)"
-                                    class="ml-1 text-xs file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300"
+                            {{-- State 3: Foto Siap Disimpan (Tombol Bersih di Bawah Kanvas) --}}
+                            <div x-show="capturedPhoto" class="flex flex-col sm:flex-row items-center justify-between gap-3 p-2">
+                                <div class="text-xs text-emerald-700 font-medium flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <span>Foto serah terima berhasil diambil dan bersih tanpa tertutupi tombol.</span>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    @click="retakeSnapshot()"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 text-xs font-semibold shadow-xs transition active:scale-95 cursor-pointer"
                                 >
+                                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                    <span>Ambil Ulang Foto</span>
+                                </button>
                             </div>
                         </div>
 
@@ -252,27 +314,79 @@
                     @enderror
                 </div>
 
-                {{-- Tanggal Rencana Pengembalian --}}
+                {{-- Tanggal Rencana Pengembalian (Modern Flatpickr & Presets) --}}
                 <div>
-                    <label
-                        for="due_at"
-                        class="block text-sm font-semibold text-gray-800"
-                    >
-                        Tenggat Waktu Pengembalian (Default H+3)
-                    </label>
+                    <div class="flex items-center justify-between mb-1">
+                        <label
+                            for="due_at_picker"
+                            class="block text-sm font-semibold text-gray-800"
+                        >
+                            Tenggat Waktu Pengembalian <span class="text-rose-500">*</span>
+                        </label>
+                        <span class="text-xs text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md font-medium">
+                            Fleksibel & Otomatis
+                        </span>
+                    </div>
 
-                    <p class="mt-0.5 text-xs text-gray-500">
-                        Secara otomatis diatur 3 hari dari sekarang. Anda dapat menyesuaikannya jika diperlukan.
+                    <p class="text-xs text-gray-500 mb-2.5">
+                        Pilih batas waktu pengembalian barang. Gunakan tombol pilihan cepat atau tentukan tanggal & waktu pada kalender.
                     </p>
 
-                    <input
-                        id="due_at"
-                        name="due_at"
-                        type="datetime-local"
-                        value="{{ old('due_at', now()->addDays(3)->format('Y-m-d\TH:i')) }}"
-                        min="{{ now()->format('Y-m-d\TH:i') }}"
-                        class="mt-2 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm shadow-sm focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600"
-                    >
+                    {{-- Tombol Preset Cepat --}}
+                    <div class="mb-2.5 flex flex-wrap items-center gap-2">
+                        <span class="text-xs text-gray-500 font-medium mr-1">Pilihan Cepat:</span>
+                        <button
+                            type="button"
+                            @click="setDuePreset(1)"
+                            :class="activePreset === 1 ? 'bg-[#6F4E37] text-white border-[#6F4E37] shadow-sm ring-2 ring-[#6F4E37]/30' : 'bg-stone-100 text-stone-700 hover:bg-stone-200 border-stone-200'"
+                            class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                        >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            <span>H+1</span>
+                        </button>
+                        <button
+                            type="button"
+                            @click="setDuePreset(3)"
+                            :class="activePreset === 3 ? 'bg-[#6F4E37] text-white border-[#6F4E37] shadow-sm ring-2 ring-[#6F4E37]/30' : 'bg-stone-100 text-stone-700 hover:bg-stone-200 border-stone-200'"
+                            class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                        >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                            </svg>
+                            <span>H+3 (Bawaan)</span>
+                        </button>
+                        <button
+                            type="button"
+                            @click="setDuePreset(5)"
+                            :class="activePreset === 5 ? 'bg-[#6F4E37] text-white border-[#6F4E37] shadow-sm ring-2 ring-[#6F4E37]/30' : 'bg-stone-100 text-stone-700 hover:bg-stone-200 border-stone-200'"
+                            class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                        >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <span>H+5</span>
+                        </button>
+                    </div>
+
+                    {{-- Input Tanggal Tenggat Pengembalian (type="datetime-local" step="60") --}}
+                    <div class="relative">
+                        <input
+                            id="due_at_picker"
+                            name="due_at"
+                            type="datetime-local"
+                            step="60"
+                            value="{{ old('due_at') ? \Carbon\Carbon::parse(old('due_at'))->format('Y-m-d\TH:i') : now()->addDays(3)->format('Y-m-d\TH:i') }}"
+                            placeholder="Pilih tanggal dan waktu tenggat..."
+                            class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 pr-11 text-sm font-medium text-gray-800 shadow-sm focus:border-[#6F4E37] focus:outline-none focus:ring-2 focus:ring-[#6F4E37]/20 cursor-pointer"
+                        >
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                    </div>
 
                     @error('due_at')
                         <p class="mt-1.5 text-xs font-medium text-rose-600">
@@ -340,6 +454,58 @@
                 capturedPhoto: null,
                 mediaStream: null,
                 facingMode: 'environment',
+                activePreset: 3,
+                fpInstance: null,
+
+                init() {
+                    this.$nextTick(() => {
+                        const input = document.getElementById('due_at_picker');
+                        if (input && typeof flatpickr !== 'undefined') {
+                            const defaultDateValue = input.value || '{{ now()->addDays(3)->format("Y-m-d\\TH:i") }}';
+                            this.fpInstance = flatpickr("#due_at_picker", {
+                                enableTime: true,
+                                time_24hr: true,
+                                dateFormat: "Y-m-d\\TH:i",
+                                altInput: true,
+                                altFormat: "d/m/Y H:i",
+                                altInputClass: "mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 pr-11 text-sm font-medium text-gray-800 shadow-sm focus:border-[#6F4E37] focus:outline-none focus:ring-2 focus:ring-[#6F4E37]/20 cursor-pointer transition",
+                                defaultDate: defaultDateValue,
+                                minDate: "today",
+                                minuteIncrement: 1,
+                                onChange: (selectedDates) => {
+                                    if (selectedDates && selectedDates[0]) {
+                                        const now = new Date();
+                                        const diffDays = Math.round((selectedDates[0] - now) / (1000 * 60 * 60 * 24));
+                                        if ([1, 3, 5].includes(diffDays)) {
+                                            this.activePreset = diffDays;
+                                        } else {
+                                            this.activePreset = null;
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    });
+                },
+
+                setDuePreset(days) {
+                    this.activePreset = days;
+                    const d = new Date();
+                    d.setDate(d.getDate() + days);
+                    d.setSeconds(0, 0); // Pastikan nilai detik dinolkan
+
+                    if (this.fpInstance) {
+                        this.fpInstance.setDate(d, true);
+                    } else {
+                        const input = document.getElementById('due_at_picker');
+                        if (input) {
+                            const pad = (n) => String(n).padStart(2, '0');
+                            const formatted = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                            input.value = formatted;
+                            input.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    }
+                },
 
                 async openCamera() {
                     try {
@@ -359,7 +525,7 @@
                         this.capturedPhoto = null;
                     } catch (error) {
                         console.error("Camera access failed:", error);
-                        alert("Tidak dapat mengakses kamera perangkat. Pastikan izin kamera aktif atau gunakan opsi pilih file di sebelah kanan.");
+                        alert("Tidak dapat mengakses kamera perangkat. Pastikan izin akses kamera telah diizinkan pada browser perangkat kamu.");
                     }
                 },
 
@@ -458,43 +624,12 @@
                     this.isCameraOpen = false;
                 },
 
-                onFileChosen(event) {
-                    const file = event.target.files[0];
-                    if (!file) return;
-
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            const canvas = this.$refs.canvasElement || document.createElement('canvas');
-                            const maxDim = 1280;
-                            let w = img.width;
-                            let h = img.height;
-
-                            if (w > maxDim || h > maxDim) {
-                                if (w >= h) {
-                                    h = Math.round((h * maxDim) / w);
-                                    w = maxDim;
-                                } else {
-                                    w = Math.round((w * maxDim) / h);
-                                    h = maxDim;
-                                }
-                            }
-
-                            canvas.width = w;
-                            canvas.height = h;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, w, h);
-                            this.applyWatermark(canvas, "{{ auth()->user()->name }}");
-                            this.capturedPhoto = canvas.toDataURL('image/jpeg', 0.68);
-                            this.closeCamera();
-                        };
-                        img.src = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                },
-
                 onFormSubmit(e) {
+                    if (!this.capturedPhoto) {
+                        e.preventDefault();
+                        alert('Silakan ambil foto bukti serah terima secara real-time via kamera terlebih dahulu.');
+                        return;
+                    }
                     // Stop camera stream before navigating
                     this.closeCamera();
                 }
