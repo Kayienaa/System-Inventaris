@@ -227,4 +227,52 @@ class AssetBorrowingTest extends TestCase
             ])
             ->assertStatus(403);
     }
+
+    public function test_submit_return_rejects_path_traversal(): void
+    {
+        $siswa = User::factory()->create();
+        $siswa->assignRole('siswa');
+
+        $asset = Asset::first();
+
+        $borrowing = Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::Borrowed,
+            'requested_at' => now(),
+            'borrowed_at' => now(),
+            'due_at' => now()->addDays(3),
+            'borrower_note' => 'Untuk praktikum',
+        ]);
+
+        $response = $this->actingAs($siswa)->postJson("/api/borrowings/{$borrowing->id}/submit-return", [
+            'return_evidence_path' => '../../.env',
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_submit_return_rejects_nonexistent_file(): void
+    {
+        $siswa = User::factory()->create();
+        $siswa->assignRole('siswa');
+
+        $asset = Asset::first();
+
+        $borrowing = Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::Borrowed,
+            'requested_at' => now(),
+            'borrowed_at' => now(),
+            'due_at' => now()->addDays(3),
+            'borrower_note' => 'Untuk praktikum',
+        ]);
+
+        $response = $this->actingAs($siswa)->postJson("/api/borrowings/{$borrowing->id}/submit-return", [
+            'return_evidence_path' => 'return-evidence/file_palsu_tidak_ada.jpg',
+        ]);
+
+        $response->assertStatus(422);
+    }
 }
