@@ -18,23 +18,23 @@
 
     {{-- Breadcrumb & Header --}}
     <div class="mb-8">
-        <div class="flex items-center gap-2 text-xs text-gray-500 mb-2">
-            <a href="{{ route('admin.assets.index') }}" class="hover:text-amber-700 transition">Master Aset</a>
+        <div class="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400 mb-2">
+            <a href="{{ route('admin.assets.index') }}" class="hover:text-amber-700 dark:hover:text-amber-400 transition">Master Aset</a>
             <span>/</span>
-            <span class="text-gray-800 font-semibold">Tambah Unit Aset</span>
+            <span class="text-stone-800 dark:text-stone-200 font-semibold">Tambah Unit Aset</span>
         </div>
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800 tracking-tight">
+                <h1 class="text-3xl font-bold text-stone-900 dark:text-stone-100 tracking-tight">
                     Tambah Unit Aset
                 </h1>
-                <p class="text-gray-500 text-sm mt-1">
+                <p class="text-stone-500 dark:text-stone-400 text-sm mt-1">
                     Registrasikan barang inventaris baru ke dalam katalog TEFA SMKN 1 Bangsri.
                 </p>
             </div>
             <a
                 href="{{ route('admin.assets.index') }}"
-                class="px-4 py-2 rounded-xl border border-gray-300 bg-white text-gray-700 text-xs font-semibold hover:bg-gray-50 transition shadow-sm"
+                class="px-4 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold hover:bg-stone-50 dark:hover:bg-stone-700 transition shadow-sm"
             >
                 Kembali
             </a>
@@ -43,14 +43,14 @@
 
     {{-- Error Summary --}}
     @if ($errors->any())
-        <div class="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm shadow-sm">
+        <div class="mb-6 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-sm shadow-sm">
             <div class="flex items-center gap-2 mb-2 font-bold">
-                <svg class="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 Terdapat kesalahan pengisian form:
             </div>
-            <ul class="list-disc list-inside text-xs space-y-1 text-rose-700">
+            <ul class="list-disc list-inside text-xs space-y-1 text-rose-700 dark:text-rose-300">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -59,7 +59,7 @@
     @endif
 
     {{-- Form Card --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8">
+    <div class="bg-white dark:bg-[#131B2A] border border-stone-200/70 dark:border-stone-800/80 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] p-6 md:p-8 transition-colors duration-300">
         <form action="{{ route('admin.assets.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
@@ -72,14 +72,14 @@
                     {{-- Row 1: Kategori & Kode Aset --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div>
-                            <label for="asset_category_id" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                            <label for="asset_category_id" class="block text-xs font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-2">
                                 Kategori Aset <span class="text-rose-500">*</span>
                             </label>
                             <select
                                 id="asset_category_id"
                                 name="asset_category_id"
                                 required
-                                class="w-full text-xs rounded-xl border-gray-300 focus:border-amber-600 focus:ring-1 focus:ring-amber-600 shadow-sm transition @error('asset_category_id') border-rose-400 @enderror"
+                                class="w-full px-4 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-[#0B0F17] text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-cyan-500 focus:border-transparent transition-colors text-sm @error('asset_category_id') border-rose-400 dark:border-rose-500 @enderror"
                             >
                                 <option value="">Pilih Kategori...</option>
                                 @foreach ($categories as $cat)
@@ -94,7 +94,7 @@
                         </div>
 
                         <div>
-                            <label for="asset_code" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                            <label for="asset_code" class="block text-xs font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-2">
                                 Kode Aset Unik <span class="text-rose-500">*</span>
                             </label>
                             <input
@@ -105,7 +105,7 @@
                                 placeholder="Contoh: LP-TEFA-021"
                                 required
                                 maxlength="50"
-                                class="w-full text-xs rounded-xl border-gray-300 focus:border-amber-600 focus:ring-1 focus:ring-amber-600 shadow-sm font-mono transition @error('asset_code') border-rose-400 @enderror"
+                                class="w-full px-4 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-[#0B0F17] text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-cyan-500 focus:border-transparent transition-colors text-sm font-mono @error('asset_code') border-rose-400 dark:border-rose-500 @enderror"
                             >
                             @error('asset_code')
                                 <p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>
@@ -116,7 +116,7 @@
                     {{-- Row 2: Nama Aset & Nomor Seri --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div>
-                            <label for="name" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                            <label for="name" class="block text-xs font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-2">
                                 Nama Barang / Unit <span class="text-rose-500">*</span>
                             </label>
                             <input
@@ -127,7 +127,7 @@
                                 placeholder="Contoh: ASUS ExpertBook B1400"
                                 required
                                 maxlength="255"
-                                class="w-full text-xs rounded-xl border-gray-300 focus:border-amber-600 focus:ring-1 focus:ring-amber-600 shadow-sm transition @error('name') border-rose-400 @enderror"
+                                class="w-full px-4 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-[#0B0F17] text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-cyan-500 focus:border-transparent transition-colors text-sm @error('name') border-rose-400 dark:border-rose-500 @enderror"
                             >
                             @error('name')
                                 <p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>
@@ -135,7 +135,7 @@
                         </div>
 
                         <div>
-                            <label for="serial_number" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                            <label for="serial_number" class="block text-xs font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-2">
                                 Nomor Seri (Serial Number) <span class="text-rose-500">*</span>
                             </label>
                             <input
@@ -146,7 +146,7 @@
                                 placeholder="Contoh: SN-ASUS-2026-9901"
                                 required
                                 maxlength="100"
-                                class="w-full text-xs rounded-xl border-gray-300 focus:border-amber-600 focus:ring-1 focus:ring-amber-600 shadow-sm font-mono transition @error('serial_number') border-rose-400 @enderror"
+                                class="w-full px-4 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-[#0B0F17] text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-cyan-500 focus:border-transparent transition-colors text-sm font-mono @error('serial_number') border-rose-400 dark:border-rose-500 @enderror"
                             >
                             @error('serial_number')
                                 <p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>
@@ -157,7 +157,7 @@
                     {{-- Row 3: Merk & Model --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div>
-                            <label for="brand" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                            <label for="brand" class="block text-xs font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-2">
                                 Merk / Brand <span class="text-rose-500">*</span>
                             </label>
                             <input
@@ -168,7 +168,7 @@
                                 placeholder="Contoh: ASUS, Lenovo, Samsung, dsb."
                                 required
                                 maxlength="100"
-                                class="w-full text-xs rounded-xl border-gray-300 focus:border-amber-600 focus:ring-1 focus:ring-amber-600 shadow-sm transition @error('brand') border-rose-400 @enderror"
+                                class="w-full px-4 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-[#0B0F17] text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-cyan-500 focus:border-transparent transition-colors text-sm @error('brand') border-rose-400 dark:border-rose-500 @enderror"
                             >
                             @error('brand')
                                 <p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>
@@ -176,7 +176,7 @@
                         </div>
 
                         <div>
-                            <label for="model" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                            <label for="model" class="block text-xs font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-2">
                                 Model / Tipe Spesifik
                             </label>
                             <input
@@ -186,7 +186,7 @@
                                 value="{{ old('model') }}"
                                 placeholder="Contoh: B1400CEAE / Core i5 11th Gen"
                                 maxlength="100"
-                                class="w-full text-xs rounded-xl border-gray-300 focus:border-amber-600 focus:ring-1 focus:ring-amber-600 shadow-sm transition @error('model') border-rose-400 @enderror"
+                                class="w-full px-4 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-[#0B0F17] text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-cyan-500 focus:border-transparent transition-colors text-sm @error('model') border-rose-400 dark:border-rose-500 @enderror"
                             >
                             @error('model')
                                 <p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>
@@ -197,14 +197,14 @@
                     {{-- Row 4: Kondisi & Status Ketersediaan --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div>
-                            <label for="condition" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                            <label for="condition" class="block text-xs font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-2">
                                 Kondisi Fisik <span class="text-rose-500">*</span>
                             </label>
                             <select
                                 id="condition"
                                 name="condition"
                                 required
-                                class="w-full text-xs rounded-xl border-gray-300 focus:border-amber-600 focus:ring-1 focus:ring-amber-600 shadow-sm transition @error('condition') border-rose-400 @enderror"
+                                class="w-full px-4 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-[#0B0F17] text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-cyan-500 focus:border-transparent transition-colors text-sm @error('condition') border-rose-400 dark:border-rose-500 @enderror"
                             >
                                 @foreach ($conditions as $cond)
                                     <option value="{{ $cond->value }}" {{ old('condition', 'baik') === $cond->value ? 'selected' : '' }}>
@@ -218,14 +218,14 @@
                         </div>
 
                         <div>
-                            <label for="availability_status" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                            <label for="availability_status" class="block text-xs font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-2">
                                 Status Ketersediaan <span class="text-rose-500">*</span>
                             </label>
                             <select
                                 id="availability_status"
                                 name="availability_status"
                                 required
-                                class="w-full text-xs rounded-xl border-gray-300 focus:border-amber-600 focus:ring-1 focus:ring-amber-600 shadow-sm transition @error('availability_status') border-rose-400 @enderror"
+                                class="w-full px-4 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-[#0B0F17] text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-cyan-500 focus:border-transparent transition-colors text-sm @error('availability_status') border-rose-400 dark:border-rose-500 @enderror"
                             >
                                 @foreach ($statuses as $st)
                                     <option value="{{ $st->value }}" {{ old('availability_status', 'tersedia') === $st->value ? 'selected' : '' }}>
@@ -241,7 +241,7 @@
 
                     {{-- Row 5: Catatan Tambahan --}}
                     <div>
-                        <label for="notes" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                        <label for="notes" class="block text-xs font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-2">
                             Catatan / Spesifikasi Tambahan
                         </label>
                         <textarea
@@ -249,7 +249,7 @@
                             name="notes"
                             rows="3"
                             placeholder="Contoh: Kelengkapan unit termasuk charger original 65W dan tas ransel TEFA."
-                            class="w-full text-xs rounded-xl border-gray-300 focus:border-amber-600 focus:ring-1 focus:ring-amber-600 shadow-sm transition"
+                            class="w-full px-4 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-[#0B0F17] text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-cyan-500 focus:border-transparent transition-colors text-sm @error('notes') border-rose-400 dark:border-rose-500 @enderror"
                         >{{ old('notes') }}</textarea>
                         @error('notes')
                             <p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>
@@ -260,25 +260,28 @@
 
                 {{-- Kolom Kanan: Tinjauan Foto Fisik Aset & Upload (1/3) --}}
                 <div class="lg:col-span-4 space-y-4">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-2">
                         Foto Fisik Aset
                     </label>
 
-                    {{-- Kontainer Pembatas Proporsional Preview Foto --}}
-                    <div class="max-w-xs md:max-w-sm rounded-xl overflow-hidden border border-gray-200 bg-gray-50 p-2 shadow-sm">
+                    {{-- Wadah Upload & Preview Foto di Kolom Kanan --}}
+                    <div class="w-full aspect-video rounded-xl bg-stone-100 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800 flex items-center justify-center overflow-hidden relative">
                         <template x-if="photoPreview">
-                            <div>
-                                <img :src="photoPreview" alt="Pratinjau Foto Baru" class="w-full h-48 md:h-56 object-cover rounded-lg">
-                                <p class="text-[11px] font-semibold text-amber-700 text-center mt-2">Pratinjau Foto Terpilih</p>
+                            <div class="w-full h-full relative">
+                                <img :src="photoPreview" alt="Pratinjau Foto Baru" class="w-full h-full object-cover">
+                                <div class="absolute bottom-2 left-2 right-2 bg-black/60 backdrop-blur-xs py-1 px-2 rounded-lg">
+                                    <p class="text-[11px] font-semibold text-white text-center">Pratinjau Foto Terpilih</p>
+                                </div>
                             </div>
                         </template>
 
                         <template x-if="!photoPreview">
-                            <div class="w-full h-48 md:h-56 rounded-lg bg-gray-100 flex flex-col items-center justify-center text-gray-400">
-                                <svg class="w-10 h-10 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            <div class="w-full h-full min-h-[50px] bg-stone-100 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800 rounded-lg flex flex-col items-center justify-center p-2 text-center">
+                                <svg class="w-5 h-5 text-stone-400 dark:text-stone-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 </svg>
-                                <span class="text-xs">Belum ada foto unit</span>
+                                <span class="text-[10px] text-stone-500 font-medium">Foto belum ada</span>
                             </div>
                         </template>
                     </div>
@@ -291,9 +294,9 @@
                             id="photo"
                             accept="image/jpeg,image/png,image/webp,image/jpg"
                             @change="updatePhotoPreview"
-                            class="block w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200 cursor-pointer"
+                            class="block w-full text-xs text-stone-500 dark:text-stone-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-amber-100 dark:file:bg-stone-800 file:text-amber-800 dark:file:text-stone-200 hover:file:bg-amber-200 dark:hover:file:bg-stone-700 cursor-pointer"
                         >
-                        <p class="text-[11px] text-gray-400 mt-2">
+                        <p class="text-[11px] text-stone-500 dark:text-stone-400 mt-2">
                             Unggah foto fisik perangkat yang jelas untuk memudahkan identifikasi saat peminjaman dan verifikasi pengembalian (Maks 2MB, JPG/PNG/WEBP).
                         </p>
                         @error('photo')
@@ -306,16 +309,16 @@
             </div>
 
             {{-- Form Actions --}}
-            <div class="mt-8 pt-5 border-t border-gray-100 flex items-center justify-end gap-3">
+            <div class="mt-8 pt-5 border-t border-stone-200 dark:border-stone-800 flex items-center justify-end gap-3">
                 <a
                     href="{{ route('admin.assets.index') }}"
-                    class="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 text-xs font-semibold hover:bg-gray-50 transition"
+                    class="px-5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300 text-xs font-semibold hover:bg-stone-50 dark:hover:bg-stone-800 transition"
                 >
                     Batal
                 </a>
                 <button
                     type="submit"
-                    class="px-6 py-2.5 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white text-xs font-bold shadow-md shadow-[#6F4E37]/20 transition-all duration-150 active:scale-95"
+                    class="px-6 py-2.5 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] dark:bg-none dark:bg-gradient-to-r dark:from-cyan-600 dark:to-teal-500 dark:hover:from-cyan-500 dark:hover:to-teal-400 text-white text-xs font-bold shadow-md shadow-[#6F4E37]/20 dark:shadow-cyan-500/20 transition-all duration-150 active:scale-95"
                 >
                     Simpan Unit Aset
                 </button>

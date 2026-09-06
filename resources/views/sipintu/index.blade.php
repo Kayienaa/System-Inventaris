@@ -210,7 +210,7 @@
         </div>
 
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <button onclick="pingGateway()" class="btn-gw-link" style="width: auto; background: var(--white); border: 1.5px solid var(--cream-dark); color: var(--brown);">
+            <button onclick="pingGateway()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-stone-700 bg-stone-800/80 hover:bg-stone-700 text-stone-200 hover:text-white text-sm font-medium shadow-sm transition-all">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:1rem;height:1rem;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/>
                 </svg>
@@ -250,7 +250,7 @@
                 <form action="{{ route('admin.sync-sipintu') }}" method="POST" @submit="if(confirm('Mulai sinkronisasi data SISWA dari SiPintu Gateway?')){ isSyncing = true; syncType = 'students'; } else { $event.preventDefault(); }">
                     @csrf
                     <input type="hidden" name="type" value="students">
-                    <button type="submit" :disabled="isSyncing" class="btn-gw-link" style="width: auto; background: var(--white); border: 1.5px solid var(--cream-dark); color: var(--brown); font-weight: 600;">
+                    <button type="submit" :disabled="isSyncing" class="text-stone-300 hover:text-amber-400 font-medium text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-stone-800/60">
                         <span>Hanya Siswa</span>
                     </button>
                 </form>
@@ -259,7 +259,7 @@
                 <form action="{{ route('admin.sync-sipintu') }}" method="POST" @submit="if(confirm('Mulai sinkronisasi data GURU dari SiPintu Gateway?')){ isSyncing = true; syncType = 'teachers'; } else { $event.preventDefault(); }">
                     @csrf
                     <input type="hidden" name="type" value="teachers">
-                    <button type="submit" :disabled="isSyncing" class="btn-gw-link" style="width: auto; background: var(--white); border: 1.5px solid var(--cream-dark); color: var(--brown); font-weight: 600;">
+                    <button type="submit" :disabled="isSyncing" class="text-stone-300 hover:text-amber-400 font-medium text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-stone-800/60">
                         <span>Hanya Guru</span>
                     </button>
                 </form>
@@ -345,7 +345,7 @@
                     {{ ($summary['is_connected'] ?? false) ? 'Terhubung' : 'Offline' }}
                 </div>
             </div>
-            <button onclick="pingGateway(true)" class="btn-gw-link" style="background: var(--cream-dark); color: var(--text);">
+            <button onclick="pingGateway(true)" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-stone-700 bg-stone-800/90 hover:bg-stone-700 hover:border-cyan-500/40 text-stone-200 hover:text-cyan-300 text-xs font-semibold tracking-wide transition-all duration-200 shadow-sm mt-3 w-full sm:w-auto">
                 Periksa Latensi &amp; Heartbeat
             </button>
         </div>

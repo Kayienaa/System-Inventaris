@@ -241,7 +241,7 @@
                                     'model' => $b->asset?->model ?? '-',
                                     'serial_number' => $b->asset?->serial_number ?? '-',
                                     'category' => $b->asset?->category?->name ?? '-',
-                                    'photo_url' => $b->asset?->photo_path ? asset('storage/' . $b->asset->photo_path) : null,
+                                    'photo_url' => ($b->asset?->photo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($b->asset->photo_path)) ? asset('storage/' . $b->asset->photo_path) : null,
                                 ],
                                 'dates' => [
                                     'borrowed_at' => $b->borrowed_at ? $b->borrowed_at->format('d M Y, H:i') . ' WIB' : ($b->requested_at ? $b->requested_at->format('d M Y, H:i') . ' WIB' : '-'),
@@ -287,25 +287,50 @@
 
                             {{-- Barang yang Dipinjam --}}
                             <td class="px-5 py-4">
-                                <div>
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="font-mono font-bold text-stone-800 dark:text-stone-100 text-xs">
-                                            {{ $b->asset?->asset_code ?? '-' }}
-                                        </span>
-                                        @if($b->asset?->category)
-                                            <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
-                                                {{ $b->asset->category->name }}
-                                            </span>
+                                @php
+                                    $assetPhotoExists = $b->asset?->photo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($b->asset->photo_path);
+                                @endphp
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 overflow-hidden shrink-0 flex items-center justify-center aspect-square">
+                                        @if ($assetPhotoExists)
+                                            <img
+                                                src="{{ asset('storage/' . $b->asset->photo_path) }}"
+                                                alt="{{ $b->asset->name }}"
+                                                width="40"
+                                                height="40"
+                                                loading="lazy"
+                                                decoding="async"
+                                                class="w-full h-full object-cover aspect-square"
+                                            >
+                                        @else
+                                            <div class="w-full h-full bg-stone-900/60 flex items-center justify-center" title="Barang belum memiliki foto">
+                                                <svg class="w-5 h-5 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                </svg>
+                                            </div>
                                         @endif
                                     </div>
-                                    <p class="text-xs text-stone-800 dark:text-stone-200 mt-0.5 font-medium">
-                                        {{ $b->asset?->name ?? 'Barang Terhapus' }}
-                                    </p>
-                                    @if($b->asset?->serial_number)
-                                        <p class="text-[10px] font-mono text-stone-400 dark:text-stone-500">
-                                            SN: {{ $b->asset->serial_number }}
+                                    <div>
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="font-mono font-bold text-stone-800 dark:text-stone-100 text-xs">
+                                                {{ $b->asset?->asset_code ?? '-' }}
+                                            </span>
+                                            @if($b->asset?->category)
+                                                <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
+                                                    {{ $b->asset->category->name }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <p class="text-xs text-stone-800 dark:text-stone-200 mt-0.5 font-medium">
+                                            {{ $b->asset?->name ?? 'Barang Terhapus' }}
                                         </p>
-                                    @endif
+                                        @if($b->asset?->serial_number)
+                                            <p class="text-[10px] font-mono text-stone-400 dark:text-stone-500">
+                                                SN: {{ $b->asset->serial_number }}
+                                            </p>
+                                        @endif
+                                    </div>
                                 </div>
                             </td>
 
@@ -557,6 +582,24 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                             </svg>
                             Barang Inventaris
+                        </div>
+
+                        {{-- Foto Aset di Modal Detail --}}
+                        <div class="mb-3 w-full">
+                            <template x-if="selectedBorrowing?.asset.photo_url">
+                                <div class="w-full h-36 rounded-xl overflow-hidden bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-sm">
+                                    <img :src="selectedBorrowing?.asset.photo_url" :alt="selectedBorrowing?.asset.name" class="w-full h-full object-cover">
+                                </div>
+                            </template>
+                            <template x-if="!selectedBorrowing?.asset.photo_url">
+                                <div class="w-full h-full min-h-[140px] bg-stone-900/60 border border-stone-800 rounded-xl flex flex-col items-center justify-center p-4 text-center">
+                                    <svg class="w-8 h-8 text-stone-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                    <span class="text-xs text-stone-500 font-medium">Barang belum memiliki foto</span>
+                                </div>
+                            </template>
                         </div>
 
                         <div class="space-y-1.5 text-xs">

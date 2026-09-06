@@ -83,38 +83,41 @@
                     @endphp
 
                     <article
-                        class="flex flex-col justify-between overflow-hidden bg-white/95 dark:bg-[#131B2A]/90 backdrop-blur-md border border-stone-200/70 dark:border-stone-800/80 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] hover:border-[#6F4E37] dark:hover:border-cyan-500/50 dark:hover:shadow-neon-sm transition-all duration-300 hover:-translate-y-1"
+                        class="p-5 flex flex-col justify-between bg-white/95 dark:bg-[#131B2A]/90 backdrop-blur-md border border-stone-200/70 dark:border-stone-800/80 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] hover:border-[#6F4E37] dark:hover:border-cyan-500/50 dark:hover:shadow-neon-sm transition-all duration-300 hover:-translate-y-1"
                     >
 
                         <div>
                             {{-- Foto Aset --}}
-                            <div class="aspect-[4/3] w-full overflow-hidden bg-stone-100 dark:bg-stone-800 relative">
-
-                                @if ($photoExists)
-                                    <img
-                                        src="{{ asset('storage/' . $asset->photo_path) }}"
-                                        alt="{{ $asset->name }}"
-                                        width="400"
-                                        height="300"
-                                        loading="lazy"
-                                        decoding="async"
-                                        class="h-full w-full object-cover aspect-[4/3] transition duration-300 {{ $statusValue !== 'tersedia' ? 'filter grayscale contrast-125 opacity-75' : '' }}"
-                                    >
+                            @php
+                                $photoExists = $asset->photo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($asset->photo_path);
+                            @endphp
+                            <div class="relative w-full aspect-video rounded-xl bg-stone-100 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800 flex items-center justify-center overflow-hidden mb-3">
+                                @if($photoExists)
+                                    <img src="{{ asset('storage/' . $asset->photo_path) }}" 
+                                         alt="{{ $asset->name }}" 
+                                         loading="lazy" 
+                                         decoding="async" 
+                                         onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
+                                         class="w-full h-full object-cover">
+                                    <div class="hidden w-full h-full flex flex-col items-center justify-center p-4 text-center">
+                                        <svg class="w-8 h-8 text-stone-400 dark:text-stone-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                        <span class="text-xs text-stone-500 font-medium">Foto belum ada</span>
+                                    </div>
                                 @else
-                                    <div class="flex h-full w-full aspect-[4/3] flex-col items-center justify-center gap-2 text-stone-400 bg-stone-100 dark:bg-stone-800">
-                                        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/80 dark:bg-stone-700/80 border border-stone-200 dark:border-stone-600 shadow-sm">
-                                            <svg class="w-6 h-6 text-stone-400 dark:text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                                            </svg>
-                                        </div>
-                                        <span class="text-xs font-medium text-stone-400 dark:text-stone-300">
-                                             Foto belum tersedia
-                                        </span>
+                                    <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center">
+                                        <svg class="w-8 h-8 text-stone-400 dark:text-stone-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                        <span class="text-xs text-stone-500 font-medium">Foto belum ada</span>
                                     </div>
                                 @endif
 
                                 {{-- Status Badge Overlay --}}
-                                <div class="absolute top-3 right-3">
+                                <div class="absolute top-3 right-3 z-10">
                                     @if ($statusValue === 'tersedia')
                                         <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-neon-emerald dark:border dark:border-emerald-500/30 shadow-sm border border-emerald-200">
                                             ● Tersedia
@@ -141,7 +144,7 @@
                             </div>
 
                             {{-- Informasi Aset --}}
-                            <div class="p-5">
+                            <div>
 
                                 <div class="mb-2">
                                     @if ($asset->category)
@@ -179,7 +182,7 @@
                         </div>
 
                         {{-- Tombol Aksi --}}
-                        <div class="p-5 pt-0">
+                        <div class="mt-5 pt-0">
                             @if ($statusValue === 'tersedia')
                                 <a
                                     href="{{ route('assets.borrow', $asset) }}"

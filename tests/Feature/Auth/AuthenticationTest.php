@@ -19,8 +19,7 @@ class AuthenticationTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Email Siswa / NIP Guru');
-        $response->assertSee('contoh: 1234@smkn1bangsri.sch.id atau NIP Guru');
-        $response->assertSee('Siswa wajib masuk menggunakan');
+        $response->assertSee('isi email / sandi kalian disini');
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void
