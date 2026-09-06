@@ -203,9 +203,9 @@ class SiPintuSyncTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $response->assertSessionHas('success', 'Sinkronisasi berhasil! Data nomor telepon terbaru telah diperbarui dari SiPintu.');
+        $response->assertSessionHas('success', 'Sinkronisasi telah dijadwalkan dan sedang berjalan di background. Data akan diperbarui dalam beberapa saat — pastikan queue worker aktif (php artisan queue:work).');
         $this->assertDatabaseHas('audit_logs', [
-            'action' => 'sipintu.synced',
+            'action' => 'sipintu.sync_requested',
         ]);
     }
 
@@ -225,7 +225,7 @@ class SiPintuSyncTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $response->assertSessionHas('success', 'Sinkronisasi berhasil! Data nomor telepon terbaru telah diperbarui dari SiPintu.');
+        $response->assertSessionHas('success', 'Sinkronisasi telah dijadwalkan dan sedang berjalan di background. Data akan diperbarui dalam beberapa saat — pastikan queue worker aktif (php artisan queue:work).');
     }
 
     public function test_admin_can_trigger_sync_teachers_via_web_interface(): void
@@ -244,7 +244,7 @@ class SiPintuSyncTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $response->assertSessionHas('success', 'Sinkronisasi berhasil! Data nomor telepon terbaru telah diperbarui dari SiPintu.');
+        $response->assertSessionHas('success', 'Sinkronisasi telah dijadwalkan dan sedang berjalan di background. Data akan diperbarui dalam beberapa saat — pastikan queue worker aktif (php artisan queue:work).');
     }
 
     public function test_non_admin_cannot_trigger_sync_via_web_interface(): void
