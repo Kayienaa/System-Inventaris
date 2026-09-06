@@ -133,6 +133,8 @@ class WhatsAppReminderTest extends TestCase
 
     public function test_monitoring_index_displays_whatsapp_button_for_borrowed_and_overdue_only(): void
     {
+        $this->markTestSkipped('Tombol WhatsApp dinonaktifkan sementara (fitur tentatif).');
+
         $admin = User::factory()->create();
         $admin->assignRole('admin');
 
@@ -329,6 +331,8 @@ class WhatsAppReminderTest extends TestCase
 
     public function test_monitoring_index_shows_disabled_whatsapp_button_when_phone_is_missing(): void
     {
+        $this->markTestSkipped('Tombol WhatsApp dinonaktifkan sementara (fitur tentatif).');
+
         $admin = User::factory()->create();
         $admin->assignRole('admin');
 
@@ -358,4 +362,69 @@ class WhatsAppReminderTest extends TestCase
         $response->assertSee('title="Nomor WhatsApp peminjam belum terdaftar di profil"', false);
         $response->assertSee('disabled', false);
     }
+
+    public function test_monitoring_index_does_not_display_whatsapp_button_when_disabled(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $siswa = User::factory()->create(['name' => 'Siti Aminah']);
+        $siswa->assignRole('siswa');
+        SiswaProfile::create([
+            'user_id' => $siswa->id,
+            'nis' => '11223',
+            'class_name' => 'X RPL 1',
+            'phone' => '08987654321',
+        ]);
+
+        $asset = Asset::first();
+
+        Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::Borrowed,
+            'requested_at' => now()->subDay(),
+            'borrowed_at' => now()->subDay(),
+            'due_at' => now()->addDays(2),
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.borrowings.index'));
+
+        $response->assertStatus(200);
+        $response->assertDontSee('title="Kirim Pengingat WhatsApp ke Peminjam"', false);
+        $response->assertDontSee('title="Nomor WhatsApp peminjam belum terdaftar di profil"', false);
+    }
+
+    public function test_borrowing_show_page_does_not_display_whatsapp_button_when_disabled(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $siswa = User::factory()->create(['name' => 'Siti Aminah']);
+        $siswa->assignRole('siswa');
+        SiswaProfile::create([
+            'user_id' => $siswa->id,
+            'nis' => '11223',
+            'class_name' => 'X RPL 1',
+            'phone' => '08987654321',
+        ]);
+
+        $asset = Asset::first();
+
+        $borrowing = Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::Borrowed,
+            'requested_at' => now()->subDay(),
+            'borrowed_at' => now()->subDay(),
+            'due_at' => now()->addDays(2),
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.borrowings.show', $borrowing));
+
+        $response->assertStatus(200);
+        $response->assertDontSee('title="Kirim Pengingat WhatsApp ke Peminjam"', false);
+        $response->assertDontSee('title="Nomor WhatsApp peminjam belum terdaftar di profil"', false);
+    }
 }
+

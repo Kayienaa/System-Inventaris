@@ -43,6 +43,7 @@
             </div>
 
             <div class="flex items-center gap-2">
+                {{-- Fitur WhatsApp dinonaktifkan sementara
                 @if(!empty($detail['wa_url']))
                     <a
                         href="{{ $detail['wa_url'] }}"
@@ -69,6 +70,7 @@
                         Nomor WA Belum Terdaftar
                     </button>
                 @endif
+                --}}
                 <a
                     href="{{ route('admin.borrowings.export-pdf') }}"
                     target="_blank"
