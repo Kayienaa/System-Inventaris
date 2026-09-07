@@ -16,6 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+            'phone.filled' => \App\Http\Middleware\EnsurePhoneIsFilled::class,
+        ]);
+
+        $middleware->appendToGroup('web', [
+            \App\Http\Middleware\EnsurePhoneIsFilled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

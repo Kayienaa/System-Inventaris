@@ -401,7 +401,6 @@
                             {{-- Aksi --}}
                             <td class="px-5 py-4 text-center">
                                 <div class="inline-flex items-center justify-center gap-1.5">
-                                    {{-- Fitur WhatsApp dinonaktifkan sementara
                                     @if($canSendWhatsApp && $waUrl)
                                         <a
                                             href="{{ $waUrl }}"
@@ -426,7 +425,6 @@
                                             </svg>
                                         </button>
                                     @endif
-                                    --}}
 
                                     <button
                                         type="button"
@@ -783,7 +781,6 @@
             <div class="bg-stone-50 dark:bg-[#0E1420] px-6 py-3.5 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between">
                 <span class="text-[11px] text-stone-400 dark:text-stone-500 font-mono" x-text="'ID Transaksi: #' + selectedBorrowing?.id"></span>
                 <div class="flex items-center gap-2">
-                    {{-- Fitur WhatsApp dinonaktifkan sementara
                     <template x-if="selectedBorrowing?.wa_url">
                         <a
                             :href="selectedBorrowing?.wa_url"
@@ -811,7 +808,6 @@
                             Nomor WA Belum Terdaftar
                         </button>
                     </template>
-                    --}}
                     <button
                         type="button"
                         @click="closeDetail()"

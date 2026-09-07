@@ -42,31 +42,34 @@ class WhatsAppNotificationService
             : '-';
 
         $isOverdue = $borrowing->isOverdue() || ($borrowing->due_at && now()->isAfter($borrowing->due_at));
-        $statusLabel = $isOverdue ? 'SUDAH MELEWATI BATAS (OVERDUE)' : 'MENDEKATI TENGGAT';
+        $statusLabel = $isOverdue ? 'STATUS: SUDAH MELEWATI TENGGAT (OVERDUE) / SUDAH MELEWATI BATAS (OVERDUE)' : 'MENDEKATI TENGGAT';
 
-        $lines = [
-            '*PENGINGAT PENGEMBALIAN BARANG INVENTARIS*',
-            '*TE-VAULT SMKN 1 BANGSRI*',
-            '--------------------------------------------',
-            "Halo *{$borrowerName}* ({$identityStr}),",
-            '',
-            'Kami menginformasikan status peminjaman barang inventaris Anda:',
-            '',
-            '📦 *Detail Barang:*',
-            "• Nama Barang: {$assetName}",
-            "• Kode Unik: {$assetCode}",
-            "• Serial Number: {$serialNumber}",
-            '',
-            '📅 *Waktu Peminjaman:*',
-            "• Tanggal Pinjam: {$borrowedAt}",
-            "• Batas Pengembalian (Due Date): {$dueAt}",
-            '',
-            "⚠️ *Status Peringatan:* *{$statusLabel}*",
-            '',
-        ];
+        $lines = [];
+        if ($isOverdue) {
+            $lines[] = '*[PEMBERITAHUAN OVERDUE INVENTARIS TEFA SMKN 1 BANGSRI]*';
+        } else {
+            $lines[] = '*PENGINGAT PENGEMBALIAN BARANG INVENTARIS*';
+        }
+        $lines[] = '*TEFA SMKN 1 Bangsri*';
+        $lines[] = '--------------------------------------------';
+        $lines[] = "Halo *{$borrowerName}* ({$identityStr}),";
+        $lines[] = '';
+        $lines[] = 'Kami menginformasikan status peminjaman barang inventaris Anda:';
+        $lines[] = '';
+        $lines[] = '📦 *Detail Barang:*';
+        $lines[] = "• Nama Barang: {$assetName}";
+        $lines[] = "• Kode Unik: {$assetCode}";
+        $lines[] = "• Serial Number: {$serialNumber}";
+        $lines[] = '';
+        $lines[] = '📅 *Waktu Peminjaman:*';
+        $lines[] = "• Tanggal Pinjam: {$borrowedAt}";
+        $lines[] = "• Batas Pengembalian (Due Date): {$dueAt}";
+        $lines[] = '';
+        $lines[] = "⚠️ *Status Peringatan:* *{$statusLabel}*";
+        $lines[] = '';
 
         if ($isOverdue) {
-            $lines[] = 'Masa peminjaman barang tersebut telah melewati batas waktu yang disepakati. Mohon *SEGERA* mengembalikan unit barang beserta kelengkapannya ke ruang TEFA SMKN 1 Bangsri.';
+            $lines[] = 'Masa peminjaman barang tersebut telah melewati batas waktu yang disepakati (OVERDUE). Mohon *SEGERA* mengembalikan unit barang beserta kelengkapannya ke ruang TEFA SMKN 1 Bangsri.';
         } else {
             $lines[] = 'Masa peminjaman barang tersebut sudah mendekati batas tenggat waktu. Mohon untuk mempersiapkan pengembalian unit tepat waktu.';
         }

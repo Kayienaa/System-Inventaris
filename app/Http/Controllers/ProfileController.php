@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\WhatsAppNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,18 +27,50 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        if ($request->user()->hasAnyRole(['guru', 'siswa'])) {
+        $user = $request->user();
+
+        if ($user->hasAnyRole(['guru', 'siswa'])) {
+            // Tolak perubahan jika user mencoba mengubah data identitas tanpa mengisi/mengirim nomor WhatsApp
+            if (! $request->filled('phone')) {
+                return Redirect::route('profile.edit')
+                    ->with('error', 'Data akun Anda dikelola secara terpusat melalui SiPintu dan tidak dapat diubah langsung.');
+            }
+
+            // Normalisasi nomor telepon
+            $normalized = WhatsAppNotificationService::normalizePhoneNumber($request->input('phone'));
+
+            if ($user->hasRole('siswa')) {
+                if ($user->siswaProfile) {
+                    $user->siswaProfile->update(['phone' => $normalized]);
+                } else {
+                    $user->siswaProfile()->create([
+                        'nis' => 'S-' . $user->id,
+                        'phone' => $normalized,
+                    ]);
+                }
+            } elseif ($user->hasRole('guru')) {
+                if ($user->guruProfile) {
+                    $user->guruProfile->update(['phone' => $normalized]);
+                } else {
+                    $user->guruProfile()->create([
+                        'nip' => 'G-' . $user->id,
+                        'phone' => $normalized,
+                    ]);
+                }
+            }
+
             return Redirect::route('profile.edit')
-                ->with('error', 'Data akun Anda dikelola secara terpusat melalui SiPintu dan tidak dapat diubah langsung.');
+                ->with('status', 'profile-updated')
+                ->with('success', 'Nomor telepon berhasil diperbarui.');
         }
 
-        $request->user()->fill($request->validated());
+        $user->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
