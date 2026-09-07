@@ -77,6 +77,16 @@ class AssetManagementTest extends TestCase
 
         $responseCreate = $this->actingAs($this->siswa)->get(route('admin.assets.create'));
         $responseCreate->assertForbidden();
+
+        $asset = Asset::create([
+            'asset_category_id' => $this->category->id,
+            'asset_code' => 'TEST-000',
+            'name' => 'Asset Test',
+            'condition' => AssetCondition::Baik,
+            'availability_status' => AssetAvailabilityStatus::Tersedia,
+        ]);
+        $responseShow = $this->actingAs($this->siswa)->get(route('admin.assets.show', $asset));
+        $responseShow->assertForbidden();
     }
 
     public function test_admin_can_view_asset_index_with_search_and_filters(): void
@@ -130,6 +140,39 @@ class AssetManagementTest extends TestCase
         $response->assertOk();
         $response->assertSee('Tambah Unit Aset');
         $response->assertSee($this->category->name);
+    }
+
+    public function test_admin_can_view_asset_detail_with_borrowing_history(): void
+    {
+        $asset = Asset::create([
+            'asset_category_id' => $this->category->id,
+            'asset_code' => 'DETAIL-001',
+            'name' => 'Asus ROG Zephyrus G14',
+            'brand' => 'Asus',
+            'model' => 'GA402RJ',
+            'serial_number' => 'ROG-SN-12345',
+            'condition' => AssetCondition::Baik,
+            'availability_status' => AssetAvailabilityStatus::Dipinjam,
+        ]);
+
+        Borrowing::create([
+            'borrower_user_id' => $this->siswa->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::Borrowed,
+            'requested_at' => now()->subDays(2),
+            'borrowed_at' => now()->subDays(2),
+            'due_at' => now()->addDay(),
+            'borrower_note' => 'Untuk rendering animasi 3D',
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.assets.show', $asset));
+
+        $response->assertOk();
+        $response->assertSee('Asus ROG Zephyrus G14');
+        $response->assertSee('DETAIL-001');
+        $response->assertSee('ROG-SN-12345');
+        $response->assertSee('Riwayat Transaksi Peminjaman Unit');
+        $response->assertSee($this->siswa->name);
     }
 
     public function test_admin_can_store_new_asset_with_photo_and_audit_log(): void
@@ -360,5 +403,14 @@ class AssetManagementTest extends TestCase
             'entity_type' => Asset::class,
             'entity_id' => $asset->id,
         ]);
+    }
+
+    public function test_asset_photo_url_accessor_encodes_special_characters(): void
+    {
+        $asset = new Asset(['photo_path' => 'assets/laptop-acer-#11.jpg']);
+        $this->assertStringContainsString('assets/laptop-acer-%2311.jpg', $asset->photo_url);
+
+        $emptyAsset = new Asset(['photo_path' => null]);
+        $this->assertNull($emptyAsset->photo_url);
     }
 }

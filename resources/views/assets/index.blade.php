@@ -78,7 +78,6 @@
                 @foreach ($assets as $asset)
 
                     @php
-                        $photoExists = $asset->photo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($asset->photo_path);
                         $statusValue = $asset->availability_status->value ?? (string) $asset->availability_status;
                     @endphp
 
@@ -88,12 +87,9 @@
 
                         <div>
                             {{-- Foto Aset --}}
-                            @php
-                                $photoExists = $asset->photo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($asset->photo_path);
-                            @endphp
                             <div class="relative w-full aspect-video rounded-xl bg-stone-100 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800 flex items-center justify-center overflow-hidden mb-3">
-                                @if($photoExists)
-                                    <img src="{{ asset('storage/' . $asset->photo_path) }}" 
+                                @if($asset->photo_url)
+                                    <img src="{{ $asset->photo_url }}" 
                                          alt="{{ $asset->name }}" 
                                          loading="lazy" 
                                          decoding="async" 

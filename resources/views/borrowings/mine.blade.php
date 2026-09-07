@@ -33,16 +33,22 @@
                     <div class="flex items-start gap-4">
                         {{-- Thumbnail --}}
                         <div class="w-16 h-16 rounded-xl bg-stone-100 dark:bg-stone-800 overflow-hidden shrink-0 border border-stone-200 dark:border-stone-700 flex items-center justify-center aspect-square">
-                            @if ($borrowing->asset?->photo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($borrowing->asset->photo_path))
+                            @if ($borrowing->asset?->photo_url)
                                 <img
-                                    src="{{ asset('storage/' . $borrowing->asset->photo_path) }}"
+                                    src="{{ $borrowing->asset->photo_url }}"
                                     class="w-full h-full object-cover aspect-square"
                                     alt="{{ $borrowing->asset->name }}"
                                     width="64"
                                     height="64"
                                     loading="lazy"
                                     decoding="async"
+                                    onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
                                 >
+                                <div class="hidden w-full h-full flex items-center justify-center">
+                                    <svg class="w-7 h-7 text-stone-400 dark:text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
                             @else
                                 <svg class="w-7 h-7 text-stone-400 dark:text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>

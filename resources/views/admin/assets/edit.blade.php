@@ -277,11 +277,8 @@
 
                         <template x-if="!photoPreview">
                             <div class="w-full h-full">
-                                @php
-                                    $photoExists = $asset->photo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($asset->photo_path);
-                                @endphp
-                                @if($photoExists)
-                                    <img src="{{ asset('storage/' . $asset->photo_path) }}" 
+                                @if($asset->photo_url)
+                                    <img src="{{ $asset->photo_url }}" 
                                          alt="{{ $asset->name }}" 
                                          loading="lazy" 
                                          decoding="async" 

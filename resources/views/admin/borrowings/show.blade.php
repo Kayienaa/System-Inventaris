@@ -331,16 +331,23 @@
     {{-- Lightbox Zoom Foto Bukti --}}
     <div
         x-show="previewImage !== null"
-        class="fixed inset-0 z-60 bg-black/90 flex items-center justify-center p-4"
+        class="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
         x-cloak
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        @keydown.escape.window="previewImage = null"
         @click="previewImage = null"
     >
-        <div class="relative max-w-4xl max-h-[90vh]">
+        <div class="relative z-[80] max-w-4xl max-h-[90vh]" @click.stop>
             <img :src="previewImage" class="max-w-full max-h-[85vh] rounded-xl object-contain shadow-2xl border border-white/20" alt="Preview Foto Bukti">
             <button
                 type="button"
                 @click="previewImage = null"
-                class="absolute -top-10 right-0 text-white hover:text-gray-300 font-bold text-sm bg-white/20 px-3 py-1 rounded-lg backdrop-blur-md"
+                class="absolute -top-10 right-0 text-white hover:text-white font-bold text-sm bg-black/50 hover:bg-black/75 px-3 py-1 rounded-lg backdrop-blur-md transition shadow-md cursor-pointer border border-white/20"
             >
                 ✕ Tutup Gambar
             </button>

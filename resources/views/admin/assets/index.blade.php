@@ -228,44 +228,40 @@
                         @php
                             $statusVal = $asset->availability_status->value ?? (string) $asset->availability_status;
                             $condVal = $asset->condition->value ?? (string) $asset->condition;
-                            $hasPhoto = $asset->photo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($asset->photo_path);
                         @endphp
                         <tr class="border-b border-stone-100 dark:border-stone-800/80 hover:bg-stone-50/50 dark:hover:bg-cyan-500/5 transition-colors">
                             {{-- Info Unit Aset (Thumbnail & Name) --}}
                             <td class="py-3 px-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-12 h-12 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 overflow-hidden shrink-0 flex items-center justify-center aspect-square">
-                                        @php
-                                            $photoExists = $asset->photo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($asset->photo_path);
-                                        @endphp
-                                        @if($photoExists)
-                                            <img src="{{ asset('storage/' . $asset->photo_path) }}" 
+                                    <div class="relative w-12 h-12 rounded-lg bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex items-center justify-center overflow-hidden shrink-0">
+                                        @if($asset->photo_url)
+                                            <img src="{{ $asset->photo_url }}" 
                                                  alt="{{ $asset->name }}" 
                                                  loading="lazy" 
                                                  decoding="async" 
                                                  onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
-                                                 class="w-full h-full object-cover rounded-lg">
-                                            <div class="hidden w-full h-full min-h-[50px] bg-stone-100 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800 rounded-lg flex flex-col items-center justify-center p-1 text-center">
-                                                <svg class="w-4 h-4 text-stone-400 dark:text-stone-600 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                 class="w-full h-full object-cover">
+                                            <div class="hidden w-full h-full flex flex-col items-center justify-center text-center p-1">
+                                                <svg class="w-4 h-4 text-stone-400 dark:text-stone-500 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
                                                 </svg>
-                                                <span class="text-[9px] text-stone-500 font-medium leading-none">Foto belum ada</span>
+                                                <span class="text-[9px] text-stone-400 leading-tight">Foto belum ada</span>
                                             </div>
                                         @else
-                                            <div class="w-full h-full min-h-[50px] bg-stone-100 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800 rounded-lg flex flex-col items-center justify-center p-1 text-center">
-                                                <svg class="w-4 h-4 text-stone-400 dark:text-stone-600 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <div class="w-full h-full flex flex-col items-center justify-center text-center p-1">
+                                                <svg class="w-4 h-4 text-stone-400 dark:text-stone-500 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
                                                 </svg>
-                                                <span class="text-[9px] text-stone-500 font-medium leading-none">Foto belum ada</span>
+                                                <span class="text-[9px] text-stone-400 leading-tight">Foto belum ada</span>
                                             </div>
                                         @endif
                                     </div>
                                     <div>
-                                        <p class="font-bold text-stone-800 dark:text-stone-200 text-sm hover:text-amber-700 dark:hover:text-amber-400 transition">
+                                        <a href="{{ route('admin.assets.show', $asset) }}" class="font-bold text-stone-800 dark:text-stone-200 text-sm hover:text-[#6F4E37] dark:hover:text-amber-400 transition block">
                                             {{ $asset->name }}
-                                        </p>
+                                        </a>
                                         <p class="text-stone-400 dark:text-stone-500 text-[11px]">
                                             {{ $asset->brand ?? 'Tanpa Merk' }} {{ $asset->model ? '• ' . $asset->model : '' }}
                                         </p>
@@ -354,6 +350,17 @@
                             {{-- Aksi --}}
                             <td class="py-3 px-4 text-center whitespace-nowrap">
                                 <div class="inline-flex items-center gap-1.5">
+                                    <a
+                                        href="{{ route('admin.assets.show', $asset) }}"
+                                        class="p-1.5 rounded-lg border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition"
+                                        title="Lihat Detail & Riwayat Aset"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                    </a>
+
                                     <a
                                         href="{{ route('admin.assets.edit', $asset) }}"
                                         class="p-1.5 rounded-lg border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:text-amber-700 dark:hover:text-amber-400 hover:border-amber-300 dark:hover:border-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition"

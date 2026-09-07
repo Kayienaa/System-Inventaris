@@ -71,6 +71,22 @@ class Asset extends Model
     }
 
     /**
+     * URL publik foto aset yang aman dari karakter khusus seperti '#'.
+     */
+    public function getPhotoUrlAttribute(): ?string
+    {
+        if (empty($this->photo_path)) {
+            return null;
+        }
+
+        // Encode segmen nama berkas agar tanda '#' berubah menjadi '%23'
+        $segments = explode('/', ltrim($this->photo_path, '/'));
+        $encodedSegments = array_map('rawurlencode', $segments);
+
+        return asset('storage/' . implode('/', $encodedSegments));
+    }
+
+    /**
      * Retrieve the model for a bound value (by id or asset_code).
      */
     public function resolveRouteBinding($value, $field = null)

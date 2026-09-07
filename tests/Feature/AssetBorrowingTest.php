@@ -64,7 +64,7 @@ class AssetBorrowingTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Laptop');
-        $response->assertSee('LP-TEFA-001');
+        $response->assertSee('LP-TEFA-005');
     }
 
     public function test_user_can_filter_katalog_by_category(): void

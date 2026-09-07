@@ -33,15 +33,15 @@ class BorrowingExportTest extends TestCase
         $this->assertTrue($categories->pluck('code')->contains('CAT-LPT'));
         $this->assertTrue($categories->pluck('code')->contains('CAT-HP'));
 
-        // Pastikan jumlah master aset tepat 30 (27 Laptop & 3 HP)
+        // Pastikan jumlah master aset tepat 31 (27 Laptop & 4 HP)
         $assets = Asset::all();
-        $this->assertCount(30, $assets);
+        $this->assertCount(31, $assets);
 
         $laptops = Asset::whereHas('category', fn ($q) => $q->where('code', 'CAT-LPT'))->get();
         $hps = Asset::whereHas('category', fn ($q) => $q->where('code', 'CAT-HP'))->get();
 
         $this->assertCount(27, $laptops);
-        $this->assertCount(3, $hps);
+        $this->assertCount(4, $hps);
     }
 
     public function test_admin_can_export_borrowings_csv(): void

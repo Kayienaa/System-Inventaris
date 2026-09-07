@@ -43,18 +43,28 @@ class DashboardController extends Controller
             ];
         }
 
-        // Tren Peminjaman 7 Hari Terakhir
+        // Tren Peminjaman 7 Hari Terakhir — 1 query, group by tanggal
+        $rangeStart = \Carbon\Carbon::today()->subDays(6)->startOfDay();
+        $rangeEnd   = \Carbon\Carbon::today()->endOfDay();
+
+        $dailyCounts = Borrowing::query()
+            ->selectRaw('DATE(COALESCE(requested_at, created_at)) as day, COUNT(*) as total')
+            ->where(function ($q) use ($rangeStart, $rangeEnd) {
+                $q->whereBetween('requested_at', [$rangeStart, $rangeEnd])
+                    ->orWhere(function ($fallback) use ($rangeStart, $rangeEnd) {
+                        $fallback->whereNull('requested_at')
+                            ->whereBetween('created_at', [$rangeStart, $rangeEnd]);
+                    });
+            })
+            ->groupBy('day')
+            ->pluck('total', 'day');
+
         $chartLabels = [];
         $chartData = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = \Carbon\Carbon::today()->subDays($i);
             $chartLabels[] = $date->translatedFormat('d M');
-            $count = Borrowing::whereDate('requested_at', $date)
-                ->orWhere(function ($q) use ($date) {
-                    $q->whereNull('requested_at')->whereDate('created_at', $date);
-                })
-                ->count();
-            $chartData[] = $count;
+            $chartData[] = (int) ($dailyCounts[$date->toDateString()] ?? 0);
         }
 
         // Filter Peminjaman Rentang Minggu Aktif
@@ -86,9 +96,21 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        $totalAset = Asset::count();
-        $barangTersedia = Asset::where('availability_status', \App\Enums\AssetAvailabilityStatus::Tersedia)->count();
-        $barangDipinjam = Asset::where('availability_status', \App\Enums\AssetAvailabilityStatus::Dipinjam)->count();
+        // Gabung 3 query count Asset menjadi 1 query agregasi
+        $assetStats = Asset::query()
+            ->selectRaw('
+                COUNT(*) as total,
+                SUM(CASE WHEN availability_status = ? THEN 1 ELSE 0 END) as tersedia,
+                SUM(CASE WHEN availability_status = ? THEN 1 ELSE 0 END) as dipinjam
+            ', [
+                \App\Enums\AssetAvailabilityStatus::Tersedia->value,
+                \App\Enums\AssetAvailabilityStatus::Dipinjam->value,
+            ])
+            ->first();
+
+        $totalAset = (int) ($assetStats->total ?? 0);
+        $barangTersedia = (int) ($assetStats->tersedia ?? 0);
+        $barangDipinjam = (int) ($assetStats->dipinjam ?? 0);
         $totalOverdue = Borrowing::whereIn('status', [BorrowingStatus::Borrowed, BorrowingStatus::ReturnPendingVerification])
             ->whereNull('returned_at')
             ->where('due_at', '<', now())

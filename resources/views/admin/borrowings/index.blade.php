@@ -17,7 +17,7 @@
             this.previewImage = null;
         }
     }"
-    @keydown.escape.window="closeDetail()"
+    @keydown.escape.window="if (previewImage) { previewImage = null; } else { closeDetail(); }"
 >
 
     {{-- Page Header --}}
@@ -241,7 +241,7 @@
                                     'model' => $b->asset?->model ?? '-',
                                     'serial_number' => $b->asset?->serial_number ?? '-',
                                     'category' => $b->asset?->category?->name ?? '-',
-                                    'photo_url' => ($b->asset?->photo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($b->asset->photo_path)) ? asset('storage/' . $b->asset->photo_path) : null,
+                                    'photo_url' => $b->asset?->photo_url,
                                 ],
                                 'dates' => [
                                     'borrowed_at' => $b->borrowed_at ? $b->borrowed_at->format('d M Y, H:i') . ' WIB' : ($b->requested_at ? $b->requested_at->format('d M Y, H:i') . ' WIB' : '-'),
@@ -287,21 +287,25 @@
 
                             {{-- Barang yang Dipinjam --}}
                             <td class="px-5 py-4">
-                                @php
-                                    $assetPhotoExists = $b->asset?->photo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($b->asset->photo_path);
-                                @endphp
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 overflow-hidden shrink-0 flex items-center justify-center aspect-square">
-                                        @if ($assetPhotoExists)
+                                        @if ($b->asset?->photo_url)
                                             <img
-                                                src="{{ asset('storage/' . $b->asset->photo_path) }}"
+                                                src="{{ $b->asset->photo_url }}"
                                                 alt="{{ $b->asset->name }}"
                                                 width="40"
                                                 height="40"
                                                 loading="lazy"
                                                 decoding="async"
+                                                onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
                                                 class="w-full h-full object-cover aspect-square"
                                             >
+                                            <div class="hidden w-full h-full bg-stone-900/60 flex items-center justify-center" title="Barang belum memiliki foto">
+                                                <svg class="w-5 h-5 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                </svg>
+                                            </div>
                                         @else
                                             <div class="w-full h-full bg-stone-900/60 flex items-center justify-center" title="Barang belum memiliki foto">
                                                 <svg class="w-5 h-5 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -823,16 +827,23 @@
     {{-- Lightbox Zoom Foto Bukti --}}
     <div
         x-show="previewImage !== null"
-        class="fixed inset-0 z-60 bg-black/90 flex items-center justify-center p-4"
+        class="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
         x-cloak
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        @keydown.escape.window.stop="previewImage = null"
         @click="previewImage = null"
     >
-        <div class="relative max-w-4xl max-h-[90vh]">
+        <div class="relative z-[80] max-w-4xl max-h-[90vh]" @click.stop>
             <img :src="previewImage" class="max-w-full max-h-[85vh] rounded-xl object-contain shadow-2xl border border-white/20" alt="Preview Foto Bukti">
             <button
                 type="button"
                 @click="previewImage = null"
-                class="absolute -top-10 right-0 text-white hover:text-gray-300 font-bold text-sm bg-white/20 px-3 py-1 rounded-lg backdrop-blur-md"
+                class="absolute -top-10 right-0 text-white hover:text-white font-bold text-sm bg-black/50 hover:bg-black/75 px-3 py-1 rounded-lg backdrop-blur-md transition shadow-md cursor-pointer border border-white/20"
             >
                 ✕ Tutup Gambar
             </button>

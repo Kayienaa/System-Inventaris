@@ -129,11 +129,18 @@ class AssetManagementController extends Controller implements HasMiddleware
     }
 
     /**
-     * Redirect show ke edit aset.
+     * Menampilkan detail unit aset dan riwayat peminjaman.
      */
-    public function show(Asset $asset): View|RedirectResponse
+    public function show(Asset $asset): View
     {
-        return redirect()->route('admin.assets.edit', $asset);
+        $asset->load('category');
+
+        $borrowingHistory = $asset->borrowings()
+            ->with(['borrower.siswaProfile', 'borrower.guruProfile'])
+            ->latest('requested_at')
+            ->paginate(10);
+
+        return view('admin.assets.show', compact('asset', 'borrowingHistory'));
     }
 
     /**
