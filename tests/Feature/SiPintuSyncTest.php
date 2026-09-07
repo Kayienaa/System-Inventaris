@@ -164,6 +164,11 @@ class SiPintuSyncTest extends TestCase
             'email' => 'siswa@smkn1bangsri.sch.id',
         ]);
         $siswa->assignRole('siswa');
+        SiswaProfile::create([
+            'user_id' => $siswa->id,
+            'nis' => '12345',
+            'phone' => '6281234567890',
+        ]);
 
         // Siswa melihat halaman profil
         $response = $this->actingAs($siswa)->get('/profile');
@@ -251,6 +256,11 @@ class SiPintuSyncTest extends TestCase
     {
         $siswa = User::factory()->create();
         $siswa->assignRole('siswa');
+        SiswaProfile::create([
+            'user_id' => $siswa->id,
+            'nis' => '12345',
+            'phone' => '6281234567890',
+        ]);
 
         $response = $this->actingAs($siswa)->post('/admin/sync-sipintu', [
             'type' => 'all',

@@ -165,14 +165,7 @@ class SiPintuSyncService
                                 $created++;
                             }
 
-                            // 2. Tetapkan role Spatie 'siswa' jika belum
-                            if (! $user->relationLoaded('roles') || ! $user->roles->contains('name', 'siswa')) {
-                                if (! $user->hasRole('siswa')) {
-                                    $user->assignRole('siswa');
-                                }
-                            }
-
-                            // 3. Simpan / update SiswaProfile
+                            // 2. Simpan / update SiswaProfile
                             if ($nis !== '') {
                                 $siswaProfile = $existingProfilesByUserId[$user->id] 
                                     ?? ($existingProfilesByNis[$nis] ?? new SiswaProfile(['user_id' => $user->id]));
@@ -190,6 +183,13 @@ class SiPintuSyncService
 
                                 $existingProfilesByNis[$nis] = $siswaProfile;
                                 $existingProfilesByUserId[$user->id] = $siswaProfile;
+
+                                // 3. Tetapkan role Spatie 'siswa' HANYA setelah profile berhasil disimpan
+                                if (! $user->relationLoaded('roles') || ! $user->roles->contains('name', 'siswa')) {
+                                    if (! $user->hasRole('siswa')) {
+                                        $user->assignRole('siswa');
+                                    }
+                                }
                             }
                         } catch (\Throwable $e) {
                             Log::warning("Error syncing student record (" . ($studentData['nis'] ?? 'unknown') . "): " . $e->getMessage());
@@ -339,14 +339,7 @@ class SiPintuSyncService
                                 $created++;
                             }
 
-                            // 2. Tetapkan role Spatie 'guru' jika belum
-                            if (! $user->relationLoaded('roles') || ! $user->roles->contains('name', 'guru')) {
-                                if (! $user->hasRole('guru')) {
-                                    $user->assignRole('guru');
-                                }
-                            }
-
-                            // 3. Simpan / update GuruProfile
+                            // 2. Simpan / update GuruProfile
                             if ($nip !== '') {
                                 $guruProfile = $existingProfilesByUserId[$user->id] 
                                     ?? ($existingProfilesByNip[$nip] ?? new GuruProfile(['user_id' => $user->id]));
@@ -362,6 +355,13 @@ class SiPintuSyncService
 
                                 $existingProfilesByNip[$nip] = $guruProfile;
                                 $existingProfilesByUserId[$user->id] = $guruProfile;
+
+                                // 3. Tetapkan role Spatie 'guru' HANYA setelah profile berhasil disimpan
+                                if (! $user->relationLoaded('roles') || ! $user->roles->contains('name', 'guru')) {
+                                    if (! $user->hasRole('guru')) {
+                                        $user->assignRole('guru');
+                                    }
+                                }
                             }
                         } catch (\Throwable $e) {
                             Log::warning("Error syncing teacher record (" . ($teacherData['nip'] ?? 'unknown') . "): " . $e->getMessage());

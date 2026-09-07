@@ -9,6 +9,7 @@ use App\Models\Asset;
 use App\Models\AssetCategory;
 use App\Models\AuditLog;
 use App\Models\Borrowing;
+use App\Models\SiswaProfile;
 use App\Models\User;
 use Database\Seeders\AssetCategorySeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -44,6 +45,11 @@ class AssetManagementTest extends TestCase
 
         $this->siswa = User::factory()->create(['name' => 'Siswa Test']);
         $this->siswa->assignRole('siswa');
+        SiswaProfile::create([
+            'user_id' => $this->siswa->id,
+            'nis' => '12345',
+            'phone' => '6281234567890',
+        ]);
 
         $this->category = AssetCategory::first() ?? AssetCategory::factory()->create();
     }

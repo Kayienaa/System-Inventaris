@@ -115,6 +115,11 @@ class BorrowingExportTest extends TestCase
     {
         $siswa = User::factory()->create();
         $siswa->assignRole('siswa');
+        \App\Models\SiswaProfile::create([
+            'user_id' => $siswa->id,
+            'nis' => '12345',
+            'phone' => '6281234567890',
+        ]);
 
         $this->actingAs($siswa)->get(route('admin.borrowings.export-excel'))->assertStatus(403);
         $this->actingAs($siswa)->get(route('admin.borrowings.export-pdf'))->assertStatus(403);

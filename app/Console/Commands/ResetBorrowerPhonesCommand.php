@@ -27,6 +27,14 @@ class ResetBorrowerPhonesCommand extends Command
      */
     public function handle(): int
     {
+        if (! $this->option('force')) {
+            if (! $this->confirm('Tindakan ini akan MENGHAPUS (NULL-kan) SEMUA nomor WhatsApp siswa & guru. Lanjutkan?')) {
+                $this->warn('Operasi reset dibatalkan.');
+
+                return Command::SUCCESS;
+            }
+        }
+
         $this->info('Memulai proses pembersihan nomor WhatsApp profil peminjam TEFA...');
 
         $siswaCount = SiswaProfile::whereNotNull('phone')->count();

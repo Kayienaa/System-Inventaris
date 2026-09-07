@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Asset;
 use App\Models\AuditLog;
+use App\Models\SiswaProfile;
 use App\Models\User;
 use App\Services\AuditLogService;
 use Database\Seeders\AssetCategorySeeder;
@@ -28,6 +29,11 @@ class AuditLogTest extends TestCase
     {
         $siswa = User::factory()->create();
         $siswa->assignRole('siswa');
+        SiswaProfile::create([
+            'user_id' => $siswa->id,
+            'nis' => '12345',
+            'phone' => '6281234567890',
+        ]);
 
         $response = $this->actingAs($siswa)->get(route('admin.audit-logs.index'));
         $response->assertStatus(403);

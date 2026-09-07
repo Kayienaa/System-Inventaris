@@ -185,6 +185,13 @@ class WhatsAppNotificationService
             return null;
         }
 
+        // Guard plausibilitas akhir: pastikan $phone yang sudah dinormalisasi cocok dengan regex nomor seluler Indonesia
+        if (! preg_match('/^628[1-9][0-9]{6,10}$/', $phone)) {
+            Log::warning("Peminjaman ID {$borrowing->id} oleh User ID {$user?->id} ({$user?->name}) memiliki nomor WhatsApp tidak valid / cacat / landline: {$phone}");
+
+            return null;
+        }
+
         // 4. Pastikan kembalian URL wajib berformat: https://wa.me/{nomor_clean}?text={encoded_message}
         $message = self::buildReminderMessage($borrowing);
         $encodedMessage = rawurlencode($message);

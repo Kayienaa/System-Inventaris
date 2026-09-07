@@ -9,6 +9,23 @@ use Symfony\Component\HttpFoundation\Response;
 class EnsurePhoneIsFilled
 {
     /**
+     * Daftar route yang dikecualikan dari pengalihan wajib nomor HP.
+     *
+     * @var list<string>
+     */
+    protected array $exceptRoutes = [
+        'complete-phone',
+        'complete-phone.store',
+        'logout',
+        'verification.notice',
+        'verification.send',
+        'verification.verify',
+        'password.confirm',
+        'password.update',
+        'storage.local',
+    ];
+
+    /**
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
@@ -18,18 +35,15 @@ class EnsurePhoneIsFilled
         $user = $request->user();
 
         if ($user && $user->hasAnyRole(['siswa', 'guru'])) {
-            $hasProfile = $user->siswaProfile !== null || $user->guruProfile !== null;
+            $phone = $user->siswaProfile?->phone ?: $user->guruProfile?->phone;
 
-            if ($hasProfile) {
-                $phone = $user->siswaProfile?->phone ?: $user->guruProfile?->phone;
-
-                if (empty($phone)) {
-                    if ($request->routeIs('complete-phone', 'complete-phone.store', 'logout')) {
-                        return $next($request);
-                    }
-
-                    return redirect()->route('complete-phone');
+            // Jika nomor HP kosong atau baris profil belum ada di database
+            if (empty($phone)) {
+                if ($request->routeIs($this->exceptRoutes)) {
+                    return $next($request);
                 }
+
+                return redirect()->route('complete-phone');
             }
         }
 

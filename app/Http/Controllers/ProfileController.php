@@ -40,23 +40,19 @@ class ProfileController extends Controller
             $normalized = WhatsAppNotificationService::normalizePhoneNumber($request->input('phone'));
 
             if ($user->hasRole('siswa')) {
-                if ($user->siswaProfile) {
-                    $user->siswaProfile->update(['phone' => $normalized]);
-                } else {
-                    $user->siswaProfile()->create([
-                        'nis' => 'S-' . $user->id,
-                        'phone' => $normalized,
-                    ]);
+                if (! $user->siswaProfile) {
+                    return Redirect::route('profile.edit')
+                        ->with('error', 'Profil Anda belum tersinkronisasi dari SiPintu Gateway. Silakan hubungi admin TEFA.');
                 }
+
+                $user->siswaProfile->update(['phone' => $normalized]);
             } elseif ($user->hasRole('guru')) {
-                if ($user->guruProfile) {
-                    $user->guruProfile->update(['phone' => $normalized]);
-                } else {
-                    $user->guruProfile()->create([
-                        'nip' => 'G-' . $user->id,
-                        'phone' => $normalized,
-                    ]);
+                if (! $user->guruProfile) {
+                    return Redirect::route('profile.edit')
+                        ->with('error', 'Profil Anda belum tersinkronisasi dari SiPintu Gateway. Silakan hubungi admin TEFA.');
                 }
+
+                $user->guruProfile->update(['phone' => $normalized]);
             }
 
             return Redirect::route('profile.edit')

@@ -72,6 +72,11 @@ class DashboardAnalyticsTest extends TestCase
     {
         $siswa = User::factory()->create(['name' => 'Siswa Test']);
         $siswa->assignRole('siswa');
+        \App\Models\SiswaProfile::create([
+            'user_id' => $siswa->id,
+            'nis' => '12345',
+            'phone' => '6281234567890',
+        ]);
 
         $response = $this->actingAs($siswa)->get(route('dashboard'));
 

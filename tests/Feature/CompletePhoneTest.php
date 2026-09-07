@@ -211,6 +211,66 @@ class CompletePhoneTest extends TestCase
         $this->assertEquals('awal@smkn1bangsri.sch.id', $siswa->email);
     }
 
+    public function test_siswa_without_profile_row_is_redirected_to_complete_phone(): void
+    {
+        $siswa = User::factory()->create();
+        $siswa->assignRole('siswa');
+
+        $response = $this->actingAs($siswa)->get(route('dashboard'));
+        $response->assertRedirect(route('complete-phone'));
+    }
+
+    public function test_guru_without_profile_row_is_redirected_to_complete_phone(): void
+    {
+        $guru = User::factory()->create();
+        $guru->assignRole('guru');
+
+        $response = $this->actingAs($guru)->get(route('dashboard'));
+        $response->assertRedirect(route('complete-phone'));
+    }
+
+    public function test_siswa_without_profile_row_submitting_phone_returns_sipintu_sync_error(): void
+    {
+        $siswa = User::factory()->create();
+        $siswa->assignRole('siswa');
+
+        $response = $this->actingAs($siswa)->post('/complete-phone', [
+            'phone' => '081234567890',
+        ]);
+
+        $response->assertSessionHas('error', 'Profil Anda belum tersinkronisasi dari SiPintu Gateway. Silakan hubungi admin TEFA.');
+        $this->assertDatabaseMissing('siswa_profiles', ['user_id' => $siswa->id]);
+    }
+
+    public function test_guru_without_profile_row_submitting_phone_returns_sipintu_sync_error(): void
+    {
+        $guru = User::factory()->create();
+        $guru->assignRole('guru');
+
+        $response = $this->actingAs($guru)->post('/complete-phone', [
+            'phone' => '081234567890',
+        ]);
+
+        $response->assertSessionHas('error', 'Profil Anda belum tersinkronisasi dari SiPintu Gateway. Silakan hubungi admin TEFA.');
+        $this->assertDatabaseMissing('guru_profiles', ['user_id' => $guru->id]);
+    }
+
+    public function test_siswa_without_profile_row_updating_profile_returns_sipintu_sync_error(): void
+    {
+        $siswa = User::factory()->create();
+        $siswa->assignRole('siswa');
+
+        $response = $this->withoutMiddleware(\App\Http\Middleware\EnsurePhoneIsFilled::class)
+            ->actingAs($siswa)
+            ->patch('/profile', [
+                'phone' => '081234567890',
+            ]);
+
+        $response->assertRedirect(route('profile.edit'));
+        $response->assertSessionHas('error', 'Profil Anda belum tersinkronisasi dari SiPintu Gateway. Silakan hubungi admin TEFA.');
+        $this->assertDatabaseMissing('siswa_profiles', ['user_id' => $siswa->id]);
+    }
+
     public function test_reset_borrower_phones_command_clears_phones(): void
     {
         $user1 = User::factory()->create();
@@ -230,6 +290,7 @@ class CompletePhoneTest extends TestCase
         ]);
 
         $this->artisan('tefa:reset-borrower-phones')
+            ->expectsConfirmation('Tindakan ini akan MENGHAPUS (NULL-kan) SEMUA nomor WhatsApp siswa & guru. Lanjutkan?', 'yes')
             ->expectsOutputToContain('Berhasil mereset kolom nomor WhatsApp')
             ->assertSuccessful();
 
@@ -238,5 +299,42 @@ class CompletePhoneTest extends TestCase
 
         $this->assertNull($siswaProfile->phone);
         $this->assertNull($guruProfile->phone);
+    }
+
+    public function test_reset_borrower_phones_command_with_force_option_skips_confirmation(): void
+    {
+        $user1 = User::factory()->create();
+        $user1->assignRole('siswa');
+        $siswaProfile = SiswaProfile::create([
+            'user_id' => $user1->id,
+            'nis' => '1008',
+            'phone' => '082100000003',
+        ]);
+
+        $this->artisan('tefa:reset-borrower-phones', ['--force' => true])
+            ->expectsOutputToContain('Berhasil mereset kolom nomor WhatsApp')
+            ->assertSuccessful();
+
+        $siswaProfile->refresh();
+        $this->assertNull($siswaProfile->phone);
+    }
+
+    public function test_reset_borrower_phones_command_can_be_cancelled(): void
+    {
+        $user1 = User::factory()->create();
+        $user1->assignRole('siswa');
+        $siswaProfile = SiswaProfile::create([
+            'user_id' => $user1->id,
+            'nis' => '1009',
+            'phone' => '082100000004',
+        ]);
+
+        $this->artisan('tefa:reset-borrower-phones')
+            ->expectsConfirmation('Tindakan ini akan MENGHAPUS (NULL-kan) SEMUA nomor WhatsApp siswa & guru. Lanjutkan?', 'no')
+            ->expectsOutputToContain('Operasi reset dibatalkan.')
+            ->assertSuccessful();
+
+        $siswaProfile->refresh();
+        $this->assertEquals('082100000004', $siswaProfile->phone);
     }
 }

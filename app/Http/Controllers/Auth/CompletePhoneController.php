@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Rules\IndonesianMobileNumber;
 use App\Services\WhatsAppNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,34 +42,27 @@ class CompletePhoneController extends Controller
             'phone' => [
                 'required',
                 'string',
-                'regex:/^(\+62|62|0)8[1-9][0-9]{6,10}$/',
+                new IndonesianMobileNumber(),
             ],
         ], [
             'phone.required' => 'Nomor WhatsApp wajib diisi.',
-            'phone.regex' => 'Format nomor WhatsApp tidak valid. Masukkan nomor seluler Indonesia yang valid (contoh: 081234567890).',
         ]);
 
         $user = $request->user();
         $normalized = WhatsAppNotificationService::normalizePhoneNumber($request->input('phone'));
 
         if ($user->hasRole('siswa')) {
-            if ($user->siswaProfile) {
-                $user->siswaProfile->update(['phone' => $normalized]);
-            } else {
-                $user->siswaProfile()->create([
-                    'nis' => 'S-' . $user->id,
-                    'phone' => $normalized,
-                ]);
+            if (! $user->siswaProfile) {
+                return back()->with('error', 'Profil Anda belum tersinkronisasi dari SiPintu Gateway. Silakan hubungi admin TEFA.');
             }
+
+            $user->siswaProfile->update(['phone' => $normalized]);
         } elseif ($user->hasRole('guru')) {
-            if ($user->guruProfile) {
-                $user->guruProfile->update(['phone' => $normalized]);
-            } else {
-                $user->guruProfile()->create([
-                    'nip' => 'G-' . $user->id,
-                    'phone' => $normalized,
-                ]);
+            if (! $user->guruProfile) {
+                return back()->with('error', 'Profil Anda belum tersinkronisasi dari SiPintu Gateway. Silakan hubungi admin TEFA.');
             }
+
+            $user->guruProfile->update(['phone' => $normalized]);
         }
 
         return redirect()->route('dashboard')->with('success', 'Nomor WhatsApp berhasil disimpan! Selamat datang di TE-VAULT.');

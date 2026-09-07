@@ -14,6 +14,7 @@ use Database\Seeders\AssetCategorySeeder;
 use Database\Seeders\AssetSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class WhatsAppReminderTest extends TestCase
@@ -421,6 +422,35 @@ class WhatsAppReminderTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('title="Nomor WhatsApp peminjam belum terdaftar di profil"', false);
         $response->assertSee('disabled', false);
+    }
+
+    public function test_whatsapp_url_returns_null_and_logs_warning_for_invalid_plausibility_phone(): void
+    {
+        Log::shouldReceive('warning')
+            ->once()
+            ->withArgs(function ($message) {
+                return str_contains($message, 'memiliki nomor WhatsApp tidak valid / cacat / landline');
+            });
+
+        $siswa = User::factory()->create();
+        $siswa->assignRole('siswa');
+        SiswaProfile::create([
+            'user_id' => $siswa->id,
+            'nis' => '99887',
+            'phone' => '0217654321',
+        ]);
+
+        $borrowing = Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => Asset::first()->id,
+            'status' => BorrowingStatus::Borrowed,
+            'requested_at' => now(),
+            'borrowed_at' => now(),
+            'due_at' => now()->addDays(3),
+        ]);
+
+        $url = WhatsAppNotificationService::getWhatsAppUrl($borrowing);
+        $this->assertNull($url);
     }
 }
 

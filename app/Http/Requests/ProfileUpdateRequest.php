@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
+use App\Rules\IndonesianMobileNumber;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -25,7 +26,7 @@ class ProfileUpdateRequest extends FormRequest
                     'phone' => [
                         'required',
                         'string',
-                        'regex:/^(\+62|62|0)8[1-9][0-9]{6,10}$/',
+                        new IndonesianMobileNumber(),
                     ],
                 ];
             }

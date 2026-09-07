@@ -39,6 +39,11 @@ class NavigationRoleTest extends TestCase
     {
         $siswa = User::factory()->create();
         $siswa->assignRole('siswa');
+        \App\Models\SiswaProfile::create([
+            'user_id' => $siswa->id,
+            'nis' => '12345',
+            'phone' => '6281234567890',
+        ]);
 
         $response = $this->actingAs($siswa)->get(route('dashboard'));
 
@@ -61,6 +66,11 @@ class NavigationRoleTest extends TestCase
     {
         $guru = User::factory()->create();
         $guru->assignRole('guru');
+        \App\Models\GuruProfile::create([
+            'user_id' => $guru->id,
+            'nip' => '198501012010011088',
+            'phone' => '6281234567891',
+        ]);
 
         // Access to audit logs blocked
         $this->actingAs($guru)->get(route('admin.audit-logs.index'))->assertStatus(403);

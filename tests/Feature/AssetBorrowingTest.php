@@ -30,10 +30,35 @@ class AssetBorrowingTest extends TestCase
         $this->seed(AssetSeeder::class);
     }
 
+    protected function createSiswa(array $attributes = []): User
+    {
+        $user = User::factory()->create($attributes);
+        $user->assignRole('siswa');
+        \App\Models\SiswaProfile::create([
+            'user_id' => $user->id,
+            'nis' => 'S-' . $user->id,
+            'phone' => '6281234567890',
+        ]);
+
+        return $user;
+    }
+
+    protected function createGuru(array $attributes = []): User
+    {
+        $user = User::factory()->create($attributes);
+        $user->assignRole('guru');
+        \App\Models\GuruProfile::create([
+            'user_id' => $user->id,
+            'nip' => 'G-' . $user->id,
+            'phone' => '6281234567891',
+        ]);
+
+        return $user;
+    }
+
     public function test_user_can_view_katalog_page(): void
     {
-        $user = User::factory()->create();
-        $user->assignRole('siswa');
+        $user = $this->createSiswa();
 
         $response = $this->actingAs($user)->get(route('assets.index'));
 
@@ -44,8 +69,7 @@ class AssetBorrowingTest extends TestCase
 
     public function test_user_can_filter_katalog_by_category(): void
     {
-        $user = User::factory()->create();
-        $user->assignRole('siswa');
+        $user = $this->createSiswa();
 
         $response = $this->actingAs($user)->get(route('assets.index', ['category' => 'HP']));
 
@@ -56,8 +80,7 @@ class AssetBorrowingTest extends TestCase
 
     public function test_user_can_view_borrow_form_for_available_asset(): void
     {
-        $user = User::factory()->create();
-        $user->assignRole('siswa');
+        $user = $this->createSiswa();
 
         $asset = Asset::where('availability_status', AssetAvailabilityStatus::Tersedia)->first();
         $this->assertNotNull($asset);
@@ -72,8 +95,7 @@ class AssetBorrowingTest extends TestCase
 
     public function test_user_cannot_view_borrow_form_for_unavailable_asset(): void
     {
-        $user = User::factory()->create();
-        $user->assignRole('siswa');
+        $user = $this->createSiswa();
 
         $asset = Asset::create([
             'asset_category_id' => AssetCategory::first()->id,
@@ -92,8 +114,7 @@ class AssetBorrowingTest extends TestCase
     {
         Storage::fake('public');
 
-        $user = User::factory()->create();
-        $user->assignRole('siswa');
+        $user = $this->createSiswa();
 
         $asset = Asset::where('availability_status', AssetAvailabilityStatus::Tersedia)->first();
         $this->assertNotNull($asset);
@@ -135,8 +156,7 @@ class AssetBorrowingTest extends TestCase
     {
         Storage::fake('public');
 
-        $user = User::factory()->create();
-        $user->assignRole('siswa');
+        $user = $this->createSiswa();
 
         $asset = Asset::where('availability_status', AssetAvailabilityStatus::Tersedia)->first();
 
@@ -184,8 +204,7 @@ class AssetBorrowingTest extends TestCase
     {
         Storage::fake('public');
 
-        $guru = User::factory()->create();
-        $guru->assignRole('guru');
+        $guru = $this->createGuru();
 
         $asset = Asset::where('availability_status', AssetAvailabilityStatus::Tersedia)->first();
         $this->assertNotNull($asset);
@@ -230,8 +249,7 @@ class AssetBorrowingTest extends TestCase
 
     public function test_submit_return_rejects_path_traversal(): void
     {
-        $siswa = User::factory()->create();
-        $siswa->assignRole('siswa');
+        $siswa = $this->createSiswa();
 
         $asset = Asset::first();
 
@@ -254,8 +272,7 @@ class AssetBorrowingTest extends TestCase
 
     public function test_submit_return_rejects_nonexistent_file(): void
     {
-        $siswa = User::factory()->create();
-        $siswa->assignRole('siswa');
+        $siswa = $this->createSiswa();
 
         $asset = Asset::first();
 
