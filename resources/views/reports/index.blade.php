@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Laporan | TE-Vault')
+@section('title', 'Laporan | SITEFA')
 
 @section('content')
 

@@ -19,7 +19,25 @@ class AuthenticationTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Email Siswa / NIP Guru');
-        $response->assertSee('isi email / sandi kalian disini');
+        $response->assertSee('isi email disini');
+        $response->assertSee('isi sandi disini');
+    }
+
+    public function test_admin_donny_can_authenticate_using_email_and_default_password(): void
+    {
+        $admin = User::create([
+            'name' => 'Mas Donny (Admin TEFA)',
+            'email' => 'admindonny@gmail.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => 'admindonny@gmail.com',
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticatedAs($admin);
+        $response->assertRedirect(route('dashboard', absolute: false));
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void

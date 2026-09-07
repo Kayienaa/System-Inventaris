@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Data Guru SIJUNA | TE-Vault')
+@section('title', 'Data Guru SIJUNA | SITEFA')
 
 @section('content')
 
@@ -316,7 +316,7 @@
         </div>
 
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <form action="{{ route('admin.sync-sipintu') }}" method="POST" onsubmit="return confirm('Mulai sinkronisasi data GURU ke database lokal TE-VAULT? Proses ini memerlukan beberapa saat.')">
+            <form action="{{ route('admin.sync-sipintu') }}" method="POST" onsubmit="return confirm('Mulai sinkronisasi data GURU ke database lokal SITEFA? Proses ini memerlukan beberapa saat.')">
                 @csrf
                 <input type="hidden" name="type" value="teachers">
                 <button type="submit" class="btn-sip-outline" style="background: var(--gold); color: #3B2610; border-color: var(--gold); font-weight: 700;">

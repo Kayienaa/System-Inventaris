@@ -60,7 +60,7 @@ class AdminBorrowingMonitoringTest extends TestCase
         $response->assertSee($asset->asset_code);
         $response->assertSee($asset->name);
         $response->assertSee('Dipinjam');
-        $response->assertSee('Detail');
+        $response->assertSee('Kelola');
     }
 
     public function test_admin_can_view_borrowing_detail_page(): void

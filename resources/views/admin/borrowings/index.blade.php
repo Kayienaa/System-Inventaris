@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Pusat Monitoring Peminjaman | TE-Vault')
+@section('title', 'Pusat Monitoring Peminjaman | SITEFA')
 
 @section('content')
 
@@ -9,12 +9,21 @@
     x-data="{
         selectedBorrowing: null,
         previewImage: null,
+        rejectModalOpen: false,
+        verifyModalOpen: false,
+        rejectionReason: '',
+        returnCondition: 'Baik',
+        verificationNote: '',
         openDetail(borrowing) {
             this.selectedBorrowing = borrowing;
+            this.rejectModalOpen = false;
+            this.verifyModalOpen = false;
         },
         closeDetail() {
             this.selectedBorrowing = null;
             this.previewImage = null;
+            this.rejectModalOpen = false;
+            this.verifyModalOpen = false;
         }
     }"
     @keydown.escape.window="if (previewImage) { previewImage = null; } else { closeDetail(); }"
@@ -34,7 +43,7 @@
                         Pusat Monitoring Peminjaman
                     </h1>
                     <p class="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-0.5">
-                        Pengecekan, verifikasi serah terima, dan kontrol sirkulasi barang TEFA real-time
+                        Pengecekan, verifikasi persetujuan & serah terima barang TEFA real-time
                     </p>
                 </div>
             </div>
@@ -64,62 +73,51 @@
         </div>
     </div>
 
+    @if (session('success'))
+        <div class="mb-6 rounded-2xl bg-emerald-50/90 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-500/30 p-4 text-sm font-medium text-emerald-800 dark:text-neon-emerald flex items-center gap-3 shadow-sm">
+            <svg class="w-5 h-5 text-emerald-600 dark:text-neon-emerald shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span>{{ session('success') }}</span>
+        </div>
+    @endif
+
     {{-- Stats Overview Cards --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 mb-6">
         {{-- Total --}}
-        <div class="bg-white dark:bg-[#131B2A] border border-stone-200/70 dark:border-stone-800 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition hover:shadow-md">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">Total Transaksi</span>
-                <span class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-stone-800/80 flex items-center justify-center text-gray-600 dark:text-stone-300">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                    </svg>
-                </span>
-            </div>
-            <p class="text-2xl sm:text-3xl font-bold text-stone-900 dark:text-stone-100 mt-2">{{ number_format($stats['total']) }}</p>
-            <p class="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Seluruh riwayat tercatat</p>
+        <div class="bg-white dark:bg-[#131B2A] border border-stone-200/70 dark:border-stone-800 rounded-2xl shadow-sm p-4 transition hover:shadow-md">
+            <span class="text-[11px] font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider block truncate">Total Transaksi</span>
+            <p class="text-2xl font-bold text-stone-900 dark:text-stone-100 mt-1.5">{{ number_format($stats['total'] ?? 0) }}</p>
         </div>
 
-        {{-- Sedang Dipinjam --}}
-        <div class="bg-white dark:bg-[#131B2A] border border-stone-200/70 dark:border-stone-800 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition hover:shadow-md">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-medium text-amber-800 dark:text-neon-glowamber uppercase tracking-wider">Sedang Dipinjam</span>
-                <span class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-neon-glowamber flex items-center justify-center">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </span>
-            </div>
-            <p class="text-2xl sm:text-3xl font-bold text-stone-900 dark:text-stone-100 mt-2">{{ number_format($stats['borrowed']) }}</p>
-            <p class="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Unit berada di tangan user</p>
+        {{-- Pending --}}
+        <div class="bg-white dark:bg-[#131B2A] border border-yellow-200/70 dark:border-yellow-900/50 rounded-2xl shadow-sm p-4 transition hover:shadow-md">
+            <span class="text-[11px] font-semibold text-yellow-700 dark:text-yellow-400 uppercase tracking-wider block truncate">Menunggu Persetujuan</span>
+            <p class="text-2xl font-bold text-yellow-700 dark:text-yellow-400 mt-1.5">{{ number_format($stats['pending'] ?? 0) }}</p>
         </div>
 
-        {{-- Selesai / Dikembalikan --}}
-        <div class="bg-white dark:bg-[#131B2A] border border-stone-200/70 dark:border-stone-800 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition hover:shadow-md">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-medium text-emerald-800 dark:text-neon-emerald uppercase tracking-wider">Dikembalikan</span>
-                <span class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-neon-emerald flex items-center justify-center">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </span>
-            </div>
-            <p class="text-2xl sm:text-3xl font-bold text-stone-900 dark:text-stone-100 mt-2">{{ number_format($stats['returned']) }}</p>
-            <p class="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Selesai & kembali tersedia</p>
+        {{-- Dipinjam --}}
+        <div class="bg-white dark:bg-[#131B2A] border border-amber-200/70 dark:border-amber-900/50 rounded-2xl shadow-sm p-4 transition hover:shadow-md">
+            <span class="text-[11px] font-semibold text-amber-800 dark:text-neon-glowamber uppercase tracking-wider block truncate">Sedang Dipinjam</span>
+            <p class="text-2xl font-bold text-amber-800 dark:text-neon-glowamber mt-1.5">{{ number_format($stats['borrowed'] ?? 0) }}</p>
         </div>
 
-        {{-- Terlambat / Overdue --}}
-        <div class="bg-white dark:bg-[#131B2A] border border-stone-200/70 dark:border-stone-800 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] p-4 sm:p-5 transition hover:shadow-md">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-medium text-rose-800 dark:text-rose-400 uppercase tracking-wider">Overdue (Terlambat)</span>
-                <span class="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 flex items-center justify-center">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                    </svg>
-                </span>
-            </div>
-            <p class="text-2xl sm:text-3xl font-bold text-stone-900 dark:text-stone-100 mt-2">{{ number_format($stats['overdue']) }}</p>
-            <p class="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Melewati batas waktu H+3</p>
+        {{-- Return Pending --}}
+        <div class="bg-white dark:bg-[#131B2A] border border-purple-200/70 dark:border-purple-900/50 rounded-2xl shadow-sm p-4 transition hover:shadow-md">
+            <span class="text-[11px] font-semibold text-purple-700 dark:text-purple-400 uppercase tracking-wider block truncate">Menunggu Verifikasi</span>
+            <p class="text-2xl font-bold text-purple-700 dark:text-purple-400 mt-1.5">{{ number_format($stats['return_pending'] ?? 0) }}</p>
+        </div>
+
+        {{-- Dikembalikan --}}
+        <div class="bg-white dark:bg-[#131B2A] border border-emerald-200/70 dark:border-emerald-900/50 rounded-2xl shadow-sm p-4 transition hover:shadow-md">
+            <span class="text-[11px] font-semibold text-emerald-800 dark:text-neon-emerald uppercase tracking-wider block truncate">Selesai Kembali</span>
+            <p class="text-2xl font-bold text-emerald-800 dark:text-neon-emerald mt-1.5">{{ number_format($stats['returned'] ?? 0) }}</p>
+        </div>
+
+        {{-- Overdue --}}
+        <div class="bg-white dark:bg-[#131B2A] border border-rose-200/70 dark:border-rose-900/50 rounded-2xl shadow-sm p-4 transition hover:shadow-md">
+            <span class="text-[11px] font-semibold text-rose-800 dark:text-rose-400 uppercase tracking-wider block truncate">Overdue</span>
+            <p class="text-2xl font-bold text-rose-800 dark:text-rose-400 mt-1.5">{{ number_format($stats['overdue'] ?? 0) }}</p>
         </div>
     </div>
 
@@ -157,7 +155,10 @@
                     class="w-full py-2 px-3 text-xs rounded-xl bg-stone-50 dark:bg-[#0B0F17] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:border-amber-600 dark:focus:border-cyan-500 focus:ring-1 focus:ring-amber-600 dark:focus:ring-cyan-500 shadow-sm"
                 >
                     <option value="">Semua Status</option>
+                    <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Menunggu Persetujuan</option>
+                    <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Disetujui (Siap Ambil)</option>
                     <option value="borrowed" {{ request('status') === 'borrowed' ? 'selected' : '' }}>Dipinjam (Aktif)</option>
+                    <option value="return_pending_verification" {{ request('status') === 'return_pending_verification' ? 'selected' : '' }}>Menunggu Verifikasi Pengembalian</option>
                     <option value="returned" {{ request('status') === 'returned' ? 'selected' : '' }}>Selesai (Kembali)</option>
                     <option value="overdue" {{ request('status') === 'overdue' ? 'selected' : '' }}>Overdue (Terlambat)</option>
                 </select>
@@ -200,32 +201,24 @@
                         <th class="px-5 py-4">Waktu Pinjam</th>
                         <th class="px-5 py-4">Target Kembali</th>
                         <th class="px-5 py-4 text-center">Status</th>
-                        <th class="px-5 py-4 text-center w-36">Aksi</th>
+                        <th class="px-5 py-4 text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-stone-100 dark:divide-stone-800/80">
-                    @forelse($borrowings as $b)
+                <tbody class="divide-y divide-stone-100 dark:divide-stone-800/60">
+                    @forelse ($borrowings as $b)
                         @php
-                            $isOverdue = $b->isOverdue();
                             $statusVal = $b->status->value ?? (string) $b->status;
+                            $isOverdue = $b->isOverdue();
                             $borrowerRole = $b->borrower?->roles->pluck('name')->first() ?? 'User';
-
-                            $identityText = '-';
-                            if ($b->borrower?->siswaProfile?->nis) {
-                                $identityText = 'NIS: ' . $b->borrower->siswaProfile->nis;
-                            } elseif ($b->borrower?->guruProfile?->nip) {
-                                $identityText = 'NIP: ' . $b->borrower->guruProfile->nip;
-                            }
-
+                            $identityText = $b->borrower?->siswaProfile?->nis ? 'NIS: ' . $b->borrower->siswaProfile->nis : ($b->borrower?->guruProfile?->nip ? 'NIP: ' . $b->borrower->guruProfile->nip : '-');
                             $canSendWhatsApp = $isOverdue || $statusVal === 'borrowed';
                             $waUrl = $canSendWhatsApp ? \App\Services\WhatsAppNotificationService::getWhatsAppUrl($b) : null;
 
-                            // Prepare structured payload for Alpine.js Detail modal
                             $detailPayload = [
                                 'id' => $b->id,
                                 'transaction_code' => '#TRX-' . str_pad((string) $b->id, 5, '0', STR_PAD_LEFT),
                                 'borrower' => [
-                                    'name' => $b->borrower?->name ?? 'Pengguna Dihapus',
+                                    'name' => $b->borrower?->name ?? 'User',
                                     'email' => $b->borrower?->email ?? '-',
                                     'role' => ucfirst($borrowerRole),
                                     'identity' => $identityText,
@@ -235,7 +228,7 @@
                                 ],
                                 'asset' => [
                                     'id' => $b->asset?->id,
-                                    'name' => $b->asset?->name ?? 'Aset Tidak Ditemukan',
+                                    'name' => $b->asset?->name ?? '-',
                                     'asset_code' => $b->asset?->asset_code ?? '-',
                                     'brand' => $b->asset?->brand ?? '-',
                                     'model' => $b->asset?->model ?? '-',
@@ -244,16 +237,20 @@
                                     'photo_url' => $b->asset?->photo_url,
                                 ],
                                 'dates' => [
+                                    'requested_at' => $b->requested_at ? $b->requested_at->format('d M Y, H:i') . ' WIB' : '-',
                                     'borrowed_at' => $b->borrowed_at ? $b->borrowed_at->format('d M Y, H:i') . ' WIB' : ($b->requested_at ? $b->requested_at->format('d M Y, H:i') . ' WIB' : '-'),
                                     'due_at' => $b->due_at ? $b->due_at->format('d M Y, H:i') . ' WIB' : '-',
                                     'returned_at' => $b->returned_at ? $b->returned_at->format('d M Y, H:i') . ' WIB' : null,
                                 ],
                                 'status' => $isOverdue ? 'overdue' : $statusVal,
+                                'raw_status' => $statusVal,
                                 'is_overdue' => $isOverdue,
                                 'borrower_note' => $b->borrower_note ?: 'Tidak ada catatan',
                                 'return_note' => $b->return_note ?: null,
                                 'borrowing_evidence_url' => $b->borrowing_evidence_path ? asset('storage/' . $b->borrowing_evidence_path) : null,
                                 'return_evidence_url' => $b->return_evidence_path ? asset('storage/' . $b->return_evidence_path) : null,
+                                'approved_by' => $b->approvedBy?->name,
+                                'return_verified_by' => $b->returnVerifiedBy?->name,
                                 'wa_url' => $waUrl,
                             ];
                         @endphp
@@ -300,14 +297,14 @@
                                                 onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
                                                 class="w-full h-full object-cover aspect-square"
                                             >
-                                            <div class="hidden w-full h-full bg-stone-900/60 flex items-center justify-center" title="Barang belum memiliki foto">
+                                            <div class="hidden w-full h-full bg-stone-900/60 flex items-center justify-center">
                                                 <svg class="w-5 h-5 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
                                                 </svg>
                                             </div>
                                         @else
-                                            <div class="w-full h-full bg-stone-900/60 flex items-center justify-center" title="Barang belum memiliki foto">
+                                            <div class="w-full h-full bg-stone-900/60 flex items-center justify-center">
                                                 <svg class="w-5 h-5 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -329,11 +326,6 @@
                                         <p class="text-xs text-stone-800 dark:text-stone-200 mt-0.5 font-medium">
                                             {{ $b->asset?->name ?? 'Barang Terhapus' }}
                                         </p>
-                                        @if($b->asset?->serial_number)
-                                            <p class="text-[10px] font-mono text-stone-400 dark:text-stone-500">
-                                                SN: {{ $b->asset->serial_number }}
-                                            </p>
-                                        @endif
                                     </div>
                                 </div>
                             </td>
@@ -352,7 +344,7 @@
                                         {{ $b->requested_at->format('d M Y') }}
                                     </p>
                                     <p class="text-[11px] text-stone-400 dark:text-stone-500 font-mono">
-                                        {{ $b->requested_at->format('H:i') }} WIB
+                                        {{ $b->requested_at->format('H:i') }} WIB <span class="text-[10px] text-amber-600 font-sans">(Diajukan)</span>
                                     </p>
                                 @else
                                     <span class="text-stone-400 dark:text-stone-500 italic">-</span>
@@ -368,14 +360,6 @@
                                     <p class="text-[11px] font-mono {{ $isOverdue ? 'text-rose-500' : 'text-stone-400 dark:text-stone-500' }}">
                                         {{ $b->due_at->format('H:i') }} WIB
                                     </p>
-                                    @if($isOverdue)
-                                        <span class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
-                                            Overdue
-                                        </span>
-                                    @endif
                                 @else
                                     <span class="text-stone-400 dark:text-stone-500 italic">-</span>
                                 @endif
@@ -387,13 +371,25 @@
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-500/30">
                                         ● Overdue
                                     </span>
-                                @elseif($statusVal === 'returned')
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-neon-emerald border border-emerald-300 dark:border-emerald-500/30">
-                                        ✓ Selesai
+                                @elseif($statusVal === 'pending')
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-yellow-50 text-yellow-700 dark:bg-yellow-950/50 dark:text-yellow-400 border border-yellow-300 dark:border-yellow-500/30">
+                                        ● Menunggu Persetujuan
+                                    </span>
+                                @elseif($statusVal === 'approved')
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-neon-cyan border border-blue-300 dark:border-cyan-500/30">
+                                        ✓ Disetujui
                                     </span>
                                 @elseif($statusVal === 'borrowed')
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-neon-glowamber border border-amber-300 dark:border-amber-500/30">
                                         ● Dipinjam
+                                    </span>
+                                @elseif($statusVal === 'return_pending_verification')
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-500/30">
+                                        ● Menunggu Verifikasi
+                                    </span>
+                                @elseif($statusVal === 'returned')
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-neon-emerald border border-emerald-300 dark:border-emerald-500/30">
+                                        ✓ Selesai
                                     </span>
                                 @else
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-300 dark:border-stone-700">
@@ -405,41 +401,43 @@
                             {{-- Aksi --}}
                             <td class="px-5 py-4 text-center">
                                 <div class="inline-flex items-center justify-center gap-1.5">
-                                    @if($canSendWhatsApp && $waUrl)
-                                        <a
-                                            href="{{ $waUrl }}"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-600 dark:hover:bg-emerald-600 text-emerald-600 dark:text-neon-emerald hover:text-white transition active:scale-95 border border-emerald-200 dark:border-emerald-500/30 hover:border-emerald-600 shadow-sm"
-                                            title="Kirim Pengingat WhatsApp ke Peminjam"
-                                        >
-                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                                            </svg>
-                                        </a>
-                                    @elseif($canSendWhatsApp && !$waUrl)
-                                        <button
-                                            type="button"
-                                            disabled
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-400 cursor-not-allowed border border-stone-200 dark:border-stone-700 shadow-sm opacity-60"
-                                            title="Nomor WhatsApp peminjam belum terdaftar di profil"
-                                        >
-                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                                            </svg>
-                                        </button>
+                                    @if($canSendWhatsApp)
+                                        @if($waUrl)
+                                            <a
+                                                href="{{ $waUrl }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-600 dark:hover:bg-emerald-600 text-emerald-600 dark:text-neon-emerald hover:text-white transition active:scale-95 border border-emerald-200 dark:border-emerald-500/30 shadow-sm"
+                                                title="Kirim Pengingat WhatsApp ke Peminjam"
+                                            >
+                                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                                </svg>
+                                            </a>
+                                        @else
+                                            <button
+                                                type="button"
+                                                disabled
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-400 dark:text-stone-600 border border-stone-200 dark:border-stone-700 cursor-not-allowed opacity-60"
+                                                title="Nomor WhatsApp peminjam belum terdaftar di profil"
+                                            >
+                                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                                </svg>
+                                            </button>
+                                        @endif
                                     @endif
 
                                     <button
                                         type="button"
                                         @click="openDetail({{ Js::from($detailPayload) }})"
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-[#6F4E37] dark:bg-stone-800 dark:hover:bg-cyan-600 text-stone-700 hover:text-white dark:text-stone-300 font-semibold text-xs transition active:scale-95 border border-stone-300 dark:border-stone-700 hover:border-[#6F4E37] dark:hover:border-cyan-600 shadow-sm cursor-pointer"
+                                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-[#6F4E37] dark:bg-stone-800 dark:hover:bg-cyan-600 text-stone-700 hover:text-white dark:text-stone-300 font-semibold text-xs transition active:scale-95 border border-stone-300 dark:border-stone-700 shadow-sm cursor-pointer"
                                     >
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                         </svg>
-                                        Detail
+                                        Kelola
                                     </button>
                                 </div>
                             </td>
@@ -449,13 +447,11 @@
                             <td colspan="7" class="px-6 py-16 text-center text-stone-400 dark:text-stone-500">
                                 <div class="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-neon-glowamber flex items-center justify-center mx-auto mb-3 border border-amber-200 dark:border-amber-500/30">
                                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                     </svg>
                                 </div>
-                                <p class="text-sm font-bold text-stone-700 dark:text-stone-200">Belum ada transaksi peminjaman</p>
-                                <p class="text-xs text-stone-500 dark:text-stone-400 mt-1 max-w-sm mx-auto">
-                                    Tidak ditemukan data transaksi yang sesuai dengan kriteria filter atau pencarian Anda.
-                                </p>
+                                <h3 class="text-sm font-bold text-stone-700 dark:text-stone-300">Tidak Ada Transaksi</h3>
+                                <p class="text-xs text-stone-400 dark:text-stone-500 mt-1">Belum ada data peminjaman yang cocok dengan filter yang dipilih.</p>
                             </td>
                         </tr>
                     @endforelse
@@ -463,70 +459,72 @@
             </table>
         </div>
 
-        {{-- Pagination --}}
-        @if($borrowings->hasPages())
-            <div class="px-6 py-4 border-t border-stone-100 dark:border-stone-800 bg-stone-50/60 dark:bg-[#0E1420]/60">
-                {{ $borrowings->links() }}
-            </div>
-        @endif
+        <div class="px-6 py-4 border-t border-stone-200 dark:border-stone-800">
+            {{ $borrowings->links() }}
+        </div>
     </div>
 
-    {{-- ══════════════════════════════════════════════════
-         MODAL DETAIL LENGKAP TRANSAKSI PEMINJAMAN (ALPINE)
-    ══════════════════════════════════════════════════ --}}
+    {{-- Modal Detail Transaksi & Kelola Aksi --}}
     <div
         x-show="selectedBorrowing !== null"
-        class="fixed inset-0 z-50 overflow-y-auto bg-black/65 backdrop-blur-sm flex items-center justify-center p-4"
+        class="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
         x-cloak
         x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
         x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
     >
         <div
-            class="max-w-2xl w-full mx-auto bg-white dark:bg-[#131B2A] rounded-2xl shadow-2xl border border-stone-200 dark:border-stone-800 overflow-hidden my-6"
+            class="max-w-3xl w-full mx-auto rounded-2xl bg-white dark:bg-[#131B2A] shadow-2xl border border-stone-200 dark:border-stone-800 overflow-hidden"
             @click.away="closeDetail()"
         >
             {{-- Modal Header --}}
-            <div class="bg-gradient-to-r from-amber-50/90 via-orange-50/70 to-white dark:from-[#1E293B] dark:via-[#162032] dark:to-[#131B2A] px-6 py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-[#6F4E37] text-white flex items-center justify-center shadow-sm">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
+            <div class="bg-gradient-to-r from-stone-50 to-stone-100 dark:from-stone-900 dark:to-[#131B2A] px-6 py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-base font-bold text-stone-800 dark:text-stone-100" x-text="'Transaksi ' + selectedBorrowing?.transaction_code"></h3>
+                        <template x-if="selectedBorrowing?.raw_status === 'pending'">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-100 text-yellow-800 border border-yellow-300">
+                                ● Menunggu Persetujuan Admin
+                            </span>
+                        </template>
+                        <template x-if="selectedBorrowing?.raw_status === 'approved'">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-300">
+                                ✓ Disetujui
+                            </span>
+                        </template>
+                        <template x-if="selectedBorrowing?.raw_status === 'borrowed' && !selectedBorrowing?.is_overdue">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                ● Dipinjam
+                            </span>
+                        </template>
+                        <template x-if="selectedBorrowing?.raw_status === 'return_pending_verification'">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-300">
+                                ● Menunggu Verifikasi Pengembalian
+                            </span>
+                        </template>
+                        <template x-if="selectedBorrowing?.raw_status === 'returned'">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                ✓ Selesai
+                            </span>
+                        </template>
+                        <template x-if="selectedBorrowing?.is_overdue">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
+                                Overdue (Terlambat)
+                            </span>
+                        </template>
                     </div>
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <h3 class="text-base font-bold text-stone-800 dark:text-stone-100" x-text="'Transaksi ' + selectedBorrowing?.transaction_code"></h3>
-                            <template x-if="selectedBorrowing?.is_overdue">
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-500/30">
-                                    Overdue (Terlambat)
-                                </span>
-                            </template>
-                            <template x-if="!selectedBorrowing?.is_overdue && selectedBorrowing?.status === 'returned'">
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-neon-emerald border border-emerald-300 dark:border-emerald-500/30">
-                                    ✓ Selesai
-                                </span>
-                            </template>
-                            <template x-if="!selectedBorrowing?.is_overdue && selectedBorrowing?.status === 'borrowed'">
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-neon-glowamber border border-amber-300 dark:border-amber-500/30">
-                                    ● Dipinjam
-                                </span>
-                            </template>
-                        </div>
-                        <p class="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-                            Rincian pengecekan data peminjam, aset fisik, tenggat & bukti serah terima
-                        </p>
-                    </div>
+                    <p class="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                        Rincian data transaksi, riwayat serah terima, dan aksi persetujuan
+                    </p>
                 </div>
 
                 <button
                     type="button"
                     @click="closeDetail()"
                     class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition cursor-pointer"
-                    title="Tutup Modal (Esc)"
                 >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -537,10 +535,122 @@
             {{-- Modal Body --}}
             <div class="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
 
-                {{-- 1. Bagian Informasi Peminjam & Barang (Grid 2 Kolom) --}}
+                {{-- Action Card: Persetujuan Request (Saat Status Pending) --}}
+                <template x-if="selectedBorrowing?.raw_status === 'pending'">
+                    <div class="bg-yellow-50/90 dark:bg-yellow-950/40 border border-yellow-200 dark:border-yellow-500/40 rounded-2xl p-4 sm:p-5">
+                        <div class="flex items-center gap-2 text-xs font-bold text-yellow-900 dark:text-yellow-300 uppercase tracking-wider mb-2">
+                            <svg class="w-4 h-4 text-yellow-700 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            Tinjau Permohonan Peminjaman
+                        </div>
+                        <p class="text-xs text-yellow-800 dark:text-yellow-200 leading-relaxed mb-4">
+                            Permohonan ini menunggu konfirmasi dari Admin. Jika disetujui, peminjam dapat datang ke ruangan TEFA untuk mengambil barang fisik dan melakukan verifikasi serah terima.
+                        </p>
+
+                        <div class="flex flex-wrap items-center gap-2.5">
+                            {{-- Form Approve --}}
+                            <form :action="'/admin/borrowings/' + selectedBorrowing?.id + '/approve'" method="POST">
+                                @csrf
+                                <button
+                                    type="submit"
+                                    class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Setujui Permintaan
+                                </button>
+                            </form>
+
+                            {{-- Form Reject --}}
+                            <button
+                                type="button"
+                                @click="rejectModalOpen = !rejectModalOpen"
+                                class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm transition active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                                Tolak Permintaan
+                            </button>
+                        </div>
+
+                        {{-- Form Input Alasan Penolakan --}}
+                        <div x-show="rejectModalOpen" class="mt-4 pt-3 border-t border-yellow-200 dark:border-yellow-500/30" x-cloak>
+                            <form :action="'/admin/borrowings/' + selectedBorrowing?.id + '/reject'" method="POST" class="space-y-3">
+                                @csrf
+                                <div>
+                                    <label class="block text-xs font-semibold text-rose-900 dark:text-rose-300 mb-1">Alasan Penolakan:</label>
+                                    <input
+                                        type="text"
+                                        name="rejection_reason"
+                                        required
+                                        placeholder="Contoh: Unit sedang dijadwalkan untuk ujian praktikum..."
+                                        class="w-full text-xs rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] px-3 py-2 text-stone-900 dark:text-stone-100"
+                                    >
+                                </div>
+                                <div class="flex justify-end gap-2">
+                                    <button type="button" @click="rejectModalOpen = false" class="px-3 py-1.5 rounded-lg border border-stone-300 text-xs">Batal</button>
+                                    <button type="submit" class="px-4 py-1.5 rounded-lg bg-rose-600 text-white font-bold text-xs">Konfirmasi Tolak</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </template>
+
+                {{-- Action Card: Verifikasi Pengembalian Fisik (Saat Status return_pending_verification) --}}
+                <template x-if="selectedBorrowing?.raw_status === 'return_pending_verification'">
+                    <div class="bg-purple-50/90 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/40 rounded-2xl p-4 sm:p-5">
+                        <div class="flex items-center gap-2 text-xs font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider mb-2">
+                            <svg class="w-4 h-4 text-purple-700 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Verifikasi Pengembalian Fisik Unit
+                        </div>
+                        <p class="text-xs text-purple-800 dark:text-purple-200 leading-relaxed mb-4">
+                            Peminjam telah menyerahkan barang fisik & mengambil foto bukti pengembalian. Periksa kondisi unit fisik lalu konfirmasi verifikasi untuk mengembalikan status unit ke katalog.
+                        </p>
+
+                        <form :action="'/admin/borrowings/' + selectedBorrowing?.id + '/verify-return'" method="POST" class="space-y-3">
+                            @csrf
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">Kondisi Fisik Saat Kembali:</label>
+                                    <select name="return_condition" class="w-full text-xs rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] px-3 py-2">
+                                        <option value="Baik">Baik (Normal)</option>
+                                        <option value="Rusak Ringan">Rusak Ringan</option>
+                                        <option value="Rusak Berat">Rusak Berat (Masuk Perbaikan)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">Catatan Admin / Verifikator:</label>
+                                    <input
+                                        type="text"
+                                        name="return_verification_note"
+                                        placeholder="Contoh: Unit lengkap beserta charger dalam kondisi normal..."
+                                        class="w-full text-xs rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] px-3 py-2"
+                                    >
+                                </div>
+                            </div>
+                            <div class="flex justify-end pt-2">
+                                <button
+                                    type="submit"
+                                    class="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Verifikasi Pengembalian & Selesaikan
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </template>
+
+                {{-- Informasi Peminjam & Barang --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    
-                    {{-- Bagian User --}}
+                    {{-- User --}}
                     <div class="bg-stone-50/70 dark:bg-[#0E1420] rounded-xl p-4 border border-stone-200/80 dark:border-stone-800">
                         <div class="flex items-center gap-2 mb-2.5 text-xs font-bold text-[#6F4E37] dark:text-neon-glowamber uppercase tracking-wider">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -562,16 +672,6 @@
                                 <span class="text-stone-400 dark:text-stone-500 text-[11px]">Identitas (NIS/NIP):</span>
                                 <span class="font-mono font-bold text-stone-800 dark:text-stone-200" x-text="selectedBorrowing?.borrower.identity"></span>
                             </div>
-                            <template x-if="selectedBorrowing?.borrower.class_name">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-stone-400 dark:text-stone-500 text-[11px]">Kelas:</span>
-                                    <span class="font-medium text-stone-700 dark:text-stone-300" x-text="selectedBorrowing?.borrower.class_name"></span>
-                                </div>
-                            </template>
-                            <div class="flex items-center justify-between">
-                                <span class="text-stone-400 dark:text-stone-500 text-[11px]">Email:</span>
-                                <span class="text-stone-600 dark:text-stone-400 truncate max-w-[150px]" x-text="selectedBorrowing?.borrower.email"></span>
-                            </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-stone-400 dark:text-stone-500 text-[11px]">No. Telepon / HP:</span>
                                 <span class="font-mono text-stone-700 dark:text-stone-300" x-text="selectedBorrowing?.borrower.formatted_phone || selectedBorrowing?.borrower.phone || '-'"></span>
@@ -579,31 +679,13 @@
                         </div>
                     </div>
 
-                    {{-- Bagian Barang --}}
+                    {{-- Barang --}}
                     <div class="bg-stone-50/70 dark:bg-[#0E1420] rounded-xl p-4 border border-stone-200/80 dark:border-stone-800">
                         <div class="flex items-center gap-2 mb-2.5 text-xs font-bold text-[#6F4E37] dark:text-neon-glowamber uppercase tracking-wider">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                             </svg>
                             Barang Inventaris
-                        </div>
-
-                        {{-- Foto Aset di Modal Detail --}}
-                        <div class="mb-3 w-full">
-                            <template x-if="selectedBorrowing?.asset.photo_url">
-                                <div class="w-full h-36 rounded-xl overflow-hidden bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-sm">
-                                    <img :src="selectedBorrowing?.asset.photo_url" :alt="selectedBorrowing?.asset.name" class="w-full h-full object-cover">
-                                </div>
-                            </template>
-                            <template x-if="!selectedBorrowing?.asset.photo_url">
-                                <div class="w-full h-full min-h-[140px] bg-stone-900/60 border border-stone-800 rounded-xl flex flex-col items-center justify-center p-4 text-center">
-                                    <svg class="w-8 h-8 text-stone-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    </svg>
-                                    <span class="text-xs text-stone-500 font-medium">Barang belum memiliki foto</span>
-                                </div>
-                            </template>
                         </div>
 
                         <div class="space-y-1.5 text-xs">
@@ -616,10 +698,6 @@
                                 <span class="font-mono font-bold text-amber-900 dark:text-neon-glowamber bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-500/30 px-2 py-0.5 rounded text-[11px]" x-text="selectedBorrowing?.asset.asset_code"></span>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-stone-400 dark:text-stone-500 text-[11px]">Merk / Model:</span>
-                                <span class="font-medium text-stone-700 dark:text-stone-300" x-text="(selectedBorrowing?.asset.brand || '-') + ' ' + (selectedBorrowing?.asset.model || '')"></span>
-                            </div>
-                            <div class="flex items-center justify-between">
                                 <span class="text-stone-400 dark:text-stone-500 text-[11px]">Serial Number:</span>
                                 <span class="font-mono text-stone-700 dark:text-stone-300" x-text="selectedBorrowing?.asset.serial_number"></span>
                             </div>
@@ -629,61 +707,47 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
 
-                {{-- 2. Bagian Waktu --}}
+                {{-- Timeline Sirkulasi --}}
                 <div class="bg-white dark:bg-[#131B2A] rounded-xl p-4 border border-stone-200 dark:border-stone-800 shadow-sm">
                     <div class="flex items-center gap-2 mb-3 text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider">
                         <svg class="w-4 h-4 text-[#6F4E37] dark:text-neon-glowamber" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                         </svg>
-                        Timeline Sirkulasi
+                        Timeline Sirkulasi & Persetujuan
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                        <div class="bg-stone-50 dark:bg-[#0E1420] p-3 rounded-lg border border-stone-100 dark:border-stone-800">
-                            <span class="text-[11px] text-stone-400 dark:text-stone-500 block mb-0.5">Waktu Pinjam</span>
-                            <span class="font-bold text-stone-800 dark:text-stone-200" x-text="selectedBorrowing?.dates.borrowed_at"></span>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                        <div class="bg-stone-50 dark:bg-[#0E1420] p-2.5 rounded-lg border border-stone-100 dark:border-stone-800">
+                            <span class="text-[10px] text-stone-400 dark:text-stone-500 block mb-0.5">Diajukan</span>
+                            <span class="font-bold text-stone-800 dark:text-stone-200 text-xs" x-text="selectedBorrowing?.dates.requested_at || '-'"></span>
                         </div>
 
-                        <div class="p-3 rounded-lg border" :class="selectedBorrowing?.is_overdue ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-500/30' : 'bg-amber-50/60 dark:bg-amber-950/40 border-amber-200 dark:border-amber-500/30'">
-                            <span class="text-[11px] block mb-0.5" :class="selectedBorrowing?.is_overdue ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-amber-800 dark:text-neon-glowamber'">
-                                Target Kembali (H+3)
+                        <div class="bg-stone-50 dark:bg-[#0E1420] p-2.5 rounded-lg border border-stone-100 dark:border-stone-800">
+                            <span class="text-[10px] text-stone-400 dark:text-stone-500 block mb-0.5">Diserahterimakan</span>
+                            <span class="font-bold text-stone-800 dark:text-stone-200 text-xs" x-text="selectedBorrowing?.dates.borrowed_at || '-'"></span>
+                        </div>
+
+                        <div class="p-2.5 rounded-lg border" :class="selectedBorrowing?.is_overdue ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-500/30' : 'bg-amber-50/60 dark:bg-amber-950/40 border-amber-200 dark:border-amber-500/30'">
+                            <span class="text-[10px] block mb-0.5" :class="selectedBorrowing?.is_overdue ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-amber-800 dark:text-neon-glowamber'">
+                                Target Kembali
                             </span>
-                            <span class="font-bold" :class="selectedBorrowing?.is_overdue ? 'text-rose-700 dark:text-rose-300' : 'text-amber-900 dark:text-neon-glowamber'" x-text="selectedBorrowing?.dates.due_at"></span>
+                            <span class="font-bold text-xs" :class="selectedBorrowing?.is_overdue ? 'text-rose-700 dark:text-rose-300' : 'text-amber-900 dark:text-neon-glowamber'" x-text="selectedBorrowing?.dates.due_at"></span>
                         </div>
 
-                        <div class="p-3 rounded-lg border" :class="selectedBorrowing?.dates.returned_at ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-500/30' : 'bg-stone-50 dark:bg-[#0E1420] border-stone-100 dark:border-stone-800'">
-                            <span class="text-[11px] text-stone-400 dark:text-stone-500 block mb-0.5">Waktu Kembali Fisik</span>
+                        <div class="p-2.5 rounded-lg border" :class="selectedBorrowing?.dates.returned_at ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-500/30' : 'bg-stone-50 dark:bg-[#0E1420] border-stone-100 dark:border-stone-800'">
+                            <span class="text-[10px] text-stone-400 dark:text-stone-500 block mb-0.5">Dikembalikan</span>
                             <span
-                                class="font-bold"
+                                class="font-bold text-xs"
                                 :class="selectedBorrowing?.dates.returned_at ? 'text-emerald-800 dark:text-neon-emerald' : 'text-stone-400 dark:text-stone-500 italic'"
-                                x-text="selectedBorrowing?.dates.returned_at || 'Belum Dikembalikan'"
+                                x-text="selectedBorrowing?.dates.returned_at || 'Belum'"
                             ></span>
                         </div>
                     </div>
                 </div>
 
-                {{-- 3. Bagian Catatan --}}
-                <div class="bg-white dark:bg-[#131B2A] rounded-xl p-4 border border-stone-200 dark:border-stone-800 shadow-sm">
-                    <div class="flex items-center gap-2 mb-2 text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider">
-                        <svg class="w-4 h-4 text-[#6F4E37] dark:text-neon-glowamber" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
-                        </svg>
-                        Catatan Keperluan
-                    </div>
-                    <div class="bg-stone-50 dark:bg-[#0E1420] rounded-lg p-3 text-xs text-stone-700 dark:text-stone-300 border border-stone-100 dark:border-stone-800 leading-relaxed" x-text="selectedBorrowing?.borrower_note"></div>
-
-                    <template x-if="selectedBorrowing?.return_note">
-                        <div class="mt-3">
-                            <span class="text-[11px] font-bold text-emerald-800 dark:text-neon-emerald uppercase tracking-wider block mb-1">Catatan Pengembalian:</span>
-                            <div class="bg-emerald-50 dark:bg-emerald-950/40 rounded-lg p-3 text-xs text-emerald-900 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-500/30 leading-relaxed" x-text="selectedBorrowing?.return_note"></div>
-                        </div>
-                    </template>
-                </div>
-
-                {{-- 4. Bagian Bukti Foto Real-time --}}
+                {{-- Bukti Foto Real-time --}}
                 <div class="bg-white dark:bg-[#131B2A] rounded-xl p-4 border border-stone-200 dark:border-stone-800 shadow-sm">
                     <div class="flex items-center justify-between mb-3">
                         <div class="flex items-center gap-2 text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider">
@@ -693,15 +757,15 @@
                             </svg>
                             Bukti Foto Serah Terima Real-Time
                         </div>
-                        <span class="text-[11px] text-stone-400 dark:text-stone-500">Webcam / Kamera Device</span>
+                        <span class="text-[11px] text-stone-400 dark:text-stone-500">Webcam Kamera</span>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {{-- Foto Bukti Saat Peminjaman --}}
+                        {{-- Foto Saat Peminjaman --}}
                         <div>
                             <span class="text-[11px] font-semibold text-stone-600 dark:text-stone-400 block mb-1.5 flex items-center gap-1.5">
                                 <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                                Bukti Saat Peminjaman
+                                Bukti Saat Serah Terima
                             </span>
 
                             <template x-if="selectedBorrowing?.borrowing_evidence_url">
@@ -712,32 +776,21 @@
                                     <img
                                         :src="selectedBorrowing?.borrowing_evidence_url"
                                         alt="Bukti Peminjaman"
-                                        width="480"
-                                        height="270"
-                                        loading="lazy"
-                                        decoding="async"
                                         class="w-full h-full object-cover aspect-video transition group-hover:scale-105"
                                     >
                                     <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-semibold gap-1">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/>
-                                        </svg>
                                         Perbesar
                                     </div>
                                 </div>
                             </template>
-
                             <template x-if="!selectedBorrowing?.borrowing_evidence_url">
                                 <div class="aspect-video rounded-xl bg-stone-100 dark:bg-stone-800 border-2 border-dashed border-stone-200 dark:border-stone-700 flex flex-col items-center justify-center text-stone-400 dark:text-stone-500 text-xs p-4 text-center">
-                                    <svg class="w-6 h-6 text-stone-300 dark:text-stone-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
-                                    <span>Tidak ada foto serah terima peminjaman</span>
+                                    <span>Belum ada foto serah terima</span>
                                 </div>
                             </template>
                         </div>
 
-                        {{-- Foto Bukti Saat Pengembalian --}}
+                        {{-- Foto Saat Pengembalian --}}
                         <div>
                             <span class="text-[11px] font-semibold text-stone-600 dark:text-stone-400 block mb-1.5 flex items-center gap-1.5">
                                 <span class="w-2 h-2 rounded-full" :class="selectedBorrowing?.return_evidence_url ? 'bg-emerald-500' : 'bg-stone-300 dark:bg-stone-600'"></span>
@@ -752,26 +805,15 @@
                                     <img
                                         :src="selectedBorrowing?.return_evidence_url"
                                         alt="Bukti Pengembalian"
-                                        width="480"
-                                        height="270"
-                                        loading="lazy"
-                                        decoding="async"
                                         class="w-full h-full object-cover aspect-video transition group-hover:scale-105"
                                     >
                                     <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-semibold gap-1">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/>
-                                        </svg>
                                         Perbesar
                                     </div>
                                 </div>
                             </template>
-
                             <template x-if="!selectedBorrowing?.return_evidence_url">
                                 <div class="aspect-video rounded-xl bg-stone-100 dark:bg-stone-800 border-2 border-dashed border-stone-200 dark:border-stone-700 flex flex-col items-center justify-center text-stone-400 dark:text-stone-500 text-xs p-4 text-center">
-                                    <svg class="w-6 h-6 text-stone-300 dark:text-stone-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
                                     <span x-text="selectedBorrowing?.dates.returned_at ? 'Tidak ada foto bukti pengembalian' : 'Barang belum dikembalikan'"></span>
                                 </div>
                             </template>
@@ -783,7 +825,7 @@
 
             {{-- Modal Footer --}}
             <div class="bg-stone-50 dark:bg-[#0E1420] px-6 py-3.5 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between">
-                <span class="text-[11px] text-stone-400 dark:text-stone-500 font-mono" x-text="'ID Transaksi: #' + selectedBorrowing?.id"></span>
+                <span class="text-[11px] text-stone-400 dark:text-stone-500 font-mono" x-text="'ID: #' + selectedBorrowing?.id"></span>
                 <div class="flex items-center gap-2">
                     <template x-if="selectedBorrowing?.wa_url">
                         <a
@@ -791,33 +833,19 @@
                             target="_blank"
                             rel="noopener noreferrer"
                             class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm active:scale-95"
-                            title="Kirim Pengingat WhatsApp ke Peminjam"
                         >
                             <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
                                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                             </svg>
-                            Kirim Pengingat WhatsApp
+                            Kirim WhatsApp
                         </a>
-                    </template>
-                    <template x-if="!selectedBorrowing?.wa_url && (selectedBorrowing?.is_overdue || selectedBorrowing?.status === 'borrowed')">
-                        <button
-                            type="button"
-                            disabled
-                            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-400 dark:text-stone-500 text-xs font-semibold border border-stone-200 dark:border-stone-700 cursor-not-allowed opacity-75 shadow-sm"
-                            title="Nomor WhatsApp peminjam belum terdaftar di profil"
-                        >
-                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                            </svg>
-                            Nomor WA Belum Terdaftar
-                        </button>
                     </template>
                     <button
                         type="button"
                         @click="closeDetail()"
                         class="px-5 py-2 rounded-xl bg-[#6F4E37] text-white text-xs font-bold hover:bg-[#5a3f2c] transition shadow-sm cursor-pointer"
                     >
-                        Tutup Rincian
+                        Tutup
                     </button>
                 </div>
             </div>

@@ -19,11 +19,15 @@ class CheckoutBorrowingAction
 
     public function __construct(private readonly BorrowingDueDateCalculator $dueDates) {}
 
-    public function execute(User $admin, Borrowing $borrowing, AssetCondition $checkoutCondition): Borrowing
-    {
-        $this->authorize($admin, 'checkout', $borrowing);
+    public function execute(
+        User $actor,
+        Borrowing $borrowing,
+        AssetCondition $checkoutCondition = AssetCondition::Baik,
+        ?string $evidencePath = null
+    ): Borrowing {
+        $this->authorize($actor, 'checkout', $borrowing);
 
-        return DB::transaction(function () use ($borrowing, $checkoutCondition): Borrowing {
+        return DB::transaction(function () use ($borrowing, $checkoutCondition, $evidencePath): Borrowing {
             $asset = Asset::withTrashed()->lockForUpdate()->find($borrowing->asset_id);
             $lockedBorrowing = Borrowing::query()->lockForUpdate()->find($borrowing->id);
 
@@ -35,12 +39,18 @@ class CheckoutBorrowingAction
             }
 
             $borrowedAt = now();
-            $lockedBorrowing->update([
+            $updateData = [
                 'status' => BorrowingStatus::Borrowed,
                 'borrowed_at' => $borrowedAt,
                 'due_at' => $this->dueDates->fromCheckout($borrowedAt),
                 'checkout_condition' => $checkoutCondition,
-            ]);
+            ];
+
+            if ($evidencePath) {
+                $updateData['borrowing_evidence_path'] = $evidencePath;
+            }
+
+            $lockedBorrowing->update($updateData);
             $asset->update(['availability_status' => AssetAvailabilityStatus::Dipinjam]);
 
             return $lockedBorrowing->fresh();

@@ -18,7 +18,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
 Route::get('/dashboard/analytics', [DashboardController::class, 'analytics'])
-    ->middleware(['auth', 'verified', 'role:admin'])
+    ->middleware(['auth', 'verified', 'role:admin|super_admin'])
     ->name('dashboard.analytics');
 
 Route::get('/katalog', [AssetController::class, 'webIndex'])
@@ -39,6 +39,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/peminjaman/riwayat', [BorrowingController::class, 'webMine'])->name('borrowings.mine');
     Route::get('/borrowings/mine', [BorrowingController::class, 'webMine']);
 
+    Route::post('/borrowings/{borrowing}/checkout', [BorrowingController::class, 'webCheckout'])
+        ->name('borrowings.checkout');
+
     Route::post('/borrowings/{borrowing}/return-request', [BorrowingController::class, 'requestReturn'])
         ->name('borrowings.return-request');
 
@@ -49,30 +52,38 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Panel Super Admin — Manajemen Master Aset, Audit Logs & Ekspor Laporan
+| Panel Admin Operasional & Super Admin — Master Aset & Monitoring Peminjaman
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:admin|super_admin'])->group(function () {
     Route::resource('admin/assets', \App\Http\Controllers\Admin\AssetManagementController::class)->names('admin.assets');
 });
 
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->group(function () {
     Route::get('/borrowings', [\App\Http\Controllers\Admin\BorrowingController::class, 'index'])->name('admin.borrowings.index');
     Route::get('/borrowings/export-excel', [\App\Http\Controllers\Admin\BorrowingReportController::class, 'exportCsv'])->name('admin.borrowings.export-excel');
     Route::get('/borrowings/export-pdf', [\App\Http\Controllers\Admin\BorrowingReportController::class, 'exportPdf'])->name('admin.borrowings.export-pdf');
     Route::get('/borrowings/{borrowing}', [\App\Http\Controllers\Admin\BorrowingController::class, 'show'])->whereNumber('borrowing')->name('admin.borrowings.show');
+
+    // Aksi Persetujuan & Verifikasi Fisik oleh Admin / Super Admin
+    Route::post('/borrowings/{borrowing}/approve', [BorrowingController::class, 'webApprove'])->name('admin.borrowings.approve');
+    Route::post('/borrowings/{borrowing}/reject', [BorrowingController::class, 'webReject'])->name('admin.borrowings.reject');
+    Route::post('/borrowings/{borrowing}/verify-return', [BorrowingController::class, 'webVerifyReturn'])->name('admin.borrowings.verify-return');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Panel Eksklusif Super Admin — Audit Log & Sinkronisasi Gateway SiPintu
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->group(function () {
     Route::get('/audit-logs', [\App\Http\Controllers\AuditLogController::class, 'webIndex'])->name('admin.audit-logs.index');
     Route::get('/audit-logs/export-excel', [\App\Http\Controllers\Admin\BorrowingReportController::class, 'exportCsv'])->name('admin.audit-logs.export-excel');
     Route::get('/audit-logs/export-pdf', [\App\Http\Controllers\Admin\BorrowingReportController::class, 'exportPdf'])->name('admin.audit-logs.export-pdf');
     Route::post('/sync-sipintu', [\App\Http\Controllers\Admin\SiPintuSyncController::class, 'sync'])->name('admin.sync-sipintu');
 });
 
-/*
-|--------------------------------------------------------------------------
-| SiPintu API Gateway — Data SIJUNA (Admin Only)
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth', 'verified', 'role:admin'])->prefix('sipintu')->group(function () {
+Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('sipintu')->group(function () {
     Route::get('/', [SiPintuController::class, 'index'])->name('sipintu.index');
     Route::get('/pengguna', [SiPintuController::class, 'studentsPage'])->name('sipintu.students.page');
     Route::get('/guru', [SiPintuController::class, 'teachersPage'])->name('sipintu.teachers.page');

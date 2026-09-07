@@ -65,6 +65,6 @@ class CompletePhoneController extends Controller
             $user->guruProfile->update(['phone' => $normalized]);
         }
 
-        return redirect()->route('dashboard')->with('success', 'Nomor WhatsApp berhasil disimpan! Selamat datang di TE-VAULT.');
+        return redirect()->route('dashboard')->with('success', 'Nomor WhatsApp berhasil disimpan! Selamat datang di SITEFA.');
     }
 }

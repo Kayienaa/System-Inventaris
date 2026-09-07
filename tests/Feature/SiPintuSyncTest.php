@@ -201,7 +201,7 @@ class SiPintuSyncTest extends TestCase
         ]);
 
         $admin = User::factory()->create();
-        $admin->assignRole('admin');
+        $admin->assignRole('super_admin');
 
         $response = $this->actingAs($admin)->post('/admin/sync-sipintu', [
             'type' => 'all',
@@ -223,7 +223,7 @@ class SiPintuSyncTest extends TestCase
         ]);
 
         $admin = User::factory()->create();
-        $admin->assignRole('admin');
+        $admin->assignRole('super_admin');
 
         $response = $this->actingAs($admin)->post('/admin/sync-sipintu', [
             'type' => 'students',
@@ -242,7 +242,7 @@ class SiPintuSyncTest extends TestCase
         ]);
 
         $admin = User::factory()->create();
-        $admin->assignRole('admin');
+        $admin->assignRole('super_admin');
 
         $response = $this->actingAs($admin)->post('/admin/sync-sipintu', [
             'type' => 'teachers',
@@ -272,7 +272,7 @@ class SiPintuSyncTest extends TestCase
     public function test_sync_job_handles_execution_and_records_audit(): void
     {
         $admin = User::factory()->create();
-        $admin->assignRole('admin');
+        $admin->assignRole('super_admin');
 
         $baseUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/');
 

@@ -33,22 +33,22 @@ class RequestBorrowingAction
                 throw new AssetUnavailableException('The asset is not available for borrowing.');
             }
 
-            $borrowedAt = now();
-            $effectiveDueAt = $dueAt ?? $borrowedAt->copy()->addDays(3);
+            $requestedAt = now();
+            $effectiveDueAt = $dueAt ?? $requestedAt->copy()->addDays(3);
 
             $borrowing = Borrowing::query()->create([
                 'borrower_user_id' => $borrower->id,
                 'asset_id' => $lockedAsset->id,
-                'status' => BorrowingStatus::Borrowed,
-                'requested_at' => $borrowedAt,
-                'borrowed_at' => $borrowedAt,
+                'status' => BorrowingStatus::Pending,
+                'requested_at' => $requestedAt,
+                'borrowed_at' => null,
                 'due_at' => $effectiveDueAt,
                 'borrowing_evidence_path' => $borrowingEvidencePath,
                 'borrower_note' => $borrowerNote,
             ]);
 
             $lockedAsset->update([
-                'availability_status' => AssetAvailabilityStatus::Dipinjam,
+                'availability_status' => AssetAvailabilityStatus::Dipesan,
             ]);
 
             return $borrowing;

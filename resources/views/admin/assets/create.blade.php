@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah Unit Aset Baru | TE-Vault')
+@section('title', 'Tambah Unit Aset Baru | SITEFA')
 
 @section('content')
 <div class="max-w-6xl mx-auto px-6 py-8" x-data="{

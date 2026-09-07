@@ -62,47 +62,114 @@ class BorrowingController extends Controller
     }
 
     /**
-     * Pengembalian barang instan dengan foto real-time dari kamera.
+     * Pengajuan serah terima barang (checkout) dengan foto real-time dari kamera.
      */
-    public function requestReturn(\Illuminate\Http\Request $request, Borrowing $borrowing, AuditLogService $audit)
+    public function webCheckout(\Illuminate\Http\Request $request, Borrowing $borrowing, CheckoutBorrowingAction $action, AuditLogService $audit)
     {
-        if ($borrowing->borrower_user_id !== $request->user()->id && ! $request->user()->hasRole('admin')) {
-            abort(403, 'Anda tidak memiliki akses ke peminjaman ini.');
+        $this->authorize('checkout', $borrowing);
+
+        if ($borrowing->status !== BorrowingStatus::Approved) {
+            return back()->with('error', 'Hanya peminjaman dengan status "Disetujui" yang dapat diserahterimakan.');
         }
 
+        $evidencePath = $this->storeEvidenceImage($request, 'borrowing_evidence', 'borrowing-evidence');
+        if (! $evidencePath && ! $borrowing->borrowing_evidence_path) {
+            return back()->with('error', 'Foto bukti fisik serah terima bersama Admin wajib diunggah.');
+        }
+
+        $condition = $request->filled('checkout_condition')
+            ? AssetCondition::tryFrom($request->input('checkout_condition')) ?? AssetCondition::Baik
+            : AssetCondition::Baik;
+
+        $oldAttributes = $borrowing->getAttributes();
+        $result = $action->execute($request->user(), $borrowing, $condition, $evidencePath ?? $borrowing->borrowing_evidence_path);
+
+        $audit->record($request->user(), 'borrowing.checked_out', $result, $oldAttributes, $result->getAttributes());
+
+        return redirect()->route('borrowings.mine')
+            ->with('success', 'Serah terima barang berhasil! Status unit kini resmi "Dipinjam".');
+    }
+
+    /**
+     * Pengajuan pengembalian barang oleh peminjam (status return_pending_verification).
+     */
+    public function requestReturn(\Illuminate\Http\Request $request, Borrowing $borrowing, SubmitReturnAction $action, AuditLogService $audit)
+    {
+        $this->authorize('submitReturn', $borrowing);
+
         if ($borrowing->status !== BorrowingStatus::Borrowed) {
-            abort(403, 'Hanya peminjaman dengan status "Dipinjam" yang dapat diajukan pengembaliannya.');
+            return back()->with('error', 'Hanya peminjaman dengan status "Dipinjam" yang dapat diajukan pengembaliannya.');
+        }
+
+        $evidencePath = $this->storeEvidenceImage($request, 'return_evidence', 'return-evidence');
+        if (! $evidencePath) {
+            return back()->with('error', 'Foto bukti fisik pengembalian bersama Admin wajib diambil.');
         }
 
         $oldAttributes = $borrowing->getAttributes();
-        $evidencePath = $this->storeEvidenceImage($request, 'return_evidence', 'return-evidence');
+        $result = $action->execute($request->user(), $borrowing, $evidencePath, $request->input('return_note'));
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($borrowing, $request, $evidencePath) {
-            $borrowing->update([
-                'status' => BorrowingStatus::Returned,
-                'returned_at' => now(),
-                'return_submitted_at' => now(),
-                'return_evidence_path' => $evidencePath,
-                'return_note' => $request->input('return_note'),
-                'return_condition' => AssetCondition::Baik,
-            ]);
-
-            // Reset status ketersediaan Asset kembali ke Tersedia
-            $borrowing->asset?->update([
-                'availability_status' => \App\Enums\AssetAvailabilityStatus::Tersedia,
-            ]);
-        });
-
-        $audit->record($request->user(), 'borrowing.returned', $borrowing, $oldAttributes, $borrowing->fresh()->getAttributes());
+        $audit->record($request->user(), 'borrowing.return_submitted', $result, $oldAttributes, $result->getAttributes());
 
         return redirect()->route('borrowings.mine')
-            ->with('success', 'Barang berhasil dikembalikan! Status telah selesai dan aset kini kembali tersedia.');
+            ->with('success', 'Pengajuan pengembalian berhasil dikirim! Menunggu verifikasi fisik oleh Admin.');
+    }
+
+    /**
+     * Persetujuan pengajuan awal oleh Admin / Super Admin (Web view).
+     */
+    public function webApprove(\Illuminate\Http\Request $request, Borrowing $borrowing, ApproveBorrowingAction $action, AuditLogService $audit, NotificationService $notifications)
+    {
+        $this->authorize('approve', $borrowing);
+
+        $old = $borrowing->getAttributes();
+        $result = $action->execute($request->user(), $borrowing);
+        $audit->record($request->user(), 'borrowing.approved', $result, $old, $result->getAttributes());
+        $notifications->scheduleReminder($result);
+        $notifications->queueApproval($result);
+
+        return back()->with('success', 'Pengajuan peminjaman #' . str_pad((string) $borrowing->id, 5, '0', STR_PAD_LEFT) . ' berhasil disetujui. Menunggu serah terima unit.');
+    }
+
+    /**
+     * Penolakan pengajuan awal oleh Admin / Super Admin (Web view).
+     */
+    public function webReject(\Illuminate\Http\Request $request, Borrowing $borrowing, RejectBorrowingAction $action, AuditLogService $audit, NotificationService $notifications)
+    {
+        $this->authorize('reject', $borrowing);
+
+        $reason = $request->input('rejection_reason', 'Pengajuan ditolak oleh Admin.');
+        $old = $borrowing->getAttributes();
+        $result = $action->execute($request->user(), $borrowing, $reason);
+        $audit->record($request->user(), 'borrowing.rejected', $result, $old, $result->getAttributes());
+        $notifications->queueRejection($result);
+
+        return back()->with('success', 'Pengajuan peminjaman #' . str_pad((string) $borrowing->id, 5, '0', STR_PAD_LEFT) . ' telah ditolak.');
+    }
+
+    /**
+     * Verifikasi penerimaan pengembalian fisik oleh Admin / Super Admin (Web view).
+     */
+    public function webVerifyReturn(\Illuminate\Http\Request $request, Borrowing $borrowing, VerifyReturnAction $action, AuditLogService $audit, NotificationService $notifications)
+    {
+        $this->authorize('verifyReturn', $borrowing);
+
+        $condition = $request->filled('return_condition')
+            ? AssetCondition::tryFrom($request->input('return_condition')) ?? AssetCondition::Baik
+            : AssetCondition::Baik;
+
+        $old = $borrowing->getAttributes();
+        $result = $action->execute($request->user(), $borrowing, $condition, $request->input('return_verification_note'));
+        $audit->record($request->user(), 'borrowing.return_verified', $result, $old, $result->getAttributes());
+        $notifications->queueReturnVerification($result);
+
+        return back()->with('success', 'Pengembalian barang berhasil diverifikasi! Unit telah kembali tersedia di katalog.');
     }
 
     public function index(): AnonymousResourceCollection
     {
         $query = Borrowing::query()->with(['asset', 'borrower']);
-        if (! request()->user()->hasRole('admin')) {
+        if (! request()->user()->hasAnyRole(['admin', 'super_admin'])) {
             $query->where('borrower_user_id', request()->user()->id);
         }
 
@@ -145,7 +212,7 @@ class BorrowingController extends Controller
 
         return redirect()
             ->route('borrowings.mine')
-            ->with('success', 'Peminjaman berhasil diajukan!');
+            ->with('success', 'Permohonan peminjaman berhasil diajukan! Menunggu persetujuan Admin.');
     }
 
     public function show(Borrowing $borrowing): BorrowingResource
@@ -187,8 +254,16 @@ class BorrowingController extends Controller
 
     public function checkout(CheckoutBorrowingRequest $request, Borrowing $borrowing, CheckoutBorrowingAction $action, AuditLogService $audit): BorrowingResource
     {
+        $evidencePath = $this->storeEvidenceImage($request, 'borrowing_evidence', 'borrowing-evidence')
+            ?? $request->input('borrowing_evidence_path');
+
         $old = $borrowing->getAttributes();
-        $result = $action->execute($request->user(), $borrowing, $request->enum('checkout_condition', AssetCondition::class));
+        $result = $action->execute(
+            $request->user(),
+            $borrowing,
+            $request->enum('checkout_condition', AssetCondition::class) ?? AssetCondition::Baik,
+            $evidencePath
+        );
         $audit->record($request->user(), 'borrowing.checked_out', $result, $old, $result->getAttributes());
 
         return new BorrowingResource($result);
@@ -196,8 +271,11 @@ class BorrowingController extends Controller
 
     public function submitReturn(SubmitReturnRequest $request, Borrowing $borrowing, SubmitReturnAction $action, AuditLogService $audit): BorrowingResource
     {
+        $evidencePath = $this->storeEvidenceImage($request, 'return_evidence', 'return-evidence')
+            ?? $request->input('return_evidence_path');
+
         $old = $borrowing->getAttributes();
-        $result = $action->execute($request->user(), $borrowing, $request->string('return_evidence_path')->toString(), $request->input('return_note'));
+        $result = $action->execute($request->user(), $borrowing, (string) $evidencePath, $request->input('return_note'));
         $audit->record($request->user(), 'borrowing.return_submitted', $result, $old, $result->getAttributes());
 
         return new BorrowingResource($result);
@@ -206,7 +284,7 @@ class BorrowingController extends Controller
     public function verifyReturn(VerifyReturnRequest $request, Borrowing $borrowing, VerifyReturnAction $action, AuditLogService $audit, NotificationService $notifications): BorrowingResource
     {
         $old = $borrowing->getAttributes();
-        $result = $action->execute($request->user(), $borrowing, $request->enum('return_condition', AssetCondition::class), $request->input('return_verification_note'));
+        $result = $action->execute($request->user(), $borrowing, $request->enum('return_condition', AssetCondition::class) ?? AssetCondition::Baik, $request->input('return_verification_note'));
         $audit->record($request->user(), 'borrowing.return_verified', $result, $old, $result->getAttributes());
         $notifications->queueReturnVerification($result);
 

@@ -22,7 +22,7 @@ class RejectBorrowingAction
         }
 
         return DB::transaction(function () use ($admin, $borrowing, $reason): Borrowing {
-            Asset::withTrashed()->lockForUpdate()->find($borrowing->asset_id);
+            $asset = Asset::withTrashed()->lockForUpdate()->find($borrowing->asset_id);
             $lockedBorrowing = Borrowing::query()->lockForUpdate()->find($borrowing->id);
 
             if ($lockedBorrowing === null || $lockedBorrowing->status !== BorrowingStatus::Pending) {
@@ -34,6 +34,10 @@ class RejectBorrowingAction
                 'rejected_by_user_id' => $admin->id,
                 'rejected_at' => now(),
                 'rejection_reason' => $reason,
+            ]);
+
+            $asset?->update([
+                'availability_status' => \App\Enums\AssetAvailabilityStatus::Tersedia,
             ]);
 
             return $lockedBorrowing->fresh();

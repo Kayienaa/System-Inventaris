@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Rekapitulasi Peminjaman Aset | TE-VAULT</title>
+    <title>Laporan Rekapitulasi Peminjaman Aset | SITEFA</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -308,7 +308,7 @@
         {{-- Document Header --}}
         <div class="document-title">
             <h2>Laporan Rekapitulasi Riwayat Peminjaman Aset</h2>
-            <p>Sistem Manajemen Inventaris TE-VAULT SMKN 1 Bangsri</p>
+            <p>Sistem Manajemen Inventaris SITEFA SMKN 1 Bangsri</p>
         </div>
 
         {{-- Metadata Bar --}}
@@ -400,7 +400,7 @@
 
             <div class="signature-box">
                 <p>Jepara, {{ $generatedAt->translatedFormat('d F Y') }}</p>
-                <p><strong>Pengelola Inventaris TE-VAULT</strong></p>
+                <p><strong>Pengelola Inventaris SITEFA</strong></p>
                 <div class="signature-space"></div>
                 <p class="signature-name">{{ auth()->user()->name }}</p>
                 <p class="signature-nip">Petugas Administrasi Lab</p>

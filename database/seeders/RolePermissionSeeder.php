@@ -15,7 +15,7 @@ class RolePermissionSeeder extends Seeder
      * @var array<string, list<string>>
      */
     private const array ROLE_PERMISSIONS = [
-        'admin' => [
+        'super_admin' => [
             'users.view',
             'users.create',
             'users.update',
@@ -35,6 +35,21 @@ class RolePermissionSeeder extends Seeder
             'audit.view',
             'notifications.view',
         ],
+        'admin' => [
+            'assets.view',
+            'assets.create',
+            'assets.update',
+            'assets.delete',
+            'borrowings.view',
+            'borrowings.create',
+            'borrowings.approve',
+            'borrowings.reject',
+            'borrowings.return',
+            'borrowings.verify-return',
+            'reports.view',
+            'reports.export',
+            'notifications.view',
+        ],
         'guru' => [
             'assets.view',
             'borrowings.view',
@@ -50,7 +65,7 @@ class RolePermissionSeeder extends Seeder
     ];
 
     /**
-     * Create the initial TE-VAULT authorization vocabulary and assignments.
+     * Create the initial SITEFA authorization vocabulary and assignments.
      */
     public function run(): void
     {

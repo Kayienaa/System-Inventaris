@@ -233,7 +233,7 @@
                             </span>
                             <input id="email" name="email" type="text"
                                    autocomplete="off"
-                                   placeholder="isi email / sandi kalian disini"
+                                   placeholder="isi email disini"
                                    value="{{ old('email') }}"
                                    required
                                    class="inp {{ $errors->has('email') ? 'inp-error' : '' }}">
@@ -253,7 +253,7 @@
                             <input id="password" name="password"
                                    :type="showPass ? 'text' : 'password'"
                                    autocomplete="new-password"
-                                   placeholder="isi email / sandi kalian disini"
+                                   placeholder="isi sandi disini"
                                    required
                                    class="inp inp-pr">
                             <!-- Eye toggle -->

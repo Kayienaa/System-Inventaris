@@ -15,7 +15,7 @@
                         Profil Pengguna
                     </h1>
                     <p class="text-stone-500 dark:text-stone-400 mt-1 text-sm">
-                        Informasi identitas akun dan pengelolaan keamanan Single Sign-On (SSO) TE-Vault
+                        Informasi identitas akun dan pengelolaan keamanan Single Sign-On (SSO) SITEFA
                     </p>
                 </div>
                 <div>

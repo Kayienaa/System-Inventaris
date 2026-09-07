@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Aset: ' . $asset->name . ' | TE-Vault')
+@section('title', 'Edit Aset: ' . $asset->name . ' | SITEFA')
 
 @section('content')
 <div class="max-w-6xl mx-auto px-6 py-8" x-data="{

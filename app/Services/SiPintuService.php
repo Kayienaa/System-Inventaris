@@ -377,7 +377,7 @@ class SiPintuService
             'gateway_status'    => $isConnected ? 'online' : 'offline',
             'gateway_name'      => $ping['data']['gateway'] ?? 'SiPintu REST API Gateway',
             'client_id'         => $this->clientId,
-            'client_name'       => $ping['data']['client_connection']['name'] ?? 'TE-Vault',
+            'client_name'       => $ping['data']['client_connection']['name'] ?? 'SITEFA',
             'total_requests'    => $ping['data']['client_connection']['total_api_requests'] ?? 0,
             'total_students'    => $studentCount,
             'total_teachers'    => $teacherCount,

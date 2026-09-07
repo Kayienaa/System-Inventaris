@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>@yield('title', 'TE-Vault')</title>
+    <title>@yield('title', 'SITEFA')</title>
 
     {{-- Favicon Resmi TEFA SMKN 1 Bangsri --}}
     <link rel="icon" type="image/png" href="{{ asset('images/logo-tefa.png') }}">
@@ -991,15 +991,19 @@
                 @endif
             </div>
 
-            <h1 class="brand-font brand-name">TE-Vault</h1>
+            <h1 class="brand-font brand-name">SITEFA</h1>
 
             <p class="brand-subtitle">
                 SISTEM INVENTARIS
             </p>
 
-            @if(auth()->user()?->hasRole('admin'))
+            @if(auth()->user()?->hasRole('super_admin'))
                 <span class="admin-badge">
-                    Administrator
+                    Super Administrator
+                </span>
+            @elseif(auth()->user()?->hasRole('admin'))
+                <span class="admin-badge">
+                    Admin TEFA
                 </span>
             @else
                 <span class="admin-badge" style="background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.85); border-color: rgba(255,255,255,0.2);">
@@ -1021,7 +1025,15 @@
                 </p>
 
                 <p class="user-role">
-                    {{ auth()->user()?->hasRole('admin') ? 'Administrator' : 'Peminjam' }}
+                    @if(auth()->user()?->hasRole('super_admin'))
+                        Super Administrator
+                    @elseif(auth()->user()?->hasRole('admin'))
+                        Admin TEFA
+                    @elseif(auth()->user()?->hasRole('guru'))
+                        Guru
+                    @else
+                        Siswa
+                    @endif
                 </p>
             </div>
 
@@ -1080,8 +1092,8 @@
                 Kategori
             </a>
 
-            {{-- Peminjaman --}}
-            @hasrole('admin')
+            {{-- Peminjaman (Admin / Super Admin vs Siswa / Guru) --}}
+            @hasanyrole(['admin', 'super_admin'])
             <a
                 href="{{ route('admin.borrowings.index') }}"
                 class="menu-link {{ request()->routeIs('admin.borrowings.*') ? 'active' : '' }}"
@@ -1091,7 +1103,7 @@
                           d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>
                 </svg>
 
-                Peminjaman
+                Monitoring Peminjaman
             </a>
             @else
             <a
@@ -1105,14 +1117,14 @@
 
                 Peminjaman
             </a>
-            @endhasrole
+            @endhasanyrole
 
-            @hasrole('admin')
+            @hasanyrole(['admin', 'super_admin'])
             <div class="menu-label" style="margin-top:22px;">
                 Administrasi
             </div>
 
-            {{-- Kelola Aset (Admin Only) --}}
+            {{-- Kelola Aset (Admin & Super Admin) --}}
             <a
                 href="{{ route('admin.assets.index') }}"
                 class="menu-link {{ request()->routeIs('admin.assets.*') ? 'active' : '' }}"
@@ -1125,6 +1137,23 @@
                 Kelola Aset
             </a>
 
+            {{-- Laporan (Admin & Super Admin) --}}
+            <a
+                href="{{ route('dashboard.analytics') }}"
+                class="menu-link {{ request()->routeIs('dashboard.analytics') ? 'active' : '' }}"
+            >
+                <svg class="menu-icon" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75z
+                             M9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625z
+                             M16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
+                </svg>
+
+                Laporan
+            </a>
+            @endhasanyrole
+
+            @hasrole('super_admin')
             {{-- Data Pengguna --}}
             <a
                 href="{{ route('sipintu.students.page') }}"
@@ -1158,22 +1187,7 @@
                 Gateway SiPintu
             </a>
 
-            {{-- Laporan --}}
-            <a
-                href="{{ route('dashboard.analytics') }}"
-                class="menu-link {{ request()->routeIs('dashboard.analytics') ? 'active' : '' }}"
-            >
-                <svg class="menu-icon" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75z
-                             M9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625z
-                             M16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
-                </svg>
-
-                Laporan
-            </a>
-
-            {{-- Audit Log (Admin Only) --}}
+            {{-- Audit Log --}}
             <a
                 href="{{ route('admin.audit-logs.index') }}"
                 class="menu-link {{ request()->routeIs('admin.audit-logs.*') ? 'active' : '' }}"
@@ -1251,7 +1265,7 @@
             </button>
 
             <span class="brand-font mobile-brand">
-                TE-Vault
+                SITEFA
             </span>
         </div>
 

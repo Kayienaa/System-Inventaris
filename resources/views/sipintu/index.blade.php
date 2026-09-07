@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'SiPintu API Gateway & Monitoring | TE-Vault')
+@section('title', 'SiPintu API Gateway & Monitoring | SITEFA')
 
 @section('content')
 
@@ -230,7 +230,7 @@
                     Sinkronisasi Database Pengguna SiPintu
                 </h2>
                 <p style="margin: 0; color: var(--muted); font-size: 0.875rem; max-width: 680px; line-height: 1.5;">
-                    Sinkronkan data pengguna (Siswa &amp; Guru) dari SiPintu Gateway ke database lokal TE-VAULT secara otomatis. Kata sandi default akun baru akan disetel ke <span class="code-pill">password</span>.
+                    Sinkronkan data pengguna (Siswa &amp; Guru) dari SiPintu Gateway ke database lokal SITEFA secara otomatis. Kata sandi default akun baru akan disetel ke <span class="code-pill">password</span>.
                 </p>
             </div>
             <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;">
@@ -368,7 +368,7 @@
             </tr>
             <tr>
                 <td>Application Name</td>
-                <td><strong>{{ $summary['client_name'] ?? 'TE-Vault' }}</strong></td>
+                <td><strong>{{ $summary['client_name'] ?? 'SITEFA' }}</strong></td>
             </tr>
             <tr>
                 <td>Metode Autentikasi</td>

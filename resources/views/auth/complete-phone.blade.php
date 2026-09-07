@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="Lengkapi Nomor WhatsApp – TE-VAULT SMKN 1 Bangsri">
-    <title>Lengkapi Nomor WhatsApp – TE-VAULT | SMK Negeri 1 Bangsri</title>
+    <meta name="description" content="Lengkapi Nomor WhatsApp – SITEFA SMKN 1 Bangsri">
+    <title>Lengkapi Nomor WhatsApp – SITEFA | SMK Negeri 1 Bangsri</title>
 
     {{-- Favicon Resmi TEFA SMKN 1 Bangsri --}}
     <link rel="icon" type="image/png" href="{{ asset('images/logo-tefa.png') }}">
@@ -127,7 +127,7 @@
                 <img src="{{ asset('images/logo-smk.png') }}" alt="Logo SMKN 1 Bangsri" class="h-10 w-auto object-contain" onerror="this.style.display='none'">
             </div>
             <h1 class="text-2xl sm:text-3xl font-extrabold text-brand-900 tracking-tight">
-                TE-VAULT
+                SITEFA
             </h1>
             <p class="text-xs sm:text-sm font-semibold text-brand-700 tracking-wider uppercase mt-0.5">
                 Sistem Inventaris TEFA SMKN 1 Bangsri
@@ -267,7 +267,7 @@
 
         {{-- Footer Note --}}
         <p class="text-center text-xs text-brand-700 mt-6 font-medium">
-            &copy; {{ date('Y') }} TE-VAULT • Teaching Factory SMKN 1 Bangsri
+            &copy; {{ date('Y') }} SITEFA • Teaching Factory SMKN 1 Bangsri
         </p>
     </div>
 

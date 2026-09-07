@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // 1. Super Administrator Resmi TEFA
-        $admin = User::updateOrCreate(
+        $superAdmin = User::updateOrCreate(
             ['email' => 'AdminInventaris@gmail.com'],
             [
                 'name' => 'Super Administrator',
@@ -24,9 +24,20 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
-        $admin->syncRoles(['admin']);
+        $superAdmin->syncRoles(['super_admin']);
 
-        // 2. Akun Contoh Guru Pengajar
+        // 2. Akun Operasional Resmi Admin TEFA (Mas Donny)
+        $adminDonny = User::updateOrCreate(
+            ['email' => 'admindonny@gmail.com'],
+            [
+                'name' => 'Mas Donny (Admin TEFA)',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+        $adminDonny->syncRoles(['admin']);
+
+        // 3. Akun Contoh Guru Pengajar
         $guru = User::updateOrCreate(
             ['email' => 'guru@smkn1bangsri.sch.id'],
             [

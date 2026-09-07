@@ -64,7 +64,7 @@ class BulkUploadAssetsPhotos extends Command
         $itemsDir = storage_path('app/public/items');
 
         $this->info('====================================================');
-        $this->info('  TE-VAULT BULK ASSET PHOTO UPLOADER & COMPRESSOR  ');
+        $this->info('  SITEFA BULK ASSET PHOTO UPLOADER & COMPRESSOR  ');
         $this->info('====================================================');
 
         // 1. Periksa ketersediaan direktori items

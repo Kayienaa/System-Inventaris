@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Sistem Inventaris Barang SMK Negeri 1 Bangsri.">
-    <title>TE-Vault — Sistem Inventaris SMK Negeri 1 Bangsri</title>
+    <title>SITEFA — Sistem Inventaris SMK Negeri 1 Bangsri</title>
 
     {{-- Favicon Resmi TEFA SMKN 1 Bangsri --}}
     <link rel="icon" type="image/png" href="{{ asset('images/logo-tefa.png') }}">
@@ -187,7 +187,7 @@
 
                 color: #A27B36;
             ">
-                TE-VAULT
+                SITEFA
             </p>
 
             <h1
@@ -302,7 +302,7 @@
             ">
                 &copy; {{ date('Y') }} SMK Negeri 1 Bangsri
                 &bull;
-                TE-Vault
+                SITEFA
             </p>
         </div>
 

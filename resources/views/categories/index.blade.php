@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Kategori Barang | TE-Vault')
+@section('title', 'Kategori Barang | SITEFA')
 
 @section('content')
 

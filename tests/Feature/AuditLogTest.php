@@ -42,7 +42,7 @@ class AuditLogTest extends TestCase
     public function test_admin_can_view_and_filter_audit_logs(): void
     {
         $admin = User::factory()->create(['name' => 'Super Admin']);
-        $admin->assignRole('admin');
+        $admin->assignRole('super_admin');
 
         $asset = Asset::first();
 

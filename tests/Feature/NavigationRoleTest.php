@@ -17,12 +17,12 @@ class NavigationRoleTest extends TestCase
         $this->seed(RolePermissionSeeder::class);
     }
 
-    public function test_admin_can_see_administration_menu(): void
+    public function test_super_admin_can_see_full_administration_and_gateway_menu(): void
     {
-        $admin = User::factory()->create();
-        $admin->assignRole('admin');
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole('super_admin');
 
-        $response = $this->actingAs($admin)->get(route('dashboard'));
+        $response = $this->actingAs($superAdmin)->get(route('dashboard'));
 
         $response->assertStatus(200);
         $response->assertSee('Administrasi');
@@ -33,6 +33,25 @@ class NavigationRoleTest extends TestCase
         $response->assertSee('Gateway SiPintu');
         $response->assertSee(route('admin.assets.index'));
         $response->assertDontSee(route('assets.index'));
+    }
+
+    public function test_admin_can_see_operational_admin_menu_without_gateway_and_audit(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $response = $this->actingAs($admin)->get(route('dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Administrasi');
+        $response->assertSee('Kelola Aset');
+        $response->assertSee('Monitoring Peminjaman');
+        $response->assertSee(route('admin.assets.index'));
+        $response->assertDontSee(route('assets.index'));
+
+        // Menu eksklusif super_admin tidak boleh terlihat oleh admin operasional
+        $response->assertDontSee('Audit Log');
+        $response->assertDontSee('Gateway SiPintu');
     }
 
     public function test_siswa_and_guru_only_see_main_user_menu(): void

@@ -21,17 +21,25 @@ class BorrowingController extends Controller
             'borrower.guruProfile',
             'borrower.roles',
             'asset.category',
+            'approvedBy',
+            'returnVerifiedBy',
         ]);
 
-        // Filter status: all, borrowed, returned, overdue
+        // Filter status: all, pending, approved, borrowed, return_pending_verification, returned, overdue
         if ($request->filled('status')) {
             $status = $request->input('status');
             if ($status === 'overdue') {
                 $query->whereIn('status', [BorrowingStatus::Borrowed, BorrowingStatus::ReturnPendingVerification])
                     ->whereNull('returned_at')
                     ->where('due_at', '<', now());
+            } elseif ($status === 'pending') {
+                $query->where('status', BorrowingStatus::Pending);
+            } elseif ($status === 'approved') {
+                $query->where('status', BorrowingStatus::Approved);
             } elseif ($status === 'borrowed') {
                 $query->where('status', BorrowingStatus::Borrowed);
+            } elseif ($status === 'return_pending_verification') {
+                $query->where('status', BorrowingStatus::ReturnPendingVerification);
             } elseif ($status === 'returned') {
                 $query->where('status', BorrowingStatus::Returned);
             }
@@ -60,7 +68,9 @@ class BorrowingController extends Controller
         // Counter statistik untuk kartu ringkasan di dashboard monitoring
         $stats = [
             'total' => Borrowing::count(),
+            'pending' => Borrowing::where('status', BorrowingStatus::Pending)->count(),
             'borrowed' => Borrowing::where('status', BorrowingStatus::Borrowed)->count(),
+            'return_pending' => Borrowing::where('status', BorrowingStatus::ReturnPendingVerification)->count(),
             'returned' => Borrowing::where('status', BorrowingStatus::Returned)->count(),
             'overdue' => Borrowing::whereIn('status', [BorrowingStatus::Borrowed, BorrowingStatus::ReturnPendingVerification])
                 ->whereNull('returned_at')
@@ -134,19 +144,23 @@ class BorrowingController extends Controller
                 'model' => $borrowing->asset?->model ?? '-',
                 'serial_number' => $borrowing->asset?->serial_number ?? '-',
                 'category' => $borrowing->asset?->category?->name ?? '-',
-                'photo_url' => $borrowing->asset?->photo_path ? asset('storage/' . $borrowing->asset->photo_path) : null,
+                'photo_url' => $borrowing->asset?->photo_url,
             ],
             'dates' => [
+                'requested_at' => $borrowing->requested_at ? $borrowing->requested_at->format('d M Y, H:i') . ' WIB' : '-',
                 'borrowed_at' => $borrowing->borrowed_at ? $borrowing->borrowed_at->format('d M Y, H:i') . ' WIB' : ($borrowing->requested_at ? $borrowing->requested_at->format('d M Y, H:i') . ' WIB' : '-'),
                 'due_at' => $borrowing->due_at ? $borrowing->due_at->format('d M Y, H:i') . ' WIB' : '-',
                 'returned_at' => $borrowing->returned_at ? $borrowing->returned_at->format('d M Y, H:i') . ' WIB' : null,
             ],
             'status' => $displayStatus,
+            'raw_status' => $statusValue,
             'is_overdue' => $isOverdue,
             'borrower_note' => $borrowing->borrower_note ?: 'Tidak ada catatan',
             'return_note' => $borrowing->return_note ?: null,
             'borrowing_evidence_url' => $borrowing->borrowing_evidence_path ? asset('storage/' . $borrowing->borrowing_evidence_path) : null,
             'return_evidence_url' => $borrowing->return_evidence_path ? asset('storage/' . $borrowing->return_evidence_path) : null,
+            'approved_by' => $borrowing->approvedBy?->name,
+            'return_verified_by' => $borrowing->returnVerifiedBy?->name,
             'wa_url' => $waUrl,
         ];
     }

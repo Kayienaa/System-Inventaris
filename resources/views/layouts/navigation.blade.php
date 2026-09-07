@@ -49,7 +49,7 @@
             </div>
 
             {{-- Brand name --}}
-            <span class="brand-font text-2xl tracking-wide text-[#F8F6F2] dark:text-stone-100">TE-Vault</span>
+            <span class="brand-font text-2xl tracking-wide text-[#F8F6F2] dark:text-stone-100">SITEFA</span>
             <span class="text-xs font-medium mt-0.5 text-center leading-tight uppercase tracking-wider text-white/60 dark:text-stone-400">
                 SISTEM INVENTARIS
             </span>
@@ -63,7 +63,17 @@
                 </div>
                 <div class="overflow-hidden">
                     <p class="text-sm font-semibold truncate text-[#F8F6F2] dark:text-stone-100">{{ Auth::user()->name }}</p>
-                    <p class="text-xs truncate font-medium text-white/60 dark:text-stone-400">{{ Auth::user()->hasRole('admin') ? 'Administrator' : 'Peminjam' }}</p>
+                    <p class="text-xs truncate font-medium text-white/60 dark:text-stone-400">
+                        @if(Auth::user()->hasRole('super_admin'))
+                            Super Administrator
+                        @elseif(Auth::user()->hasRole('admin'))
+                            Admin TEFA
+                        @elseif(Auth::user()->hasRole('guru'))
+                            Guru
+                        @else
+                            Siswa
+                        @endif
+                    </p>
                 </div>
             </div>
             <button id="theme-toggle" type="button" 
@@ -130,15 +140,15 @@
                 Kategori
             </a>
 
-            {{-- Peminjaman --}}
-            @hasrole('admin')
+            {{-- Peminjaman (Admin / Super Admin vs Siswa / Guru) --}}
+            @hasanyrole(['admin', 'super_admin'])
             <a href="{{ route('admin.borrowings.index') }}"
                class="{{ $link }} {{ request()->routeIs('admin.borrowings.*') ? $active : $inactive }}">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>
                 </svg>
-                Peminjaman
+                Monitoring Peminjaman
             </a>
             @else
             <a href="{{ route('borrowings.mine') }}"
@@ -149,17 +159,17 @@
                 </svg>
                 Peminjaman
             </a>
-            @endhasrole
+            @endhasanyrole
 
-            {{-- ── Administrasi (Super Admin Only) ── --}}
-            @hasrole('admin')
+            {{-- ── Administrasi (Admin & Super Admin) ── --}}
+            @hasanyrole(['admin', 'super_admin'])
             <div class="pt-4 pb-1 px-4">
                 <p class="text-[11px] font-bold uppercase tracking-wider text-white/40">
                     Administrasi
                 </p>
             </div>
 
-            {{-- Kelola Aset (admin only) --}}
+            {{-- Kelola Aset (Admin & Super Admin) --}}
             <a href="{{ route('admin.assets.index') }}"
                class="{{ $link }} {{ request()->routeIs('admin.assets.*') ? $active : $inactive }}">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -169,41 +179,7 @@
                 Kelola Aset
             </a>
 
-            {{-- Data Pengguna / Siswa (admin only) --}}
-            <a href="{{ route('sipintu.students.page') }}"
-               class="{{ $link }} {{ request()->routeIs('sipintu.students*') ? $active : $inactive }}">
-                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952
-                             4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07
-                             M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109
-                             a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25
-                             a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
-                </svg>
-                Data Pengguna
-            </a>
-
-            {{-- Data Guru (admin only) --}}
-            <a href="{{ route('sipintu.teachers.page') }}"
-               class="{{ $link }} {{ request()->routeIs('sipintu.teachers*') ? $active : $inactive }}">
-                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M4.26 10.147a60.438 60.438 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.636 50.636 0 00-2.658-.813A59.906 59.906 0 0112 3.493a59.903 59.903 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0112 13.489a50.702 50.702 0 017.74-3.342"/>
-                </svg>
-                Data Guru
-            </a>
-
-            {{-- Gateway SiPintu (admin only) --}}
-            <a href="{{ route('sipintu.index') }}"
-               class="{{ $link }} {{ request()->routeIs('sipintu.index') ? $active : $inactive }}">
-                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5a17.92 17.92 0 01-8.716-2.247m0 0A9.015 9.015 0 003 12c0-1.605.42-3.113 1.157-4.418"/>
-                </svg>
-                Gateway SiPintu
-            </a>
-
-            {{-- Laporan (admin only) --}}
+            {{-- Laporan (Admin & Super Admin) --}}
             <a href="{{ route('dashboard.analytics') }}"
                class="{{ $link }} {{ request()->routeIs('dashboard.analytics') ? $active : $inactive }}">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -217,8 +193,51 @@
                 </svg>
                 Laporan
             </a>
+            @endhasanyrole
 
-            {{-- Audit Log (admin only) --}}
+            {{-- ── Sistem & Gateway (Super Admin Eksklusif) ── --}}
+            @hasrole('super_admin')
+            <div class="pt-4 pb-1 px-4">
+                <p class="text-[11px] font-bold uppercase tracking-wider text-white/40">
+                    Sistem & Integrasi
+                </p>
+            </div>
+
+            {{-- Data Pengguna / Siswa (super_admin only) --}}
+            <a href="{{ route('sipintu.students.page') }}"
+               class="{{ $link }} {{ request()->routeIs('sipintu.students*') ? $active : $inactive }}">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952
+                             4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07
+                             M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109
+                             a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25
+                             a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
+                </svg>
+                Data Pengguna
+            </a>
+
+            {{-- Data Guru (super_admin only) --}}
+            <a href="{{ route('sipintu.teachers.page') }}"
+               class="{{ $link }} {{ request()->routeIs('sipintu.teachers*') ? $active : $inactive }}">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M4.26 10.147a60.438 60.438 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.636 50.636 0 00-2.658-.813A59.906 59.906 0 0112 3.493a59.903 59.903 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0112 13.489a50.702 50.702 0 017.74-3.342"/>
+                </svg>
+                Data Guru
+            </a>
+
+            {{-- Gateway SiPintu (super_admin only) --}}
+            <a href="{{ route('sipintu.index') }}"
+               class="{{ $link }} {{ request()->routeIs('sipintu.index') ? $active : $inactive }}">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5a17.92 17.92 0 01-8.716-2.247m0 0A9.015 9.015 0 003 12c0-1.605.42-3.113 1.157-4.418"/>
+                </svg>
+                Gateway SiPintu
+            </a>
+
+            {{-- Audit Log (super_admin only) --}}
             <a href="{{ route('admin.audit-logs.index') }}"
                class="{{ $link }} {{ request()->routeIs('admin.audit-logs.*') ? $active : $inactive }}">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -279,7 +298,7 @@
             </svg>
         </button>
 
-        <span class="brand-font text-lg tracking-wide text-[#F8F6F2]">TE-Vault</span>
+        <span class="brand-font text-lg tracking-wide text-[#F8F6F2]">SITEFA</span>
 
         <div class="flex items-center gap-2">
             <button id="theme-toggle-mobile" type="button" 

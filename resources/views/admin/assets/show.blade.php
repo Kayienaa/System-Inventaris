@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Aset: ' . $asset->name . ' (' . $asset->asset_code . ') | TE-Vault')
+@section('title', 'Detail Aset: ' . $asset->name . ' (' . $asset->asset_code . ') | SITEFA')
 
 @section('content')
 <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8" x-data="{ photoModal: false }">

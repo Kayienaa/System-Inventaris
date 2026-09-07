@@ -110,7 +110,7 @@ class CompletePhoneTest extends TestCase
         ]);
 
         $response->assertRedirect(route('dashboard'));
-        $response->assertSessionHas('success', 'Nomor WhatsApp berhasil disimpan! Selamat datang di TE-VAULT.');
+        $response->assertSessionHas('success', 'Nomor WhatsApp berhasil disimpan! Selamat datang di SITEFA.');
 
         $siswa->refresh();
         $this->assertEquals('6281234567890', $siswa->siswaProfile->phone);
@@ -131,7 +131,7 @@ class CompletePhoneTest extends TestCase
         ]);
 
         $response->assertRedirect(route('dashboard'));
-        $response->assertSessionHas('success', 'Nomor WhatsApp berhasil disimpan! Selamat datang di TE-VAULT.');
+        $response->assertSessionHas('success', 'Nomor WhatsApp berhasil disimpan! Selamat datang di SITEFA.');
 
         $guru->refresh();
         $this->assertEquals('628987654321', $guru->guruProfile->phone);

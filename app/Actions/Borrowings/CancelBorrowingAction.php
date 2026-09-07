@@ -39,9 +39,7 @@ class CancelBorrowingAction
                 'cancellation_reason' => $reason,
             ]);
 
-            if ($wasApproved) {
-                $asset->update(['availability_status' => AssetAvailabilityStatus::Tersedia]);
-            }
+            $asset?->update(['availability_status' => AssetAvailabilityStatus::Tersedia]);
 
             return $lockedBorrowing->fresh();
         });

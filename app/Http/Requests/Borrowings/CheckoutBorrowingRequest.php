@@ -10,7 +10,12 @@ class CheckoutBorrowingRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->hasRole('admin') ?? false;
+        $borrowing = $this->route('borrowing');
+        if ($this->user()?->hasAnyRole(['admin', 'super_admin'])) {
+            return true;
+        }
+
+        return $borrowing && $this->user()?->id === $borrowing->borrower_user_id;
     }
 
     public function rules(): array

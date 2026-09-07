@@ -29,10 +29,10 @@ class ApproveBorrowingAction
                 if ($lockedBorrowing === null || $lockedBorrowing->status !== BorrowingStatus::Pending) {
                     throw new BorrowingStateException('Only pending borrowings can be approved.');
                 }
-                if ($asset === null || $asset->trashed() || $asset->availability_status !== AssetAvailabilityStatus::Tersedia) {
+                if ($asset === null || $asset->trashed() || ! in_array($asset->availability_status, [AssetAvailabilityStatus::Tersedia, AssetAvailabilityStatus::Dipesan], true)) {
                     throw new AssetUnavailableException('The asset is no longer available for approval.');
                 }
-                if (Borrowing::query()->where('asset_id', $asset->id)->whereIn('status', [BorrowingStatus::Approved, BorrowingStatus::Borrowed, BorrowingStatus::ReturnPendingVerification])->exists()) {
+                if (Borrowing::query()->where('asset_id', $asset->id)->where('id', '!=', $lockedBorrowing->id)->whereIn('status', [BorrowingStatus::Approved, BorrowingStatus::Borrowed, BorrowingStatus::ReturnPendingVerification])->exists()) {
                     throw new AssetUnavailableException('The asset already has an active borrowing.');
                 }
 

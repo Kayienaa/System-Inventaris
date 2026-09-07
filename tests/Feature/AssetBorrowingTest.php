@@ -13,7 +13,6 @@ use Database\Seeders\AssetCategorySeeder;
 use Database\Seeders\AssetSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -54,6 +53,14 @@ class AssetBorrowingTest extends TestCase
         ]);
 
         return $user;
+    }
+
+    protected function createAdmin(array $attributes = []): User
+    {
+        $admin = User::factory()->create($attributes);
+        $admin->assignRole('admin');
+
+        return $admin;
     }
 
     public function test_user_can_view_katalog_page(): void
@@ -110,76 +117,90 @@ class AssetBorrowingTest extends TestCase
         $response->assertStatus(404);
     }
 
-    public function test_user_can_instant_borrow_asset_with_h_plus_3_and_status_borrowed(): void
+    public function test_dual_step_borrowing_and_physical_handover_flow(): void
     {
         Storage::fake('public');
 
         $user = $this->createSiswa();
+        $admin = $this->createAdmin();
 
         $asset = Asset::where('availability_status', AssetAvailabilityStatus::Tersedia)->first();
         $this->assertNotNull($asset);
 
-        // Simulasi pengiriman foto Base64 hasil tangkapan webcam
-        $base64Image = 'data:image/jpeg;base64,' . base64_encode('fake image binary content');
-
+        // Tahap 1: Siswa mengajukan permohonan pinjam
         $response = $this->actingAs($user)->post(route('assets.borrow.store', $asset), [
             'asset_id' => $asset->id,
             'borrower_note' => 'Praktikum TEFA SMKN 1 Bangsri',
-            'borrowing_evidence' => $base64Image,
+            'due_at' => now()->addDays(3)->format('Y-m-d H:i:s'),
         ]);
 
         $response->assertRedirect(route('borrowings.mine'));
         $response->assertSessionHas('success');
 
-        // Status langsung Borrowed
+        // Peminjaman dibuat dengan status Pending & Asset berstatus Dipesan
         $this->assertDatabaseHas('borrowings', [
             'borrower_user_id' => $user->id,
             'asset_id' => $asset->id,
-            'status' => BorrowingStatus::Borrowed->value,
+            'status' => BorrowingStatus::Pending->value,
             'borrower_note' => 'Praktikum TEFA SMKN 1 Bangsri',
         ]);
 
-        // Status Asset langsung berubah menjadi Dipinjam
         $asset->refresh();
-        $this->assertEquals(AssetAvailabilityStatus::Dipinjam, $asset->availability_status);
+        $this->assertEquals(AssetAvailabilityStatus::Dipesan, $asset->availability_status);
 
-        // Verify borrowings mine page displays active borrowing
-        $mineResponse = $this->actingAs($user)->get(route('borrowings.mine'));
-        $mineResponse->assertStatus(200);
-        $mineResponse->assertSee($asset->name);
-        $mineResponse->assertSee($asset->asset_code);
-        $mineResponse->assertSee('Dipinjam');
-        $mineResponse->assertSee('Kembalikan Barang');
+        $borrowing = Borrowing::where('borrower_user_id', $user->id)->first();
+
+        // Tahap 2: Admin menyetujui permohonan
+        $approveResponse = $this->actingAs($admin)->post(route('admin.borrowings.approve', $borrowing));
+        $approveResponse->assertSessionHas('success');
+
+        $borrowing->refresh();
+        $this->assertEquals(BorrowingStatus::Approved, $borrowing->status);
+
+        // Tahap 3: Siswa & Admin melakukan serah terima fisik dengan foto kamera
+        $base64CheckoutPhoto = $this->createTestBase64Image();
+
+        $checkoutResponse = $this->actingAs($user)->post(route('borrowings.checkout', $borrowing), [
+            'borrowing_evidence' => $base64CheckoutPhoto,
+        ]);
+
+        $checkoutResponse->assertRedirect(route('borrowings.mine'));
+        $checkoutResponse->assertSessionHas('success');
+
+        $borrowing->refresh();
+        $asset->refresh();
+
+        // Status borrowing resmi Dipinjam & Asset status Dipinjam
+        $this->assertEquals(BorrowingStatus::Borrowed, $borrowing->status);
+        $this->assertNotNull($borrowing->borrowed_at);
+        $this->assertNotNull($borrowing->borrowing_evidence_path);
+        $this->assertEquals(AssetAvailabilityStatus::Dipinjam, $asset->availability_status);
     }
 
-    public function test_user_can_instant_return_asset_and_reset_status_to_tersedia(): void
+    public function test_dual_step_return_and_physical_verification_flow(): void
     {
         Storage::fake('public');
 
         $user = $this->createSiswa();
+        $admin = $this->createAdmin();
 
         $asset = Asset::where('availability_status', AssetAvailabilityStatus::Tersedia)->first();
 
-        // Buat borrowing dengan status borrowed
+        // Buat borrowing yang sedang berstatus Borrowed
         $borrowing = Borrowing::create([
             'borrower_user_id' => $user->id,
             'asset_id' => $asset->id,
             'status' => BorrowingStatus::Borrowed,
-            'requested_at' => now(),
-            'borrowed_at' => now(),
-            'due_at' => now()->addDays(3),
+            'requested_at' => now()->subDay(),
+            'borrowed_at' => now()->subDay(),
+            'due_at' => now()->addDays(2),
             'borrower_note' => 'Sedang dipinjam',
         ]);
         $asset->update(['availability_status' => AssetAvailabilityStatus::Dipinjam]);
 
-        $gdImage = imagecreatetruecolor(100, 100);
-        ob_start();
-        imagejpeg($gdImage);
-        $jpegData = ob_get_clean();
-        imagedestroy($gdImage);
-        $base64ReturnPhoto = 'data:image/jpeg;base64,' . base64_encode($jpegData);
+        $base64ReturnPhoto = $this->createTestBase64Image();
 
-        // Student submits return with webcam photo
+        // Tahap 1 Pengembalian: Siswa submit pengembalian dengan foto
         $response = $this->actingAs($user)->post(route('borrowings.return-request', $borrowing), [
             'return_evidence' => $base64ReturnPhoto,
             'return_note' => 'Alat dikembalikan lengkap dan normal',
@@ -189,14 +210,25 @@ class AssetBorrowingTest extends TestCase
         $response->assertSessionHas('success');
 
         $borrowing->refresh();
-        $asset->refresh();
-
-        // Status borrowing langsung Returned (Selesai)
-        $this->assertEquals(BorrowingStatus::Returned, $borrowing->status);
-        $this->assertNotNull($borrowing->returned_at);
+        // Status menjadi ReturnPendingVerification
+        $this->assertEquals(BorrowingStatus::ReturnPendingVerification, $borrowing->status);
         $this->assertNotNull($borrowing->return_evidence_path);
 
-        // Status asset langsung kembali Tersedia
+        // Tahap 2 Pengembalian: Admin memverifikasi fisik unit
+        $verifyResponse = $this->actingAs($admin)->post(route('admin.borrowings.verify-return', $borrowing), [
+            'return_condition' => 'Baik',
+            'return_verification_note' => 'Unit lengkap dan normal',
+        ]);
+
+        $verifyResponse->assertSessionHas('success');
+
+        $borrowing->refresh();
+        $asset->refresh();
+
+        // Status selesai Returned & Asset kembali Tersedia
+        $this->assertEquals(BorrowingStatus::Returned, $borrowing->status);
+        $this->assertNotNull($borrowing->returned_at);
+        $this->assertEquals($admin->id, $borrowing->return_verified_by_user_id);
         $this->assertEquals(AssetAvailabilityStatus::Tersedia, $asset->availability_status);
     }
 
@@ -209,29 +241,26 @@ class AssetBorrowingTest extends TestCase
         $asset = Asset::where('availability_status', AssetAvailabilityStatus::Tersedia)->first();
         $this->assertNotNull($asset);
 
-        $base64Image = 'data:image/jpeg;base64,' . base64_encode('fake guru image binary content');
-
-        // Submit tanpa asset_id di body — harus otomatis terikat via route model {asset}
+        // Submit tanpa asset_id di body — otomatis terikat via route model {asset}
         $response = $this->actingAs($guru)->post(route('assets.borrow.store', $asset), [
             'borrower_note' => 'Peminjaman untuk keperluan mengajar di Lab TEFA',
-            'borrowing_evidence' => $base64Image,
+            'due_at' => now()->addDays(3)->format('Y-m-d H:i:s'),
         ]);
 
         $response->assertRedirect(route('borrowings.mine'));
-        $response->assertSessionHas('success', 'Peminjaman berhasil diajukan!');
+        $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('borrowings', [
             'borrower_user_id' => $guru->id,
             'asset_id' => $asset->id,
-            'status' => BorrowingStatus::Borrowed->value,
+            'status' => BorrowingStatus::Pending->value,
             'borrower_note' => 'Peminjaman untuk keperluan mengajar di Lab TEFA',
         ]);
     }
 
     public function test_admin_cannot_access_borrow_form_or_submit_borrowing(): void
     {
-        $admin = User::factory()->create();
-        $admin->assignRole('admin');
+        $admin = $this->createAdmin();
 
         $asset = Asset::where('availability_status', AssetAvailabilityStatus::Tersedia)->first();
 

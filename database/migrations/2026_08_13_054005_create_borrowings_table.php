@@ -71,7 +71,7 @@ return new class extends Migration
             $table->dateTime('return_verified_at')->nullable();
             $table->text('return_verification_note')->nullable();
 
-            $table->unsignedBigInteger('active_asset_id')->storedAs("CASE WHEN `status` IN ('approved', 'borrowed', 'return_pending_verification') THEN `asset_id` ELSE NULL END");
+            $table->unsignedBigInteger('active_asset_id')->storedAs("CASE WHEN `status` IN ('pending', 'approved', 'borrowed', 'return_pending_verification') THEN `asset_id` ELSE NULL END");
 
             $table->timestamps();
 

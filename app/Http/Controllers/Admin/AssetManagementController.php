@@ -31,7 +31,7 @@ class AssetManagementController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware(['auth', 'verified', 'role:admin']),
+            new Middleware(['auth', 'verified', 'role:admin|super_admin']),
         ];
     }
 

@@ -108,7 +108,7 @@ class BorrowingExportTest extends TestCase
         $response->assertSee('Citra Siswi');
         $response->assertSee($asset->name);
         $response->assertSee('Kepala Lab / Pembimbing TEFA');
-        $response->assertSee('Pengelola Inventaris TE-VAULT');
+        $response->assertSee('Pengelola Inventaris SITEFA');
     }
 
     public function test_non_admin_cannot_export_borrowings(): void
