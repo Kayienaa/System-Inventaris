@@ -50,16 +50,24 @@ class LoginRequest extends FormRequest
 
         $user = null;
 
-        if (filter_var($login, FILTER_VALIDATE_EMAIL) || str_contains($login, '@')) {
+        if (str_contains($login, '@')) {
             // 1. Format Email: Autentikasi langsung menggunakan kolom email pada tabel users
             // (mencakup akun siswa berformat nis@smkn1bangsri.sch.id serta akun admin)
             $user = User::where('email', $login)->first();
             if (! $user) {
                 $user = User::whereRaw('LOWER(email) = ?', [strtolower($login)])->first();
             }
-        } elseif (ctype_digit($login)) {
-            // 2. Format Angka / NIP: Jika input bukan email melainkan deretan angka, cocokkan hanya ke relasi guruProfile (nip)
-            $guruProfile = GuruProfile::where('nip', $login)->first();
+        } else {
+            // 2. Format NIP / Deretan Angka (tanpa @): cocokkan ke relasi guruProfile (nip)
+            // Pastikan pencarian menggunakan string comparison murni agar NIP tidak terpotong casting integer
+            $cleanNip = (string) preg_replace('/\s+/', '', $login);
+
+            $guruProfile = GuruProfile::where('nip', (string) $login)
+                ->when($cleanNip !== $login && $cleanNip !== '', function ($query) use ($cleanNip) {
+                    return $query->orWhere('nip', $cleanNip);
+                })
+                ->first();
+
             if ($guruProfile && $guruProfile->user) {
                 $user = $guruProfile->user;
             }

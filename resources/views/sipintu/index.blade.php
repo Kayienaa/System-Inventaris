@@ -178,7 +178,8 @@
     .diag-table td:first-child {
         color: var(--muted);
         font-weight: 500;
-        width: 240px;
+        width: 220px;
+        min-width: 180px;
     }
 
     .diag-table td:last-child {
@@ -357,36 +358,44 @@
         <h2>Parameter &amp; Detail Koneksi</h2>
         <p style="margin: 0; color: var(--muted); font-size: 0.85rem;">Kredensial dan endpoint yang digunakan untuk komunikasi antar server.</p>
 
-        <table class="diag-table">
-            <tr>
-                <td>Gateway API Endpoint</td>
-                <td><span class="code-pill">{{ config('sipintu.api_url') }}</span></td>
-            </tr>
-            <tr>
-                <td>Downstream Client ID</td>
-                <td><span class="code-pill">{{ config('sipintu.client_id') }}</span></td>
-            </tr>
-            <tr>
-                <td>Application Name</td>
-                <td><strong>{{ $summary['client_name'] ?? 'SITEFA' }}</strong></td>
-            </tr>
-            <tr>
-                <td>Metode Autentikasi</td>
-                <td>Server-to-Server Header Auth (<span class="code-pill">X-Client-ID</span> &amp; <span class="code-pill">X-Client-Secret</span>)</td>
-            </tr>
-            <tr>
-                <td>Status Database Gateway</td>
-                <td><span class="badge-status" style="color: #059669; font-weight: 700;">● Online</span> (Latensi DB: {{ $summary['latency_ms'] ?? 0.02 }} ms)</td>
-            </tr>
-            <tr>
-                <td>Total Request Tercatat</td>
-                <td id="diag-total-req">{{ $summary['total_requests'] ?? 0 }} requests</td>
-            </tr>
-            <tr>
-                <td>Terakhir Terhubung</td>
-                <td id="diag-last-conn">{{ $summary['last_connected_at'] ?? '-' }}</td>
-            </tr>
-        </table>
+        <div class="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-stone-700">
+            <table class="diag-table w-full min-w-[520px]">
+                <tr>
+                    <td class="whitespace-nowrap">Gateway API Endpoint</td>
+                    <td class="max-w-full overflow-hidden">
+                        <code class="text-xs break-all bg-stone-100 dark:bg-stone-800 p-1.5 rounded-lg block text-stone-800 dark:text-stone-200 font-mono">{{ config('sipintu.api_url') }}</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="whitespace-nowrap">Downstream Client ID</td>
+                    <td class="max-w-full overflow-hidden">
+                        <code class="text-xs break-all bg-stone-100 dark:bg-stone-800 p-1.5 rounded-lg inline-block text-stone-800 dark:text-stone-200 font-mono">{{ config('sipintu.client_id') }}</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="whitespace-nowrap">Application Name</td>
+                    <td><strong>{{ $summary['client_name'] ?? 'SITEFA' }}</strong></td>
+                </tr>
+                <tr>
+                    <td class="whitespace-nowrap">Metode Autentikasi</td>
+                    <td class="max-w-full overflow-hidden break-words text-stone-700 dark:text-stone-300">
+                        Server-to-Server Header Auth (<code class="text-xs break-all bg-stone-100 dark:bg-stone-800 p-1 rounded font-mono">X-Client-ID</code> &amp; <code class="text-xs break-all bg-stone-100 dark:bg-stone-800 p-1 rounded font-mono">X-Client-Secret</code>)
+                    </td>
+                </tr>
+                <tr>
+                    <td class="whitespace-nowrap">Status Database Gateway</td>
+                    <td><span class="badge-status" style="color: #059669; font-weight: 700;">● Online</span> (Latensi DB: {{ $summary['latency_ms'] ?? 0.02 }} ms)</td>
+                </tr>
+                <tr>
+                    <td class="whitespace-nowrap">Total Request Tercatat</td>
+                    <td id="diag-total-req">{{ $summary['total_requests'] ?? 0 }} requests</td>
+                </tr>
+                <tr>
+                    <td class="whitespace-nowrap">Terakhir Terhubung</td>
+                    <td id="diag-last-conn">{{ $summary['last_connected_at'] ?? '-' }}</td>
+                </tr>
+            </table>
+        </div>
     </div>
 
 </div>

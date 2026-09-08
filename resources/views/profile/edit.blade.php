@@ -19,10 +19,22 @@
                     </p>
                 </div>
                 <div>
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-neon-glowamber border border-amber-200 dark:border-amber-500/30 shadow-xs">
-                        <span class="w-2 h-2 rounded-full bg-amber-500 dark:bg-neon-glowamber"></span>
-                        {{ $user->hasRole('admin') ? 'Administrator' : ($user->hasRole('guru') ? 'Dewan Guru' : 'Siswa TEFA') }}
-                    </span>
+                    @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-600 dark:bg-amber-400"></span>
+                            {{ auth()->user()->hasRole('super_admin') ? 'Super Administrator' : 'Administrator' }}
+                        </span>
+                    @elseif(auth()->user()->hasRole('guru'))
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-700">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400"></span>
+                            Guru TEFA
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-900 border border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-700">
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400"></span>
+                            Siswa TEFA
+                        </span>
+                    @endif
                 </div>
             </div>
 

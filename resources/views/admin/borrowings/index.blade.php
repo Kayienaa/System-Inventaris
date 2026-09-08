@@ -191,8 +191,8 @@
 
     {{-- Tabel Monitoring Transaksi --}}
     <div class="bg-white dark:bg-[#131B2A] rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs text-stone-600 dark:text-stone-300">
+        <div class="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-stone-700">
+            <table class="w-full min-w-[768px] text-left text-xs text-stone-600 dark:text-stone-300">
                 <thead class="bg-stone-50/80 dark:bg-[#0E1420] border-b border-stone-200 dark:border-stone-800 text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
                     <tr>
                         <th class="px-5 py-4 w-12 text-center">No</th>

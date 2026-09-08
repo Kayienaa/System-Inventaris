@@ -16,7 +16,17 @@ class GuruProfile extends Model
     protected $fillable = [
         'user_id',
         'nip',
+        'code',
         'phone',
+    ];
+
+    /**
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'nip' => 'string',
+        'code' => 'string',
+        'phone' => 'string',
     ];
 
     public function user(): BelongsTo

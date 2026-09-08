@@ -251,7 +251,7 @@ class SiPintuSyncService
                 ];
             }
 
-            $payload = $response->json();
+            $payload = json_decode($response->body(), true, 512, JSON_BIGINT_AS_STRING) ?? $response->json();
             $teachers = $payload['data'] ?? (is_array($payload) ? $payload : []);
 
             $created = 0;
@@ -288,22 +288,25 @@ class SiPintuSyncService
                                 $loggedTeacherSample = true;
                             }
 
-                            $nip = trim((string) ($teacherData['nip'] ?? ''));
+                            $rawNip = $teacherData['nip'] ?? '';
+                            if (is_float($rawNip) || (is_numeric($rawNip) && str_contains((string) $rawNip, 'E'))) {
+                                $nip = number_format((float) $rawNip, 0, '', '');
+                            } else {
+                                $nip = trim((string) $rawNip);
+                            }
+
                             $email = trim((string) ($teacherData['user']['email'] ?? ($teacherData['email'] ?? ($nip ? "{$nip}@smkn1bangsri.sch.id" : ''))));
-                            $name = trim((string) ($teacherData['nama'] ?? ($teacherData['user']['name'] ?? ($teacherData['name'] ?? 'Guru'))));
+                            $name = trim((string) ($teacherData['nama'] ?? ($teacherData['name'] ?? ($teacherData['user']['name'] ?? 'Guru'))));
                             $phone = trim((string) (
                                 $teacherData['hp']
                                 ?? $teacherData['phone']
                                 ?? $teacherData['no_hp']
-                                ?? $teacherData['nomor_hp']
                                 ?? $teacherData['telepon']
-                                ?? $teacherData['telp']
-                                ?? $teacherData['phone_number']
                                 ?? ($teacherData['user']['phone'] ?? null)
-                                ?? ($teacherData['user']['no_hp'] ?? null)
                                 ?? ($teacherData['user']['hp'] ?? null)
                                 ?? ''
                             )) ?: null;
+                            $code = trim((string) ($teacherData['kode'] ?? ($teacherData['code'] ?? '')));
 
                             if ($email === '' && $nip === '') {
                                 continue;
@@ -316,18 +319,17 @@ class SiPintuSyncService
                                 : ($email !== '' ? ($existingUsersByEmail[$email] ?? null) : null);
 
                             if ($user) {
-                                $needsUpdate = ($user->name !== $name) || ($email !== '' && $user->email !== $email);
-                                if ($needsUpdate) {
+                                if (! empty($name)) {
                                     $user->name = $name;
-                                    if ($email !== '') {
-                                        $user->email = $email;
-                                    }
-                                    $user->save();
                                 }
+                                if ($email !== '') {
+                                    $user->email = $email;
+                                }
+                                $user->save();
                                 $updated++;
                             } else {
                                 $user = User::create([
-                                    'name'              => $name,
+                                    'name'              => ! empty($name) ? $name : ($email ?: 'Guru'),
                                     'email'             => $email,
                                     'password'          => $defaultPasswordHash,
                                     'email_verified_at' => now(),
@@ -339,19 +341,19 @@ class SiPintuSyncService
                                 $created++;
                             }
 
-                            // 2. Simpan / update GuruProfile
+                            // 2. Simpan / update GuruProfile (selalu menimpa phone jika disediakan dari SiPintu)
                             if ($nip !== '') {
-                                $guruProfile = $existingProfilesByUserId[$user->id] 
-                                    ?? ($existingProfilesByNip[$nip] ?? new GuruProfile(['user_id' => $user->id]));
+                                $existingProfile = $existingProfilesByUserId[$user->id] 
+                                    ?? ($existingProfilesByNip[$nip] ?? null);
 
-                                $guruProfile->user_id = $user->id;
-                                $guruProfile->nip = $nip;
-
-                                if (! empty($phone)) {
-                                    $guruProfile->phone = $phone;
-                                }
-
-                                $guruProfile->save();
+                                $guruProfile = GuruProfile::updateOrCreate(
+                                    ['user_id' => $user->id],
+                                    [
+                                        'nip'   => (string) $nip,
+                                        'code'  => $code ?: ($existingProfile?->code ?? null),
+                                        'phone' => $phone ?? $existingProfile?->phone,
+                                    ]
+                                );
 
                                 $existingProfilesByNip[$nip] = $guruProfile;
                                 $existingProfilesByUserId[$user->id] = $guruProfile;

@@ -248,26 +248,42 @@ class SiPintuService
         $cacheKey = 'sipintu_all_teachers_raw';
 
         if (!$forceRefresh && $this->cacheStore()->has($cacheKey)) {
-            return $this->cacheStore()->get($cacheKey);
+            $cached = $this->cacheStore()->get($cacheKey);
+            if (isset($cached['data']) && is_array($cached['data'])) {
+                foreach ($cached['data'] as &$item) {
+                    if (isset($item['nip']) && $item['nip'] !== null) {
+                        $item['nip'] = trim((string) $item['nip']);
+                    }
+                }
+                unset($item);
+            }
+            return $cached;
         }
 
         try {
             $response = $this->client(60)->get('/api/v1/sijuna/teachers');
 
             if ($response->successful()) {
-                $json = $response->json();
+                $json = json_decode($response->body(), true, 512, JSON_BIGINT_AS_STRING) ?? $response->json();
                 $rawList = $json['data'] ?? (is_array($json) ? $json : []);
 
                 $compactList = [];
                 foreach ($rawList as $t) {
+                    $rawNip = $t['nip'] ?? null;
+                    if (is_float($rawNip) || (is_numeric($rawNip) && str_contains((string) $rawNip, 'E'))) {
+                        $nip = number_format((float) $rawNip, 0, '', '');
+                    } else {
+                        $nip = ($rawNip !== null && $rawNip !== '') ? trim((string) $rawNip) : null;
+                    }
+
                     $compactList[] = [
                         'id'             => $t['id'] ?? null,
-                        'nip'            => $t['nip'] ?? null,
-                        'kode'           => $t['kode'] ?? '-',
-                        'nama'           => $t['nama'] ?? '-',
+                        'nip'            => $nip,
+                        'kode'           => isset($t['kode']) ? trim((string) $t['kode']) : '-',
+                        'nama'           => $t['nama'] ?? ($t['name'] ?? '-'),
                         'nama_panggilan' => $t['nama_panggilan'] ?? null,
                         'jk'             => $t['jk'] ?? null,
-                        'hp'             => $t['hp'] ?? null,
+                        'hp'             => isset($t['hp']) && $t['hp'] !== null && $t['hp'] !== '' ? trim((string) $t['hp']) : null,
                         'alamat'         => $t['alamat'] ?? '-',
                         'status'         => $t['status'] ?? 1,
                         'user'           => [
@@ -442,6 +458,21 @@ class SiPintuService
             $this->cacheStore()->put($key, $value, $ttl);
         } catch (\Throwable $e) {
             Log::warning('SiPintu cache put failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Hapus seluruh cache SiPintu (guru, siswa, ping, summary).
+     */
+    public function clearCache(): void
+    {
+        try {
+            $this->cacheStore()->forget('sipintu_all_teachers_raw');
+            $this->cacheStore()->forget('sipintu_all_students_raw');
+            $this->cacheStore()->forget('sipintu_ping');
+            $this->cacheStore()->forget('sipintu_summary');
+        } catch (\Throwable $e) {
+            Log::warning('SiPintu clearCache failed: ' . $e->getMessage());
         }
     }
 }

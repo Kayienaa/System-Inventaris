@@ -95,8 +95,8 @@
     {{-- Audit Log Table Card --}}
     <div class="bg-white dark:bg-[#131B2A] rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 overflow-hidden">
         
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs text-stone-600 dark:text-stone-300">
+        <div class="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-stone-700">
+            <table class="w-full min-w-[640px] text-left text-xs text-stone-600 dark:text-stone-300">
                 <thead class="bg-stone-900 text-stone-200 dark:bg-[#0E1420] dark:text-stone-300 border-b border-stone-800 text-[11px] font-bold uppercase tracking-wider">
                     <tr>
                         <th class="px-5 py-3.5 bg-stone-900 text-stone-200 dark:bg-[#0E1420] dark:text-stone-300">Waktu</th>
@@ -104,7 +104,7 @@
                         <th class="px-5 py-3.5 bg-stone-900 text-stone-200 dark:bg-[#0E1420] dark:text-stone-300">Aksi / Event</th>
                         <th class="px-5 py-3.5 bg-stone-900 text-stone-200 dark:bg-[#0E1420] dark:text-stone-300">Entitas Terkait</th>
                         <th class="px-5 py-3.5 bg-stone-900 text-stone-200 dark:bg-[#0E1420] dark:text-stone-300">Perubahan Data</th>
-                        <th class="px-5 py-3.5 bg-stone-900 text-stone-200 dark:bg-[#0E1420] dark:text-stone-300">IP &amp; Device</th>
+                        <th class="px-5 py-3.5 bg-stone-900 text-stone-200 dark:bg-[#0E1420] dark:text-stone-300 hidden md:table-cell">IP &amp; Device</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-stone-100 dark:divide-stone-800/80">
@@ -187,12 +187,12 @@
                             </td>
 
                             {{-- IP & Device Metadata --}}
-                            <td class="px-5 py-4 text-[11px]">
+                            <td class="px-5 py-4 text-[11px] hidden md:table-cell">
                                 @if(!empty($log->metadata['ip_address']))
                                     <p class="font-mono text-stone-700 dark:text-stone-300 font-semibold">{{ $log->metadata['ip_address'] }}</p>
                                 @endif
                                 @if(!empty($log->metadata['user_agent']))
-                                    <p class="text-[10px] text-stone-400 dark:text-stone-500 line-clamp-1 max-w-[200px]" title="{{ $log->metadata['user_agent'] }}">
+                                    <p class="text-[10px] text-stone-400 dark:text-stone-500 line-clamp-1 max-w-[200px] break-all" title="{{ $log->metadata['user_agent'] }}">
                                         {{ $log->metadata['user_agent'] }}
                                     </p>
                                 @endif

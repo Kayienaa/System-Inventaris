@@ -412,21 +412,21 @@
 
     {{-- Main Data Table Card --}}
     <div class="sip-card">
-        <div class="sip-table-responsive">
+        <div class="sip-table-responsive w-full overflow-x-auto scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-stone-700">
             <div id="teacher-loading" class="sip-state-box" style="display: none;">
                 <div class="sip-spinner"></div>
                 <p>Memuat data guru dari SiPintu Gateway...</p>
             </div>
 
-            <table class="sip-table" id="teachers-table">
+            <table class="sip-table w-full min-w-[768px]" id="teachers-table">
                 <thead>
                     <tr>
                         <th style="width: 50px;">No</th>
                         <th>Kode</th>
                         <th>NIP</th>
                         <th>Nama Guru &amp; Gelar</th>
-                        <th>Panggilan</th>
-                        <th>L/P</th>
+                        <th class="hidden md:table-cell">Panggilan</th>
+                        <th class="hidden md:table-cell">L/P</th>
                         <th>No HP / WhatsApp</th>
                         <th>Email SIJUNA</th>
                         <th>Status</th>
@@ -434,7 +434,51 @@
                     </tr>
                 </thead>
                 <tbody id="teachers-tbody">
-                    {{-- Populated by JavaScript --}}
+                    @forelse(($teachers['data'] ?? []) as $index => $teacher)
+                        @php
+                            $t = is_array($teacher) ? $teacher : (array) $teacher;
+                            $nipVal = (string) ($teacher['nip'] ?? $teacher->nip ?? '-');
+                            $kodeVal = (string) ($t['kode'] ?? ($teacher->kode ?? '-'));
+                            $namaVal = (string) ($t['nama'] ?? ($teacher->nama ?? ($t['user']['name'] ?? ($teacher->user->name ?? '-'))));
+                            $panggilanVal = $t['nama_panggilan'] ?? ($teacher->nama_panggilan ?? null);
+                            $jkVal = $t['jk'] ?? ($teacher->jk ?? null);
+                            $emailVal = $t['user']['email'] ?? ($teacher->user->email ?? '-');
+                            $hpVal = (string) ($t['hp'] ?? ($teacher->phone ?? ($teacher->hp ?? '-')));
+                            $alamatVal = $t['alamat'] ?? ($teacher->alamat ?? '-');
+
+                            $hpClean = preg_replace('/[^0-9]/', '', $hpVal);
+                            if (str_starts_with($hpClean, '0')) {
+                                $hpClean = '62' . substr($hpClean, 1);
+                            }
+                        @endphp
+                        <tr>
+                            <td style="color: var(--muted); font-weight: 600;">{{ $index + 1 }}</td>
+                            <td><span class="badge-code">{{ $kodeVal }}</span></td>
+                            <td><span class="badge-nip">{{ (string) ($teacher['nip'] ?? $teacher->nip ?? '-') }}</span></td>
+                            <td style="font-weight: 600; color: var(--brown-dark);">{{ $namaVal }}</td>
+                            <td class="hidden md:table-cell" style="color: var(--muted); font-style: italic;">{{ $panggilanVal ? '"' . $panggilanVal . '"' : '-' }}</td>
+                            <td class="hidden md:table-cell">
+                                @if($jkVal == 1)
+                                    <span class="badge-gender l">L</span>
+                                @elseif($jkVal == 2)
+                                    <span class="badge-gender p">P</span>
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td>
+                                @if($hpVal && $hpVal !== '-')
+                                    <a href="https://wa.me/{{ $hpClean }}" target="_blank" class="wa-link" title="Kirim Pesan WhatsApp">{{ $hpVal }}</a>
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td style="color: #4b5563; font-size: 0.8rem;">{{ $emailVal }}</td>
+                            <td><span class="badge-status-active">Aktif</span></td>
+                            <td style="color: var(--muted); max-width: 220px; font-size: 0.8rem;" class="truncate">{{ $alamatVal }}</td>
+                        </tr>
+                    @empty
+                    @endforelse
                 </tbody>
             </table>
 
@@ -518,7 +562,7 @@
         filteredTeachers.forEach((teacher, index) => {
             const rowNum = index + 1;
             const kode = teacher.kode || '-';
-            const nip = teacher.nip || '-';
+            const nip = (teacher.nip !== null && teacher.nip !== undefined && teacher.nip !== '') ? String(teacher.nip) : '-';
             const nama = teacher.nama || '-';
             const panggilan = teacher.nama_panggilan ? `"${teacher.nama_panggilan}"` : '-';
             const jk = (teacher.jk == 1) ? '<span class="badge-gender l">L</span>' : ((teacher.jk == 2) ? '<span class="badge-gender p">P</span>' : '-');
@@ -537,8 +581,8 @@
                     <td><span class="badge-code">${escapeHtml(String(kode))}</span></td>
                     <td><span class="badge-nip">${escapeHtml(String(nip))}</span></td>
                     <td style="font-weight: 600; color: var(--brown-dark);">${escapeHtml(nama)}</td>
-                    <td style="color: var(--muted); font-style: italic;">${escapeHtml(panggilan)}</td>
-                    <td>${jk}</td>
+                    <td class="hidden md:table-cell" style="color: var(--muted); font-style: italic;">${escapeHtml(panggilan)}</td>
+                    <td class="hidden md:table-cell">${jk}</td>
                     <td>${waLink}</td>
                     <td style="color: #4b5563; font-size: 0.8rem;">${escapeHtml(email)}</td>
                     <td><span class="badge-status-active">Aktif</span></td>

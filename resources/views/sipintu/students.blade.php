@@ -423,19 +423,19 @@
 
     {{-- Main Data Table Card --}}
     <div class="sip-card">
-        <div class="sip-table-responsive">
+        <div class="sip-table-responsive w-full overflow-x-auto scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-stone-700">
             <div id="table-loading" class="sip-state-box" style="display: none;">
                 <div class="sip-spinner"></div>
                 <p>Memuat data siswa dari SiPintu Gateway...</p>
             </div>
 
-            <table class="sip-table" id="students-table">
+            <table class="sip-table w-full min-w-[640px]" id="students-table">
                 <thead>
                     <tr>
                         <th style="width: 50px;">No</th>
                         <th>NIS</th>
                         <th>Nama Lengkap</th>
-                        <th>L/P</th>
+                        <th class="hidden md:table-cell">L/P</th>
                         <th>Email SIJUNA</th>
                         <th>No HP / WhatsApp</th>
                         <th>Alamat</th>
@@ -573,7 +573,7 @@
                     <td style="color: var(--muted); font-weight: 600;">${rowNum}</td>
                     <td><span class="badge-nis">${escapeHtml(String(nis))}</span></td>
                     <td style="font-weight: 600; color: var(--brown-dark);">${escapeHtml(nama)}</td>
-                    <td>${jk}</td>
+                    <td class="hidden md:table-cell">${jk}</td>
                     <td style="color: #4b5563; font-size: 0.8rem;">${escapeHtml(email)}</td>
                     <td style="font-size: 0.825rem;">${escapeHtml(String(hp))}</td>
                     <td style="color: var(--muted); max-width: 220px; font-size: 0.8rem;" class="truncate">${escapeHtml(alamat)}</td>
