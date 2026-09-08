@@ -8,8 +8,8 @@
         <title>{{ config('app.name', 'SITEFA') }}</title>
 
         {{-- Favicon Resmi TEFA SMKN 1 Bangsri --}}
-        <link rel="icon" type="image/png" href="{{ asset('images/logo-tefa.png') }}">
-        <link rel="shortcut icon" type="image/png" href="{{ asset('images/logo-tefa.png') }}">
+        <link rel="icon" type="image/png" href="{{ asset('images/favicon-circle.png') }}">
+        <link rel="shortcut icon" type="image/png" href="{{ asset('images/favicon-circle.png') }}">
 
         {{-- Anti-Flicker Script --}}
         <script>

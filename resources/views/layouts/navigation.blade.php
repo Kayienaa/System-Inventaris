@@ -31,21 +31,10 @@
         {{-- ── Brand / Logo ── --}}
         <div class="flex flex-col items-center py-7 px-5 border-b border-white/10 dark:border-stone-800">
             {{-- Logo Resmi TEFA SMKN 1 Bangsri --}}
-            <div class="bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-2.5 mx-auto max-w-[80px] flex items-center justify-center shadow-sm mb-2">
-                @if (file_exists(public_path('images/logo-tefa.png')))
-                    <img src="{{ asset('images/logo-tefa.png') }}" alt="Logo TEFA SMKN 1 Bangsri" class="h-10 w-auto object-contain">
-                @else
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none"
-                         viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5
-                                 M10 11.25h4
-                                 M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-.375
-                                 c0-.621-.504-1.125-1.125-1.125H3.375
-                                 c-.621 0-1.125.504-1.125 1.125v.375
-                                 c0 .621.504 1.125 1.125 1.125z"/>
-                    </svg>
-                @endif
+            <div class="w-11 h-11 rounded-xl bg-white p-1.5 flex items-center justify-center shadow-sm border border-stone-200 shrink-0 mb-2">
+                <img src="{{ asset('images/logo-tefa.png') }}" 
+                     alt="Logo TEFA" 
+                     class="w-full h-full object-contain">
             </div>
 
             {{-- Brand name --}}
@@ -128,7 +117,8 @@
             </a>
             @endhasanyrole
 
-            {{-- Kategori --}}
+            {{-- Kategori (Admin & Super Admin) --}}
+            @hasanyrole(['admin', 'super_admin'])
             <a href="{{ route('categories.index') }}"
                class="{{ $link }} {{ request()->routeIs('categories.*') ? $active : $inactive }}">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -139,6 +129,7 @@
                 </svg>
                 Kategori
             </a>
+            @endhasanyrole
 
             {{-- Peminjaman (Admin / Super Admin vs Siswa / Guru) --}}
             @hasanyrole(['admin', 'super_admin'])
@@ -291,14 +282,23 @@
     ══════════════════════════════════ --}}
     <div class="lg:hidden fixed top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 shadow-sm bg-[#3D2817] dark:bg-[#0E1420] border-b border-[#5a3f2c]/40 dark:border-stone-800">
 
-        <button @click="sidebarOpen = !sidebarOpen"
-                class="p-1.5 rounded-lg focus:outline-none transition text-[#F8F6F2]">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
-            </svg>
-        </button>
+        <div class="flex items-center gap-3">
+            <button @click="sidebarOpen = !sidebarOpen"
+                    class="p-1.5 rounded-lg focus:outline-none transition text-[#F8F6F2]">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+                </svg>
+            </button>
 
-        <span class="brand-font text-lg tracking-wide text-[#F8F6F2]">SITEFA</span>
+            <div class="w-10 h-10 rounded-full overflow-hidden border border-stone-200 dark:border-stone-700 shadow-sm flex items-center justify-center shrink-0 bg-white">
+                <img src="{{ asset('images/logo-tefa-bg-putih.jpeg') }}" 
+                     alt="Logo TEFA" 
+                     class="w-full h-full object-cover"
+                     onerror="this.onerror=null; this.src='{{ asset('images/logo-tefa.png') }}';">
+            </div>
+
+            <span class="brand-font text-lg tracking-wide text-[#F8F6F2]">SITEFA</span>
+        </div>
 
         <div class="flex items-center gap-2">
             <button id="theme-toggle-mobile" type="button" 

@@ -25,6 +25,8 @@ class NavigationRoleTest extends TestCase
         $response = $this->actingAs($superAdmin)->get(route('dashboard'));
 
         $response->assertStatus(200);
+        $response->assertSee('Kategori');
+        $response->assertSee(route('categories.index'));
         $response->assertSee('Administrasi');
         $response->assertSee('Kelola Aset');
         $response->assertSee('Audit Log');
@@ -43,6 +45,8 @@ class NavigationRoleTest extends TestCase
         $response = $this->actingAs($admin)->get(route('dashboard'));
 
         $response->assertStatus(200);
+        $response->assertSee('Kategori');
+        $response->assertSee(route('categories.index'));
         $response->assertSee('Administrasi');
         $response->assertSee('Kelola Aset');
         $response->assertSee('Monitoring Peminjaman');
@@ -67,18 +71,37 @@ class NavigationRoleTest extends TestCase
         $response = $this->actingAs($siswa)->get(route('dashboard'));
 
         $response->assertStatus(200);
-        // Menu utama yang wajib terlihat
+        // Menu utama peminjam yang wajib terlihat
         $response->assertSee('Dashboard');
         $response->assertSee('Barang');
         $response->assertSee(route('assets.index'));
-        $response->assertDontSee(route('admin.assets.index'));
-        $response->assertSee('Kategori');
         $response->assertSee('Peminjaman');
+        $response->assertSee(route('borrowings.mine'));
 
-        // Menu administrasi tidak boleh ada di navigasi siswa
+        // Menu kategori dan administrasi tidak boleh terlihat oleh siswa
+        $response->assertDontSee(route('admin.assets.index'));
+        $response->assertDontSee(route('categories.index'));
         $response->assertDontSee('Kelola Aset');
         $response->assertDontSee('Audit Log');
         $response->assertDontSee('Gateway SiPintu');
+
+        // Verifikasi juga untuk role guru
+        $guru = User::factory()->create();
+        $guru->assignRole('guru');
+        \App\Models\GuruProfile::create([
+            'user_id' => $guru->id,
+            'nip' => '198501012010011099',
+            'phone' => '6281234567899',
+        ]);
+
+        $guruResponse = $this->actingAs($guru)->get(route('dashboard'));
+        $guruResponse->assertStatus(200);
+        $guruResponse->assertSee('Dashboard');
+        $guruResponse->assertSee('Barang');
+        $guruResponse->assertSee(route('assets.index'));
+        $guruResponse->assertSee('Peminjaman');
+        $guruResponse->assertDontSee(route('categories.index'));
+        $guruResponse->assertDontSee('Kelola Aset');
     }
 
     public function test_non_admin_cannot_access_administrative_routes(): void

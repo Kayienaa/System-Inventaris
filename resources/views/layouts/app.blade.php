@@ -7,8 +7,8 @@
     <title>@yield('title', 'SITEFA')</title>
 
     {{-- Favicon Resmi TEFA SMKN 1 Bangsri --}}
-    <link rel="icon" type="image/png" href="{{ asset('images/logo-tefa.png') }}">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('images/logo-tefa.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon-circle.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/favicon-circle.png') }}">
 
     {{-- Anti-Flicker Script --}}
     <script>
@@ -37,8 +37,8 @@
             --brown-light: #8B6A4F;
             --gold: #C89B3C;
             --gold-light: #E4C77B;
-            --cream: #F8F6F2;
-            --cream-dark: #EEE9E1;
+            --cream: #FFFFFF;
+            --cream-dark: #F3F4F6;
             --text: #30251F;
             --muted: #8A817A;
             --white: #FFFFFF;
@@ -620,10 +620,10 @@
 
         .stat-card {
             background: white;
-            border: 1px solid #EDE6DE;
+            border: 1px solid rgba(231, 229, 228, 0.8);
             border-radius: 16px;
             padding: 20px;
-            box-shadow: 0 5px 20px rgba(65,45,30,0.04);
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
 
         .stat-top {
@@ -675,10 +675,10 @@
 
         .panel {
             background: white;
-            border: 1px solid #EDE6DE;
+            border: 1px solid rgba(231, 229, 228, 0.8);
             border-radius: 16px;
             padding: 22px;
-            box-shadow: 0 5px 20px rgba(65,45,30,0.04);
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
 
         .panel-title {
@@ -945,7 +945,7 @@
     </style>
 </head>
 
-<body class="bg-[#FDFBF7] text-stone-800 dark:bg-[#0B0F17] dark:text-stone-100 transition-colors duration-300 antialiased font-sans">
+<body class="bg-white text-stone-800 dark:bg-[#0B0F17] dark:text-stone-100 transition-colors duration-300 antialiased font-sans">
 
 <div class="dashboard-wrapper" x-data="{ sidebarOpen: false }">
 
@@ -970,25 +970,10 @@
 
         <div class="brand-area">
 
-            <div class="bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-2.5 mx-auto max-w-[80px] flex items-center justify-center shadow-sm mb-2">
-                @if (file_exists(public_path('images/logo-tefa.png')))
-                    <img src="{{ asset('images/logo-tefa.png') }}" alt="Logo TEFA SMKN 1 Bangsri" class="h-10 w-auto object-contain">
-                @else
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                        style="width: 28px; height: 28px; color: white;"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m16.5 0H3.75m16.5 0c.621 0 1.125-.504 1.125-1.125V6c0-.621-.504-1.125-1.125-1.125H3.75C3.129 4.875 2.625 5.379 2.625 6v.375c0 .621.504 1.125 1.125 1.125"
-                        />
-                    </svg>
-                @endif
+            <div class="w-11 h-11 rounded-xl bg-white p-1.5 flex items-center justify-center shadow-sm border border-stone-200 shrink-0 mb-2 mx-auto">
+                <img src="{{ asset('images/logo-tefa.png') }}" 
+                     alt="Logo TEFA" 
+                     class="w-full h-full object-contain">
             </div>
 
             <h1 class="brand-font brand-name">SITEFA</h1>
@@ -1078,7 +1063,8 @@
             </a>
             @endhasanyrole
 
-            {{-- Kategori --}}
+            {{-- Kategori (Hanya untuk Admin & Super Admin) --}}
+            @hasanyrole(['admin', 'super_admin'])
             <a
                 href="{{ route('categories.index') }}"
                 class="menu-link {{ request()->routeIs('categories.*') ? 'active' : '' }}"
@@ -1091,6 +1077,7 @@
 
                 Kategori
             </a>
+            @endhasanyrole
 
             {{-- Peminjaman (Admin / Super Admin vs Siswa / Guru) --}}
             @hasanyrole(['admin', 'super_admin'])
@@ -1263,6 +1250,13 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"/>
                 </svg>
             </button>
+
+            <div class="w-10 h-10 rounded-full overflow-hidden border border-stone-200 dark:border-stone-700 shadow-sm flex items-center justify-center shrink-0 bg-white">
+                <img src="{{ asset('images/logo-tefa-bg-putih.jpeg') }}" 
+                     alt="Logo TEFA" 
+                     class="w-full h-full object-cover"
+                     onerror="this.onerror=null; this.src='{{ asset('images/logo-tefa.png') }}';">
+            </div>
 
             <span class="brand-font mobile-brand">
                 SITEFA

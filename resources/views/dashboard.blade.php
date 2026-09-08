@@ -168,7 +168,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {{-- Top 5 Aset Populer --}}
-        <div class="bg-white/95 dark:bg-[#131B2A]/90 backdrop-blur-md border border-stone-200/70 dark:border-stone-800/80 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] p-6">
+        <div class="bg-white border border-stone-200/80 shadow-sm rounded-2xl dark:bg-[#131B2A] dark:border-stone-800 p-6">
             <div class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-stone-800 mb-4">
                 <div class="flex items-center gap-2.5">
                     <div class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-neon-glowamber border border-amber-200/40 dark:border-amber-500/30">
@@ -214,7 +214,7 @@
         </div>
 
         {{-- Top 5 Peminjam Teraktif --}}
-        <div class="bg-white/95 dark:bg-[#131B2A]/90 backdrop-blur-md border border-stone-200/70 dark:border-stone-800/80 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] p-6">
+        <div class="bg-white border border-stone-200/80 shadow-sm rounded-2xl dark:bg-[#131B2A] dark:border-stone-800 p-6">
             <div class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-stone-800 mb-4">
                 <div class="flex items-center gap-2.5">
                     <div class="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-neon-cyan border border-blue-200/40 dark:border-cyan-500/30">

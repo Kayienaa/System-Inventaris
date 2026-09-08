@@ -49,7 +49,7 @@
                 class="rounded-xl px-4 py-2 text-sm font-medium transition shadow-sm
                     {{ !request('category')
                         ? 'bg-[#6F4E37] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:shadow-neon-amber'
-                        : 'bg-white/95 dark:bg-[#131B2A]/90 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200/70 dark:border-stone-800/80' }}"
+                        : 'bg-white text-stone-700 hover:bg-stone-50 border border-stone-200/80 dark:bg-[#131B2A] dark:text-stone-300 dark:hover:bg-stone-800 dark:border-stone-800' }}"
             >
                 Semua Kategori
             </a>
@@ -63,7 +63,7 @@
                     class="rounded-xl px-4 py-2 text-sm font-medium transition shadow-sm
                         {{ $isActive
                             ? 'bg-[#6F4E37] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:shadow-neon-amber'
-                            : 'bg-white/95 dark:bg-[#131B2A]/90 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200/70 dark:border-stone-800/80' }}"
+                            : 'bg-white text-stone-700 hover:bg-stone-50 border border-stone-200/80 dark:bg-[#131B2A] dark:text-stone-300 dark:hover:bg-stone-800 dark:border-stone-800' }}"
                 >
                     {{ $cat->name }}
                 </a>
@@ -82,7 +82,7 @@
                     @endphp
 
                     <article
-                        class="p-5 flex flex-col justify-between bg-white/95 dark:bg-[#131B2A]/90 backdrop-blur-md border border-stone-200/70 dark:border-stone-800/80 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] hover:border-[#6F4E37] dark:hover:border-cyan-500/50 dark:hover:shadow-neon-sm transition-all duration-300 hover:-translate-y-1"
+                        class="p-5 flex flex-col justify-between bg-white border border-stone-200/80 rounded-2xl shadow-sm dark:bg-[#131B2A] dark:border-stone-800 hover:border-[#6F4E37] dark:hover:border-cyan-500/50 transition-all duration-300 hover:-translate-y-1"
                     >
 
                         <div>

@@ -8,8 +8,8 @@
     <title>Lengkapi Nomor WhatsApp – SITEFA | SMK Negeri 1 Bangsri</title>
 
     {{-- Favicon Resmi TEFA SMKN 1 Bangsri --}}
-    <link rel="icon" type="image/png" href="{{ asset('images/logo-tefa.png') }}">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('images/logo-tefa.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon-circle.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/favicon-circle.png') }}">
 
     <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
