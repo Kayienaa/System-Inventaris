@@ -413,4 +413,63 @@ class AssetManagementTest extends TestCase
         $emptyAsset = new Asset(['photo_path' => null]);
         $this->assertNull($emptyAsset->photo_url);
     }
+
+    public function test_admin_can_store_asset_with_large_camera_photo_up_to_5mb(): void
+    {
+        Storage::fake('public');
+
+        $largePhoto = UploadedFile::fake()->image('camera_photo.jpg', 2400, 1800)->size(4000);
+
+        $payload = [
+            'asset_category_id' => $this->category->id,
+            'asset_code' => 'LARGE-IMG-001',
+            'serial_number' => 'SN-LARGE-4000',
+            'name' => 'Dell Precision 5570',
+            'brand' => 'Dell',
+            'condition' => AssetCondition::Baik->value,
+            'availability_status' => AssetAvailabilityStatus::Tersedia->value,
+            'photo' => $largePhoto,
+        ];
+
+        $response = $this->actingAs($this->admin)->post(route('admin.assets.store'), $payload);
+
+        $response->assertRedirect(route('admin.assets.index'));
+        $response->assertSessionHasNoErrors();
+
+        $asset = Asset::where('asset_code', 'LARGE-IMG-001')->first();
+        $this->assertNotNull($asset);
+        $this->assertNotNull($asset->photo_path);
+
+        Storage::disk('public')->assertExists($asset->photo_path);
+
+        $fileSize = Storage::disk('public')->size($asset->photo_path);
+        $this->assertLessThanOrEqual(200 * 1024, $fileSize);
+
+        $content = Storage::disk('public')->get($asset->photo_path);
+        $dim = getimagesizefromstring($content);
+        $this->assertLessThanOrEqual(1280, $dim[0]);
+        $this->assertLessThanOrEqual(1280, $dim[1]);
+    }
+
+    public function test_store_asset_rejects_photo_exceeding_5mb(): void
+    {
+        Storage::fake('public');
+
+        $tooLargePhoto = UploadedFile::fake()->image('huge_photo.jpg', 2400, 1800)->size(6000);
+
+        $payload = [
+            'asset_category_id' => $this->category->id,
+            'asset_code' => 'TOO-LARGE-001',
+            'serial_number' => 'SN-HUGE-6000',
+            'name' => 'Dell Precision Huge',
+            'brand' => 'Dell',
+            'condition' => AssetCondition::Baik->value,
+            'availability_status' => AssetAvailabilityStatus::Tersedia->value,
+            'photo' => $tooLargePhoto,
+        ];
+
+        $response = $this->actingAs($this->admin)->post(route('admin.assets.store'), $payload);
+
+        $response->assertSessionHasErrors(['photo']);
+    }
 }

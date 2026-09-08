@@ -90,6 +90,15 @@
                 </div>
             </div>
 
+            {{-- Pengaturan Nomor Pengirim WhatsApp Admin TEFA (Khusus Admin & Super Admin) --}}
+            @if ($user->hasAnyRole(['admin', 'super_admin']))
+                <div class="bg-white dark:bg-[#131B2A] border border-stone-200/70 dark:border-stone-800/80 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] p-6 md:p-8 transition-colors duration-300">
+                    <div class="max-w-2xl">
+                        @include('profile.partials.update-admin-whatsapp-form')
+                    </div>
+                </div>
+            @endif
+
             {{-- Update Password --}}
             <div class="bg-white dark:bg-[#131B2A] border border-stone-200/70 dark:border-stone-800/80 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] p-6 md:p-8 transition-colors duration-300">
                 <div class="max-w-2xl">

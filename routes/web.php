@@ -47,6 +47,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile/admin-whatsapp', [ProfileController::class, 'updateAdminWhatsApp'])
+        ->name('profile.admin-whatsapp.update')
+        ->middleware(['role:admin|super_admin']);
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 

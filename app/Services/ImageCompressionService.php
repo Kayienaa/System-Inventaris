@@ -11,10 +11,12 @@ use Intervention\Image\Laravel\Facades\Image;
 
 class ImageCompressionService
 {
-    public const MAX_WIDTH = 1280;        // Maksimal lebar foto (px)
+    public const MAX_WIDTH = 1280;        // Maksimal dimensi foto (px)
     public const TARGET_MAX_KB = 200;      // Batas atas ukuran file (200 KB)
     public const TARGET_MIN_KB = 100;      // Batas bawah rekomendasi (100 KB)
-    public const DEFAULT_QUALITY = 68;     // Level kompresi standar (rentang 65 - 70)
+    public const MAX_QUALITY = 75;         // Batas atas rentang kualitas kompresi (65 - 75)
+    public const MIN_QUALITY = 65;         // Batas bawah rentang kualitas kompresi standar (65 - 75)
+    public const DEFAULT_QUALITY = 75;     // Level kompresi standar awal
 
     /**
      * Resize + kompres foto UploadedFile agar ukurannya konsisten di rentang 100 KB – 200 KB.
@@ -25,18 +27,28 @@ class ImageCompressionService
         try {
             if (extension_loaded('gd') || extension_loaded('imagick')) {
                 $image = Image::decode($file->getRealPath());
-                $image->scaleDown(width: self::MAX_WIDTH);
+                $image->scaleDown(width: self::MAX_WIDTH, height: self::MAX_WIDTH);
 
-                $quality = self::DEFAULT_QUALITY; // 68
-                $encoded = $image->encodeUsingFileExtension('jpg', quality: $quality);
+                $clientExt = strtolower($file->getClientOriginalExtension());
+                $format = ($clientExt === 'webp') ? 'webp' : 'jpg';
 
-                // Jika ukuran melebihi 200 KB, turunkan bertahap sampai masuk rentang (minimal quality 40)
-                while (strlen((string) $encoded) > (self::TARGET_MAX_KB * 1024) && $quality > 40) {
-                    $quality -= 5;
-                    $encoded = $image->encodeUsingFileExtension('jpg', quality: $quality);
+                // Iterasi kompresi bertahap antara 75 turun ke 65
+                $quality = self::MAX_QUALITY; // 75
+                $encoded = $image->encodeUsingFileExtension($format, quality: $quality);
+
+                while (strlen((string) $encoded) > (self::TARGET_MAX_KB * 1024) && $quality > self::MIN_QUALITY) {
+                    $quality -= 2;
+                    $encoded = $image->encodeUsingFileExtension($format, quality: $quality);
                 }
 
-                $filename = $folder . '/' . now()->format('Ymd_His') . '_' . Str::random(8) . '.jpg';
+                // Jika pada kualitas 65 masih di atas batas maksimal 200 KB, lanjutkan kompresi bertahap (minimal quality 40)
+                while (strlen((string) $encoded) > (self::TARGET_MAX_KB * 1024) && $quality > 40) {
+                    $quality -= 5;
+                    $encoded = $image->encodeUsingFileExtension($format, quality: $quality);
+                }
+
+                $ext = ($format === 'webp') ? 'webp' : 'jpg';
+                $filename = $folder . '/' . now()->format('Ymd_His') . '_' . Str::random(8) . '.' . $ext;
                 Storage::disk('public')->put($filename, (string) $encoded);
 
                 return $filename;
@@ -55,7 +67,7 @@ class ImageCompressionService
     public function compressAndStoreBase64(string $base64OrBinary, string $folder = 'evidence'): ?string
     {
         $data = $base64OrBinary;
-        $ext = 'jpg';
+        $format = 'jpg';
 
         if (str_starts_with($base64OrBinary, 'data:image/')) {
             @[$header, $payload] = explode(';', $base64OrBinary, 2);
@@ -67,30 +79,32 @@ class ImageCompressionService
                 }
                 $data = $decoded;
             }
-            if (str_contains($header, 'png')) {
-                $ext = 'png';
-            } elseif (str_contains($header, 'webp')) {
-                $ext = 'webp';
+            if (str_contains($header, 'webp')) {
+                $format = 'webp';
             }
         }
-
-        $filename = $folder . '/' . now()->format('Ymd_His') . '_' . Str::random(8) . '.' . $ext;
 
         try {
             if (extension_loaded('gd') || extension_loaded('imagick')) {
                 $image = Image::decode($data);
-                $image->scaleDown(width: self::MAX_WIDTH);
+                $image->scaleDown(width: self::MAX_WIDTH, height: self::MAX_WIDTH);
 
-                $quality = self::DEFAULT_QUALITY; // 68 (rentang 65 - 70)
-                $encoded = $image->encodeUsingFileExtension('jpg', quality: $quality);
+                // Iterasi kompresi bertahap antara 75 turun ke 65
+                $quality = self::MAX_QUALITY; // 75
+                $encoded = $image->encodeUsingFileExtension($format, quality: $quality);
 
-                // Pastikan ukuran tidak melebihi 200 KB
-                while (strlen((string) $encoded) > (self::TARGET_MAX_KB * 1024) && $quality > 40) {
-                    $quality -= 5;
-                    $encoded = $image->encodeUsingFileExtension('jpg', quality: $quality);
+                while (strlen((string) $encoded) > (self::TARGET_MAX_KB * 1024) && $quality > self::MIN_QUALITY) {
+                    $quality -= 2;
+                    $encoded = $image->encodeUsingFileExtension($format, quality: $quality);
                 }
 
-                $finalFilename = $folder . '/' . now()->format('Ymd_His') . '_' . Str::random(8) . '.jpg';
+                while (strlen((string) $encoded) > (self::TARGET_MAX_KB * 1024) && $quality > 40) {
+                    $quality -= 5;
+                    $encoded = $image->encodeUsingFileExtension($format, quality: $quality);
+                }
+
+                $ext = ($format === 'webp') ? 'webp' : 'jpg';
+                $finalFilename = $folder . '/' . now()->format('Ymd_His') . '_' . Str::random(8) . '.' . $ext;
                 Storage::disk('public')->put($finalFilename, (string) $encoded);
 
                 return $finalFilename;

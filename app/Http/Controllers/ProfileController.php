@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\SystemSetting;
+use App\Rules\IndonesianMobileNumber;
 use App\Services\WhatsAppNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -95,5 +97,29 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * Update the official TEFA Admin WhatsApp sender phone number.
+     */
+    public function updateAdminWhatsApp(Request $request): RedirectResponse
+    {
+        if (! $request->user()?->hasAnyRole(['admin', 'super_admin'])) {
+            abort(403, 'Aksi ini hanya dapat dilakukan oleh Administrator.');
+        }
+
+        $validated = $request->validate([
+            'tefa_admin_whatsapp' => ['required', 'string', new IndonesianMobileNumber],
+        ], [
+            'tefa_admin_whatsapp.required' => 'Nomor WhatsApp pengirim admin wajib diisi.',
+        ]);
+
+        $normalized = WhatsAppNotificationService::normalizePhoneNumber($validated['tefa_admin_whatsapp']);
+
+        SystemSetting::set('tefa_admin_whatsapp', $normalized);
+
+        return Redirect::route('profile.edit')
+            ->with('status', 'admin-whatsapp-updated')
+            ->with('success', 'Nomor WhatsApp pengirim admin berhasil diperbarui!');
     }
 }

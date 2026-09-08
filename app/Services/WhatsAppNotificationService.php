@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Borrowing;
+use App\Models\SystemSetting;
 use Illuminate\Support\Facades\Log;
 
 class WhatsAppNotificationService
@@ -197,5 +198,38 @@ class WhatsAppNotificationService
         $encodedMessage = rawurlencode($message);
 
         return "https://wa.me/{$phone}?text={$encodedMessage}";
+    }
+
+    /**
+     * Dapatkan nomor WhatsApp resmi pengirim Admin TEFA.
+     * Memprioritaskan pengaturan dinamis dari database (system_settings: tefa_admin_whatsapp),
+     * dan fallback ke konfigurasi services.whatsapp.admin_number / .env jika belum disetel.
+     */
+    public static function getAdminNumber(): string
+    {
+        $dynamicNumber = SystemSetting::get('tefa_admin_whatsapp');
+        if (! empty($dynamicNumber)) {
+            return self::normalizePhoneNumber((string) $dynamicNumber);
+        }
+
+        $configNumber = (string) config('services.whatsapp.admin_number', '6281234567890');
+
+        return self::normalizePhoneNumber($configNumber);
+    }
+
+    /**
+     * Alias untuk getAdminNumber().
+     */
+    public static function getAdminPhoneNumber(): string
+    {
+        return self::getAdminNumber();
+    }
+
+    /**
+     * Dapatkan nomor WhatsApp resmi pengirim Admin TEFA dalam format tampilan rapi (+62 8xx...).
+     */
+    public static function getAdminDisplayPhoneNumber(): string
+    {
+        return self::formatDisplayPhoneNumber(self::getAdminNumber());
     }
 }

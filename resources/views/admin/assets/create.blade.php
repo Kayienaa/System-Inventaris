@@ -297,7 +297,7 @@
                             class="block w-full text-xs text-stone-500 dark:text-stone-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-amber-100 dark:file:bg-stone-800 file:text-amber-800 dark:file:text-stone-200 hover:file:bg-amber-200 dark:hover:file:bg-stone-700 cursor-pointer"
                         >
                         <p class="text-[11px] text-stone-500 dark:text-stone-400 mt-2">
-                            Unggah foto fisik perangkat yang jelas untuk memudahkan identifikasi saat peminjaman dan verifikasi pengembalian (Maks 2MB, JPG/PNG/WEBP).
+                            Unggah foto fisik perangkat yang jelas untuk memudahkan identifikasi saat peminjaman dan verifikasi pengembalian (Maks 5MB, JPG/PNG/WEBP).
                         </p>
                         @error('photo')
                             <p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>

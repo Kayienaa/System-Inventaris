@@ -85,4 +85,34 @@ class ImageCompressionTest extends TestCase
         $this->assertNull($path);
         $this->assertEmpty(Storage::disk('public')->allFiles());
     }
+
+    public function test_uploaded_webp_image_is_compressed_and_stored_as_webp(): void
+    {
+        Storage::fake('public');
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'test_webp_') . '.webp';
+        $gdImage = imagecreatetruecolor(1800, 2400); // Portrait
+        $bgColor = imagecolorallocate($gdImage, 210, 180, 140);
+        imagefilledrectangle($gdImage, 0, 0, 1800, 2400, $bgColor);
+        imagewebp($gdImage, $tmpFile, 90);
+        imagedestroy($gdImage);
+
+        $uploadedFile = new UploadedFile($tmpFile, 'sample_portrait.webp', 'image/webp', null, true);
+
+        $service = app(ImageCompressionService::class);
+        $path = $service->compressAndStore($uploadedFile, 'assets');
+
+        $this->assertTrue(Storage::disk('public')->exists($path));
+        $this->assertStringEndsWith('.webp', $path);
+
+        $fileSize = Storage::disk('public')->size($path);
+        $this->assertLessThanOrEqual(200 * 1024, $fileSize);
+
+        $storedContent = Storage::disk('public')->get($path);
+        $imageInfo = getimagesizefromstring($storedContent);
+        $this->assertLessThanOrEqual(1280, $imageInfo[0]); // width
+        $this->assertLessThanOrEqual(1280, $imageInfo[1]); // height
+
+        @unlink($tmpFile);
+    }
 }

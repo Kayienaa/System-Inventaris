@@ -37,7 +37,7 @@ class UpdateAssetRequest extends FormRequest
             'model' => ['nullable', 'string', 'max:100'],
             'condition' => ['required', Rule::enum(AssetCondition::class)],
             'availability_status' => ['required', Rule::enum(AssetAvailabilityStatus::class)],
-            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'notes' => ['nullable', 'string'],
         ];
     }
@@ -67,7 +67,7 @@ class UpdateAssetRequest extends FormRequest
             'availability_status.required' => 'Status ketersediaan aset wajib dipilih.',
             'photo.image' => 'File yang diunggah harus berupa gambar.',
             'photo.mimes' => 'Format gambar harus berupa JPG, JPEG, PNG, atau WEBP.',
-            'photo.max' => 'Ukuran foto maksimal adalah 2MB.',
+            'photo.max' => 'Ukuran foto maksimal adalah 5MB.',
         ];
     }
 }
