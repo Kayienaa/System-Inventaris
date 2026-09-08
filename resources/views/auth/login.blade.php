@@ -185,7 +185,7 @@
 
                 <!-- ── Heading ── -->
                 <div class="mb-6">
-                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Selamat Datang 👋</h2>
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Selamat Datang </h2>
                     <p class="text-sm text-slate-500 mt-1.5 leading-relaxed">
                         Silakan masuk ke akun Anda untuk mengakses Sistem Inventaris Barang SMK Negeri 1 Bangsri.
                     </p>
