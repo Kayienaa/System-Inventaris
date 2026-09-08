@@ -19,6 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'phone.filled' => \App\Http\Middleware\EnsurePhoneIsFilled::class,
         ]);
 
+        $middleware->validateCsrfTokens(except: [
+            'oauth/*',
+            'api/*',
+            'api/sipintu/sync-user',
+        ]);
+
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\EnsurePhoneIsFilled::class,
         ]);

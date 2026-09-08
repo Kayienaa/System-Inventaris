@@ -23,6 +23,7 @@ class EnsurePhoneIsFilled
         'password.confirm',
         'password.update',
         'storage.local',
+        'oauth.callback',
     ];
 
     /**

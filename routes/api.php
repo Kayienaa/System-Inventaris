@@ -5,7 +5,11 @@ use App\Http\Controllers\AssetController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BorrowingController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OAuthController;
 use Illuminate\Support\Facades\Route;
+
+// Webhook Sinkronisasi Real-time Pengguna dari SiPintu Gateway
+Route::post('sipintu/sync-user', [OAuthController::class, 'syncUser'])->name('api.sipintu.sync-user');
 
 Route::middleware('auth')->group(function (): void {
     Route::get('assets', [AssetController::class, 'index'])->middleware('permission:assets.view');

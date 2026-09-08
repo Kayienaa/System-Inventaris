@@ -18,9 +18,9 @@ class SiPintuService
 
     public function __construct()
     {
-        $this->baseUrl = rtrim(config('sipintu.api_url', 'http://sipintu.smkn1bangsri.sch.id'), '/');
-        $this->clientId = config('sipintu.client_id', 'app_1p03mtss7tbl');
-        $this->clientSecret = config('sipintu.client_secret', 'sec_BVKkUc6wG7NbBwP6SD3kGN8DZHiSodCo');
+        $this->baseUrl = rtrim(env('SIPINTU_BASE_URL', config('services.sipintu.base_url', config('sipintu.api_url', 'http://sipintu.smkn1bangsri.sch.id'))), '/');
+        $this->clientId = env('SIPINTU_CLIENT_ID', config('services.sipintu.client_id', config('sipintu.client_id', 'app_44rtj8sanrpy')));
+        $this->clientSecret = env('SIPINTU_CLIENT_SECRET', config('services.sipintu.client_secret', config('sipintu.client_secret', 'sec_fPitvBwUAC6PT6cGMNXeUmn50uvWtdri')));
         $this->timeout = (int) config('sipintu.timeout', 60);
         $this->connectTimeout = (int) config('sipintu.connect_timeout', 10);
         $this->cacheTtl = (int) config('sipintu.cache_ttl', 1800);
@@ -172,11 +172,21 @@ class SiPintuService
 
     /**
      * Ambil data siswa dengan filter & pencarian cepat.
-     *
-     * @param  array  $params  ['nis' => ..., 'search' => ...]
+     * Mendukung format parameter array maupun positional (nis, search, limit).
      */
-    public function getStudents(array $params = [], bool $forceRefresh = false): array
+    public function getStudents(array|string|null $nis = null, ?string $search = null, int $limit = 50, bool $forceRefresh = false): array
     {
+        if (is_array($nis)) {
+            $params = $nis;
+            $forceRefresh = $search ? (bool) $search : $forceRefresh;
+        } else {
+            $params = array_filter([
+                'nis'    => $nis,
+                'search' => $search,
+                'limit'  => $limit,
+            ]);
+        }
+
         $raw = $this->getAllStudentsRaw($forceRefresh);
 
         if (!$raw['success']) {
@@ -185,7 +195,7 @@ class SiPintuService
 
         $items = $raw['data'];
         $nis = trim($params['nis'] ?? '');
-        $search = mb_strtolower(trim($params['search'] ?? ''));
+        $searchQuery = mb_strtolower(trim($params['search'] ?? ''));
 
         if ($nis !== '') {
             $items = array_values(array_filter($items, function ($item) use ($nis) {
@@ -195,20 +205,25 @@ class SiPintuService
             }));
         }
 
-        if ($search !== '') {
-            $items = array_values(array_filter($items, function ($item) use ($search) {
+        if ($searchQuery !== '') {
+            $items = array_values(array_filter($items, function ($item) use ($searchQuery) {
                 $nama = mb_strtolower((string) ($item['nama'] ?? ''));
                 $nis = (string) ($item['nis'] ?? '');
                 $email = mb_strtolower((string) ($item['user']['email'] ?? ''));
                 $alamat = mb_strtolower((string) ($item['alamat'] ?? ''));
                 $hp = (string) ($item['hp'] ?? '');
 
-                return str_contains($nama, $search)
-                    || str_contains($nis, $search)
-                    || str_contains($email, $search)
-                    || str_contains($alamat, $search)
-                    || str_contains($hp, $search);
+                return str_contains($nama, $searchQuery)
+                    || str_contains($nis, $searchQuery)
+                    || str_contains($email, $searchQuery)
+                    || str_contains($alamat, $searchQuery)
+                    || str_contains($hp, $searchQuery);
             }));
+        }
+
+        $maxLimit = isset($params['limit']) ? (int) $params['limit'] : 0;
+        if ($maxLimit > 0 && count($items) > $maxLimit) {
+            $items = array_slice($items, 0, $maxLimit);
         }
 
         return [
@@ -217,7 +232,7 @@ class SiPintuService
             'count'        => count($items),
             'data'         => $items,
             'source'       => $raw['source'] ?? 'SiPintu Gateway',
-            'is_filtered'  => ($nis !== '' || $search !== ''),
+            'is_filtered'  => ($nis !== '' || $searchQuery !== ''),
         ];
     }
 
@@ -294,11 +309,20 @@ class SiPintuService
 
     /**
      * Ambil data guru dengan filter & pencarian cepat.
-     *
-     * @param  array  $params  ['nip' => ..., 'search' => ...]
+     * Mendukung format parameter array maupun positional (nip, search).
      */
-    public function getTeachers(array $params = [], bool $forceRefresh = false): array
+    public function getTeachers(array|string|null $nip = null, ?string $search = null, bool $forceRefresh = false): array
     {
+        if (is_array($nip)) {
+            $params = $nip;
+            $forceRefresh = $search ? (bool) $search : $forceRefresh;
+        } else {
+            $params = array_filter([
+                'nip'    => $nip,
+                'search' => $search,
+            ]);
+        }
+
         $raw = $this->getAllTeachersRaw($forceRefresh);
 
         if (!$raw['success']) {
@@ -307,7 +331,7 @@ class SiPintuService
 
         $items = $raw['data'];
         $nip = trim($params['nip'] ?? '');
-        $search = mb_strtolower(trim($params['search'] ?? ''));
+        $searchQuery = mb_strtolower(trim($params['search'] ?? ''));
 
         if ($nip !== '') {
             $items = array_values(array_filter($items, function ($item) use ($nip) {
@@ -317,8 +341,8 @@ class SiPintuService
             }));
         }
 
-        if ($search !== '') {
-            $items = array_values(array_filter($items, function ($item) use ($search) {
+        if ($searchQuery !== '') {
+            $items = array_values(array_filter($items, function ($item) use ($searchQuery) {
                 $nama = mb_strtolower((string) ($item['nama'] ?? ''));
                 $panggilan = mb_strtolower((string) ($item['nama_panggilan'] ?? ''));
                 $nip = (string) ($item['nip'] ?? '');
@@ -327,13 +351,13 @@ class SiPintuService
                 $alamat = mb_strtolower((string) ($item['alamat'] ?? ''));
                 $hp = (string) ($item['hp'] ?? '');
 
-                return str_contains($nama, $search)
-                    || str_contains($panggilan, $search)
-                    || str_contains($nip, $search)
-                    || str_contains($kode, $search)
-                    || str_contains($email, $search)
-                    || str_contains($alamat, $search)
-                    || str_contains($hp, $search);
+                return str_contains($nama, $searchQuery)
+                    || str_contains($panggilan, $searchQuery)
+                    || str_contains($nip, $searchQuery)
+                    || str_contains($kode, $searchQuery)
+                    || str_contains($email, $searchQuery)
+                    || str_contains($alamat, $searchQuery)
+                    || str_contains($hp, $searchQuery);
             }));
         }
 
@@ -343,8 +367,31 @@ class SiPintuService
             'count'       => count($items),
             'data'        => $items,
             'source'      => $raw['source'] ?? 'SiPintu Gateway',
-            'is_filtered' => ($nip !== '' || $search !== ''),
+            'is_filtered' => ($nip !== '' || $searchQuery !== ''),
         ];
+    }
+
+    /**
+     * Verifikasi validitas client credentials ke SiPintu Gateway.
+     */
+    public function validateClient(): array
+    {
+        try {
+            $response = Http::baseUrl($this->baseUrl)
+                ->timeout(10)
+                ->acceptJson()
+                ->post('/api/v1/validate-client', [
+                    'client_id'     => $this->clientId,
+                    'client_secret' => $this->clientSecret,
+                ]);
+
+            return $response->json() ?? ['valid' => false, 'status' => $response->status()];
+        } catch (\Throwable $e) {
+            return [
+                'valid'   => false,
+                'error'   => $e->getMessage(),
+            ];
+        }
     }
 
     /**

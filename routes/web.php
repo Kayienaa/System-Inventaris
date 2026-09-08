@@ -4,10 +4,19 @@ use App\Http\Controllers\AssetCategoryController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\BorrowingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\OAuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SiPintuController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+
+/*
+|--------------------------------------------------------------------------
+| Integrasi SiPintu Gateway: SSO Otomatis & Webhook Sinkronisasi Real-time
+|--------------------------------------------------------------------------
+*/
+Route::get('/oauth/callback', [OAuthController::class, 'callback'])->name('oauth.callback');
+Route::post('/api/sipintu/sync-user', [OAuthController::class, 'syncUser'])->name('sipintu.sync-user');
 
 Route::get('/', function () {
     return view('welcome');
