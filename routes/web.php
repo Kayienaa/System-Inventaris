@@ -63,6 +63,7 @@ Route::middleware(['auth', 'verified', 'role:admin|super_admin'])->group(functio
 });
 
 Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->group(function () {
+    Route::get('/dashboard/weekly-history', [DashboardController::class, 'weeklyHistory'])->name('admin.dashboard.weekly-history');
     Route::get('/borrowings', [\App\Http\Controllers\Admin\BorrowingController::class, 'index'])->name('admin.borrowings.index');
     Route::get('/borrowings/export-excel', [\App\Http\Controllers\Admin\BorrowingReportController::class, 'exportCsv'])->name('admin.borrowings.export-excel');
     Route::get('/borrowings/export-pdf', [\App\Http\Controllers\Admin\BorrowingReportController::class, 'exportPdf'])->name('admin.borrowings.export-pdf');

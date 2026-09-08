@@ -6,6 +6,8 @@ use App\Enums\BorrowingStatus;
 use App\Models\Asset;
 use App\Models\Borrowing;
 use App\Services\SiPintuService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -43,17 +45,19 @@ class DashboardController extends Controller
             ];
         }
 
-        // Tren Peminjaman 7 Hari Terakhir — 1 query, group by tanggal
-        $rangeStart = \Carbon\Carbon::today()->subDays(6)->startOfDay();
-        $rangeEnd   = \Carbon\Carbon::today()->endOfDay();
+        // Periode Minggu Berjalan (Senin s.d. Minggu)
+        $startOfWeek = now()->startOfWeek(\Carbon\Carbon::MONDAY)->startOfDay();
+        $endOfWeek   = now()->endOfWeek(\Carbon\Carbon::SUNDAY)->endOfDay();
+        $weeklyPeriodLabel = $startOfWeek->locale('id')->translatedFormat('d F') . ' - ' . $endOfWeek->locale('id')->translatedFormat('d F Y');
 
+        // Tren Peminjaman Minggu Berjalan (Senin s.d. Minggu) — 1 query, group by tanggal
         $dailyCounts = Borrowing::query()
             ->selectRaw('DATE(COALESCE(requested_at, created_at)) as day, COUNT(*) as total')
-            ->where(function ($q) use ($rangeStart, $rangeEnd) {
-                $q->whereBetween('requested_at', [$rangeStart, $rangeEnd])
-                    ->orWhere(function ($fallback) use ($rangeStart, $rangeEnd) {
+            ->where(function ($q) use ($startOfWeek, $endOfWeek) {
+                $q->whereBetween('requested_at', [$startOfWeek, $endOfWeek])
+                    ->orWhere(function ($fallback) use ($startOfWeek, $endOfWeek) {
                         $fallback->whereNull('requested_at')
-                            ->whereBetween('created_at', [$rangeStart, $rangeEnd]);
+                            ->whereBetween('created_at', [$startOfWeek, $endOfWeek]);
                     });
             })
             ->groupBy('day')
@@ -61,16 +65,14 @@ class DashboardController extends Controller
 
         $chartLabels = [];
         $chartData = [];
-        for ($i = 6; $i >= 0; $i--) {
-            $date = \Carbon\Carbon::today()->subDays($i);
-            $chartLabels[] = $date->translatedFormat('d M');
+        $dayNames = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+        for ($i = 0; $i < 7; $i++) {
+            $date = $startOfWeek->copy()->addDays($i);
+            $chartLabels[] = $dayNames[$i] . ' (' . $date->format('d/m') . ')';
             $chartData[] = (int) ($dailyCounts[$date->toDateString()] ?? 0);
         }
 
         // Filter Peminjaman Rentang Minggu Aktif
-        $startOfWeek = now()->startOfWeek();
-        $endOfWeek = now()->endOfWeek();
-
         $weeklyFilter = function ($q) use ($startOfWeek, $endOfWeek) {
             $q->where(function ($sub) use ($startOfWeek, $endOfWeek) {
                 $sub->whereBetween('requested_at', [$startOfWeek, $endOfWeek])
@@ -128,6 +130,8 @@ class DashboardController extends Controller
                 'terlambat_sejak' => $b->due_at ? $b->due_at->diffForHumans() : '-',
             ]);
 
+        $weeklyHistory = $this->getWeeklyHistory(6);
+
         return [
             'sipintu_summary' => $sipintuSummary,
 
@@ -135,6 +139,10 @@ class DashboardController extends Controller
             'barang_tersedia' => $barangTersedia,
             'barang_dipinjam' => $barangDipinjam,
             'total_overdue' => $totalOverdue,
+
+            'weekly_period_label' => $weeklyPeriodLabel,
+            'weeklyPeriodLabel' => $weeklyPeriodLabel,
+            'weekly_history' => $weeklyHistory,
 
             'chart_labels' => $chartLabels,
             'chart_data' => $chartData,
@@ -151,5 +159,97 @@ class DashboardController extends Controller
                 ->pluck('total', 'availability_status'),
             'overdue' => $overdueList,
         ];
+    }
+
+    /**
+     * Endpoint API Riwayat (History) Top Peminjaman Mingguan.
+     */
+    public function weeklyHistory(Request $request): JsonResponse
+    {
+        $history = $this->getWeeklyHistory(8);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $history,
+        ]);
+    }
+
+    /**
+     * Agregasi data riwayat top peminjaman per pekan ke belakang.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getWeeklyHistory(int $weeks = 6): array
+    {
+        $history = [];
+
+        for ($w = 0; $w < $weeks; $w++) {
+            $wStart = now()->subWeeks($w)->startOfWeek(\Carbon\Carbon::MONDAY)->startOfDay();
+            $wEnd   = now()->subWeeks($w)->endOfWeek(\Carbon\Carbon::SUNDAY)->endOfDay();
+            $periodLabel = $wStart->locale('id')->translatedFormat('d M') . ' - ' . $wEnd->locale('id')->translatedFormat('d M Y');
+
+            $filter = function ($q) use ($wStart, $wEnd) {
+                $q->where(function ($sub) use ($wStart, $wEnd) {
+                    $sub->whereBetween('requested_at', [$wStart, $wEnd])
+                        ->orWhere(function ($fallback) use ($wStart, $wEnd) {
+                            $fallback->whereNull('requested_at')
+                                ->whereBetween('created_at', [$wStart, $wEnd]);
+                        });
+                });
+            };
+
+            $totalTx = Borrowing::query()->where($filter)->count();
+
+            $topAssets = Asset::query()
+                ->with(['category'])
+                ->withCount(['borrowings' => $filter])
+                ->whereHas('borrowings', $filter)
+                ->orderByDesc('borrowings_count')
+                ->take(3)
+                ->get()
+                ->map(fn (Asset $a) => [
+                    'name' => $a->name,
+                    'asset_code' => $a->asset_code,
+                    'category' => $a->category?->name ?? 'Umum',
+                    'count' => (int) $a->borrowings_count,
+                ])
+                ->values()
+                ->all();
+
+            $topBorrowers = \App\Models\User::query()
+                ->with(['siswaProfile', 'guruProfile'])
+                ->withCount(['borrowings' => $filter])
+                ->whereHas('borrowings', $filter)
+                ->orderByDesc('borrowings_count')
+                ->take(3)
+                ->get()
+                ->map(function ($u) {
+                    $ident = $u->siswaProfile?->class_name
+                        ? 'Kelas ' . $u->siswaProfile->class_name
+                        : ($u->guruProfile ? 'Guru' : ($u->hasRole('admin') ? 'Admin' : '-'));
+
+                    return [
+                        'name' => $u->name,
+                        'email' => $u->email,
+                        'identity' => $ident,
+                        'count' => (int) $u->borrowings_count,
+                    ];
+                })
+                ->values()
+                ->all();
+
+            $history[] = [
+                'week_number' => $w,
+                'is_current' => $w === 0,
+                'period' => $periodLabel,
+                'start_date' => $wStart->toDateString(),
+                'end_date' => $wEnd->toDateString(),
+                'total_transactions' => $totalTx,
+                'top_assets' => $topAssets,
+                'top_borrowers' => $topBorrowers,
+            ];
+        }
+
+        return $history;
     }
 }

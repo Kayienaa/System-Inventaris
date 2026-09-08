@@ -61,11 +61,73 @@ class DashboardAnalyticsTest extends TestCase
         // Verify view data
         $response->assertViewHas('chart_labels');
         $response->assertViewHas('chart_data');
+        $response->assertViewHas('weekly_period_label');
+        $response->assertViewHas('weekly_history');
         $response->assertViewHas('popular_assets');
         $response->assertViewHas('active_borrowers');
         $response->assertViewHas('total_aset');
         $response->assertViewHas('barang_tersedia');
         $response->assertViewHas('barang_dipinjam');
+
+        $response->assertSee('Lihat History Mingguan');
+        $response->assertSee($response->viewData('weekly_period_label'));
+
+        // Chart labels harus 7 hari (Senin s.d. Minggu)
+        $labels = $response->viewData('chart_labels');
+        $this->assertCount(7, $labels);
+        $this->assertStringStartsWith('Senin', $labels[0]);
+        $this->assertStringStartsWith('Minggu', $labels[6]);
+    }
+
+    public function test_admin_can_access_weekly_history_endpoint(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $response = $this->actingAs($admin)->getJson(route('admin.dashboard.weekly-history'));
+
+        $response->assertOk();
+        $response->assertJsonStructure([
+            'status',
+            'data' => [
+                '*' => [
+                    'week_number',
+                    'is_current',
+                    'period',
+                    'start_date',
+                    'end_date',
+                    'total_transactions',
+                    'top_assets',
+                    'top_borrowers',
+                ],
+            ],
+        ]);
+        $this->assertCount(8, $response->json('data'));
+    }
+
+    public function test_super_admin_can_access_weekly_history_endpoint(): void
+    {
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole('super_admin');
+
+        $response = $this->actingAs($superAdmin)->getJson(route('admin.dashboard.weekly-history'));
+
+        $response->assertOk();
+    }
+
+    public function test_non_admin_cannot_access_weekly_history_endpoint(): void
+    {
+        $siswa = User::factory()->create();
+        $siswa->assignRole('siswa');
+        \App\Models\SiswaProfile::create([
+            'user_id' => $siswa->id,
+            'nis' => '11223',
+            'phone' => '081234567890',
+        ]);
+
+        $response = $this->actingAs($siswa)->get(route('admin.dashboard.weekly-history'));
+
+        $response->assertForbidden();
     }
 
     public function test_non_admin_does_not_see_sipintu_gateway_widget_on_dashboard(): void
