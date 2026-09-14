@@ -6,6 +6,7 @@ use App\Enums\BorrowingStatus;
 use App\Exceptions\BorrowingStateException;
 use App\Models\Borrowing;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 class SubmitReturnAction
@@ -18,17 +19,22 @@ class SubmitReturnAction
         if (blank($evidencePath)) {
             throw new InvalidArgumentException('Return evidence is required.');
         }
-        if ($borrowing->status !== BorrowingStatus::Borrowed) {
-            throw new BorrowingStateException('Only borrowed assets can be submitted for return.');
-        }
 
-        $borrowing->update([
-            'status' => BorrowingStatus::ReturnPendingVerification,
-            'return_submitted_at' => now(),
-            'return_evidence_path' => $evidencePath,
-            'return_note' => $returnNote,
-        ]);
+        return DB::transaction(function () use ($borrowing, $evidencePath, $returnNote): Borrowing {
+            $locked = Borrowing::query()->lockForUpdate()->find($borrowing->id);
 
-        return $borrowing->fresh();
+            if ($locked === null || $locked->status !== BorrowingStatus::Borrowed) {
+                throw new BorrowingStateException('Only borrowed assets can be submitted for return.');
+            }
+
+            $locked->update([
+                'status' => BorrowingStatus::ReturnPendingVerification,
+                'return_submitted_at' => now(),
+                'return_evidence_path' => $evidencePath,
+                'return_note' => $returnNote,
+            ]);
+
+            return $locked->fresh();
+        });
     }
 }

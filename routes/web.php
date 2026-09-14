@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Storage;
 |--------------------------------------------------------------------------
 */
 Route::get('/oauth/callback', [OAuthController::class, 'callback'])->name('oauth.callback');
-Route::post('/api/sipintu/sync-user', [OAuthController::class, 'syncUser'])->name('sipintu.sync-user');
 
 Route::get('/', function () {
     return view('welcome');

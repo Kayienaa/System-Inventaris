@@ -86,6 +86,17 @@ class ImageCompressionService
 
         try {
             if (extension_loaded('gd') || extension_loaded('imagick')) {
+                if (strlen($data) > 8 * 1024 * 1024) {
+                    Log::warning('Payload evidence melebihi batas aman.');
+                    return null;
+                }
+
+                $dimensions = @getimagesizefromstring($data);
+                if ($dimensions === false || $dimensions[0] > 6000 || $dimensions[1] > 6000) {
+                    Log::warning('Dimensi gambar evidence tidak wajar, ditolak sebelum decode.');
+                    return null;
+                }
+
                 $image = Image::decode($data);
                 $image->scaleDown(width: self::MAX_WIDTH, height: self::MAX_WIDTH);
 

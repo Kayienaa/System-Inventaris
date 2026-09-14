@@ -123,6 +123,9 @@ class OAuthController extends Controller
             if ($email !== '' && $user->email !== $email) {
                 $user->email = $email;
             }
+            if ($user->email_verified_at === null) {
+                $user->email_verified_at = now();
+            }
             $user->save();
         } else {
             $fallbackEmail = $email !== '' ? $email : ($externalId !== '' ? "{$externalId}@smkn1bangsri.sch.id" : 'user_' . Str::random(8) . '@smkn1bangsri.sch.id');
@@ -206,13 +209,13 @@ class OAuthController extends Controller
     {
         // 1. Verifikasi Keamanan Signature HMAC SHA-256
         $signature = $request->header('X-SiPintu-Signature');
-        $clientSecret = env('SIPINTU_CLIENT_SECRET', config('services.sipintu.client_secret', config('sipintu.client_secret')));
+        $clientSecret = config('sipintu.client_secret');
 
-        if ($signature && $clientSecret) {
-            $computed = hash_hmac('sha256', $request->getContent(), $clientSecret);
-            if (! hash_equals($computed, $signature)) {
-                return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 401);
-            }
+        if (blank($clientSecret) || ! is_string($signature) || ! hash_equals(
+            hash_hmac('sha256', $request->getContent(), $clientSecret),
+            $signature
+        )) {
+            return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 401);
         }
 
         $userData = $request->input('user');
@@ -257,8 +260,6 @@ class OAuthController extends Controller
         ];
 
         // 4. Update jika user sudah ada, atau buat baru
-        $passwordHash = $userData['password'] ?? ($userData['password_hash'] ?? null);
-
         if ($user) {
             $user->update($updateFields);
             $action = 'updated';
@@ -268,11 +269,6 @@ class OAuthController extends Controller
             $updateFields['password'] = Hash::make(Str::random(24));
             $user = User::create($updateFields);
             $action = 'created';
-        }
-
-        if (! empty($passwordHash)) {
-            DB::table('users')->where('id', $user->id)->update(['password' => $passwordHash]);
-            $user->refresh();
         }
 
         // 5. Sinkronkan profil Siswa / Guru & role

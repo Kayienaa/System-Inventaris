@@ -9,7 +9,9 @@ use App\Http\Controllers\OAuthController;
 use Illuminate\Support\Facades\Route;
 
 // Webhook Sinkronisasi Real-time Pengguna dari SiPintu Gateway
-Route::post('sipintu/sync-user', [OAuthController::class, 'syncUser'])->name('api.sipintu.sync-user');
+Route::post('sipintu/sync-user', [OAuthController::class, 'syncUser'])
+    ->middleware('throttle:30,1')
+    ->name('api.sipintu.sync-user');
 
 Route::middleware('auth')->group(function (): void {
     Route::get('assets', [AssetController::class, 'index'])->middleware('permission:assets.view');
