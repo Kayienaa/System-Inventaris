@@ -415,18 +415,36 @@
             x-show="photoModal"
             x-cloak
             @keydown.escape.window="photoModal = false"
-            class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-            x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100"
-            x-transition:leave="transition ease-in duration-150"
-            x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-[70] flex items-center justify-center p-4"
         >
-            <div class="relative z-[80] max-w-3xl w-full bg-white dark:bg-stone-900 rounded-2xl overflow-hidden shadow-2xl border border-stone-800" @click.outside="photoModal = false">
+            {{-- Backdrop Overlay --}}
+            <div
+                x-show="photoModal"
+                class="fixed inset-0 bg-black/80 backdrop-blur-sm"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                @click="photoModal = false"
+            ></div>
+
+            {{-- Modal Dialog Card --}}
+            <div
+                x-show="photoModal"
+                class="relative z-[80] max-w-3xl w-full bg-white dark:bg-stone-900 rounded-2xl overflow-hidden shadow-2xl border border-stone-800"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                @click.stop
+            >
                 <div class="p-3 bg-stone-900 text-white flex items-center justify-between">
                     <span class="text-xs font-bold">{{ $asset->name }} ({{ $asset->asset_code }})</span>
-                    <button type="button" @click="photoModal = false" class="text-stone-400 hover:text-white text-sm cursor-pointer">✕</button>
+                    <button type="button" @click="photoModal = false" class="text-stone-400 hover:text-white text-sm cursor-pointer interactive-btn">✕</button>
                 </div>
                 <img src="{{ $asset->photo_url }}" alt="{{ $asset->name }}" class="w-full max-h-[80vh] object-contain bg-black">
             </div>

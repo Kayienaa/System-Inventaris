@@ -1215,7 +1215,7 @@
 
                 <button
                     type="submit"
-                    class="logout-button"
+                    class="logout-button interactive-btn"
                 >
                     <svg class="menu-icon" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -1242,7 +1242,7 @@
         <div class="mobile-brand-wrap">
             <button
                 type="button"
-                class="mobile-menu-toggle"
+                class="mobile-menu-toggle interactive-btn"
                 @click="sidebarOpen = !sidebarOpen"
                 aria-label="Buka menu navigasi"
             >
@@ -1266,7 +1266,7 @@
         <div class="flex items-center gap-3">
             {{-- Tombol Toggle Dark/Light Mode Mobile --}}
             <button id="theme-toggle-mobile" type="button" 
-                    class="p-2 rounded-xl text-white/80 hover:text-white bg-white/10 hover:bg-white/20 dark:text-neon-glowcyan dark:hover:text-neon-cyan dark:border dark:border-cyan-500/30 transition-all duration-200 cursor-pointer"
+                    class="p-2 rounded-xl text-white/80 hover:text-white bg-white/10 hover:bg-white/20 dark:text-neon-glowcyan dark:hover:text-neon-cyan dark:border dark:border-cyan-500/30 interactive-btn cursor-pointer"
                     title="Ubah Mode Tampilan">
                 <svg id="theme-toggle-light-icon-mobile" class="hidden w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -1287,7 +1287,7 @@
     {{-- =========================
          MAIN CONTENT
     ========================== --}}
-    <main class="main-content">
+    <main class="main-content page-enter">
 
         <header class="topbar">
 
@@ -1300,7 +1300,7 @@
             <div class="flex items-center gap-4">
                 {{-- Tombol Toggle Switch Dark/Light Mode --}}
                 <button id="theme-toggle" type="button" 
-                        class="p-2 rounded-xl text-stone-500 hover:text-stone-900 bg-stone-100/80 hover:bg-stone-200/80 dark:bg-stone-900/90 dark:text-neon-glowcyan dark:hover:text-neon-cyan dark:border dark:border-cyan-500/30 dark:shadow-neon-sm transition-all duration-200 cursor-pointer"
+                        class="p-2 rounded-xl text-stone-500 hover:text-stone-900 bg-stone-100/80 hover:bg-stone-200/80 dark:bg-stone-900/90 dark:text-neon-glowcyan dark:hover:text-neon-cyan dark:border dark:border-cyan-500/30 dark:shadow-neon-sm interactive-btn cursor-pointer"
                         title="Ubah Mode Tampilan">
                     <!-- Ikon Matahari (Tampil saat Dark Mode aktif) -->
                     <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

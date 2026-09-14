@@ -40,7 +40,7 @@
 
     <div class="stats-grid">
         {{-- Total Aset --}}
-        <div class="stat-card">
+        <div class="stat-card static-card">
             <div class="stat-top">
                 <div>
                     <p class="stat-label" style="margin-top:0;">
@@ -62,7 +62,7 @@
         </div>
 
         {{-- Barang Tersedia --}}
-        <div class="stat-card">
+        <div class="stat-card static-card">
             <div class="stat-top">
                 <div>
                     <p class="stat-label" style="margin-top:0; color: #059669;">
@@ -81,7 +81,7 @@
         </div>
 
         {{-- Barang Dipinjam --}}
-        <div class="stat-card">
+        <div class="stat-card static-card">
             <div class="stat-top">
                 <div>
                     <p class="stat-label" style="margin-top:0; color: var(--gold);">
@@ -101,7 +101,7 @@
         </div>
 
         {{-- Overdue --}}
-        <div class="stat-card">
+        <div class="stat-card static-card">
             <div class="stat-top">
                 <div>
                     <p class="stat-label" style="margin-top:0; color: #dc2626;">
@@ -133,7 +133,10 @@
         </span>
     </div>
 
-    <div x-data="{ showWeeklyHistoryModal: false }" class="panel" style="margin-bottom: 2rem; padding: 1.5rem;">
+    <div x-data="{ historyOpen: false }" 
+         @weekly-history-state.window="historyOpen = $event.detail.open" 
+         class="panel static-card" 
+         style="margin-bottom: 2rem; padding: 1.5rem;">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
                 <div class="flex flex-wrap items-center gap-2.5">
@@ -154,16 +157,21 @@
             <div class="flex items-center gap-2 shrink-0">
                 <button 
                     type="button" 
-                    @click="showWeeklyHistoryModal = true" 
-                    class="group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 active:scale-95 shadow-xs
-                           bg-stone-100 hover:bg-[#6F4E37] text-stone-700 hover:text-white border border-stone-200/80 hover:border-[#6F4E37]
-                           dark:bg-[#162032] dark:text-stone-300 dark:border-stone-700/80 dark:hover:border-amber-500/60 dark:hover:text-amber-300 dark:hover:shadow-[0_0_12px_rgba(245,158,11,0.25)] cursor-pointer"
+                    @click="$dispatch('toggle-weekly-history')" 
+                    :class="historyOpen 
+                        ? 'bg-[#6F4E37] text-white border-[#6F4E37] dark:bg-amber-600 dark:text-white dark:border-amber-500 shadow-sm' 
+                        : 'bg-stone-100 hover:bg-[#6F4E37] text-stone-700 hover:text-white border-stone-200/80 hover:border-[#6F4E37] dark:bg-[#162032] dark:text-stone-300 dark:border-stone-700/80 dark:hover:border-amber-500/60 dark:hover:text-amber-300'"
+                    class="group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 active:scale-95 shadow-xs interactive-btn cursor-pointer"
+                    title="Buka / Tutup Riwayat Mingguan"
                 >
                     <!-- Ikon Jam/Riwayat dengan efek putar halus saat hover -->
-                    <svg class="w-3.5 h-3.5 text-[#6F4E37] group-hover:text-white dark:text-amber-400 group-hover:rotate-12 transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-3.5 h-3.5 shrink-0 transition-transform duration-200" 
+                         :class="historyOpen ? 'rotate-180 text-white' : 'text-[#6F4E37] group-hover:text-white dark:text-amber-400 group-hover:rotate-12'" 
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span>Lihat History Mingguan</span>
+                    <span x-text="historyOpen ? 'Tutup History' : 'Lihat History Mingguan'">Lihat History Mingguan</span>
+                    <span x-show="historyOpen" class="w-1.5 h-1.5 rounded-full bg-amber-300 dark:bg-amber-200 animate-pulse"></span>
                 </button>
 
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-neon-glowamber border border-amber-200 dark:border-amber-500/30">
@@ -176,183 +184,175 @@
         <div style="position: relative; height: 260px; width: 100%;">
             <canvas id="borrowingTrendChart"></canvas>
         </div>
+    </div>
 
-        {{-- Modal Dialog Riwayat (History) Top Peminjaman Mingguan --}}
-        <div
-            x-show="showWeeklyHistoryModal"
-            x-cloak
-            @keydown.escape.window="showWeeklyHistoryModal = false"
-            class="fixed inset-0 z-50 overflow-y-auto"
-            style="display: none;"
-        >
-            {{-- Backdrop --}}
-            <div
-                x-show="showWeeklyHistoryModal"
-                x-transition:enter="ease-out duration-300"
-                x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100"
-                x-transition:leave="ease-in duration-200"
-                x-transition:leave-start="opacity-100"
-                x-transition:leave-end="opacity-0"
-                @click="showWeeklyHistoryModal = false"
-                class="fixed inset-0 bg-stone-900/60 dark:bg-black/80 backdrop-blur-xs transition-opacity"
-            ></div>
-
-            {{-- Modal Content --}}
-            <div class="flex min-h-full items-center justify-center p-4 sm:p-6 text-center">
-                <div
-                    x-show="showWeeklyHistoryModal"
-                    x-transition:enter="ease-out duration-300"
-                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                    x-transition:leave="ease-in duration-200"
-                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                    @click.stop
-                    class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-[#131B2A] border border-stone-200/90 dark:border-stone-800 text-left shadow-2xl transition-all w-full max-w-4xl max-h-[85vh] flex flex-col"
-                >
-                    {{-- Modal Header --}}
-                    <div class="px-6 py-4 border-b border-stone-200/80 dark:border-stone-800 flex items-center justify-between bg-stone-50/70 dark:bg-[#0B0F17]/50">
-                        <div class="flex items-center gap-3">
-                            <div class="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-[#6F4E37] dark:text-neon-glowamber border border-amber-200/60 dark:border-amber-500/30">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-stone-900 dark:text-stone-100">
-                                    Riwayat Performa Peminjaman Mingguan
-                                </h3>
-                                <p class="text-xs text-stone-500 dark:text-stone-400">
-                                    Rekapitulasi aktivitas transaksi, aset terpopuler, dan peminjam teraktif per pekan
-                                </p>
-                            </div>
-                        </div>
-                        <button
-                            type="button"
-                            @click="showWeeklyHistoryModal = false"
-                            class="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 dark:hover:text-stone-200 dark:hover:bg-stone-800 transition-colors cursor-pointer"
-                        >
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
+    <!-- Seksi Riwayat Performa Mingguan (Sejajar dengan Konten Dashboard) -->
+    <div id="weekly-history-section" 
+         x-data="{ openHistory: false }" 
+         @toggle-weekly-history.window="
+             openHistory = !openHistory;
+             $dispatch('weekly-history-state', { open: openHistory });
+             if (openHistory) {
+                 $nextTick(() => {
+                     const el = document.getElementById('weekly-history-section');
+                     if (el) {
+                         el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                     }
+                 });
+             }
+         "
+         @open-weekly-history.window="
+             openHistory = true;
+             $dispatch('weekly-history-state', { open: true });
+             $nextTick(() => {
+                 const el = document.getElementById('weekly-history-section');
+                 if (el) {
+                     el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                 }
+             });
+         "
+         @close-weekly-history.window="
+             openHistory = false;
+             $dispatch('weekly-history-state', { open: false });
+         "
+         class="scroll-mt-6">
+        
+        <!-- Kontainer Kartu Utama -->
+        <div x-show="openHistory" 
+             x-cloak
+             x-collapse
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 -translate-y-2"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             class="bg-white dark:bg-[#131B2A] border border-stone-200/80 dark:border-stone-800 rounded-2xl shadow-sm p-5 sm:p-6 mt-6 mb-8 scroll-mt-6 static-card">
+            
+            <!-- Header Seksi -->
+            <div class="flex items-center justify-between pb-4 mb-4 border-b border-stone-100 dark:border-stone-800">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/50 text-[#6F4E37] dark:text-amber-400 flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                     </div>
-
-                    {{-- Modal Body with Custom Slim Scrollbar --}}
-                    <div class="p-6 overflow-y-auto max-h-[70vh] pr-2 scroll-smooth [scrollbar-gutter:stable] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-stone-300 dark:[&::-webkit-scrollbar-thumb]:bg-stone-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#6F4E37] dark:hover:[&::-webkit-scrollbar-thumb]:bg-amber-500 transition-colors space-y-4 flex-1">
-                        @if(isset($weekly_history) && count($weekly_history))
-                            @foreach($weekly_history as $week)
-                                <div class="bg-stone-50/80 dark:bg-[#0B0F17]/60 border {{ $week['is_current'] ? 'border-[#6F4E37]/50 dark:border-amber-500/40 ring-1 ring-[#6F4E37]/20 dark:ring-amber-500/20' : 'border-stone-200 dark:border-stone-800' }} rounded-2xl p-4 sm:p-5 transition hover:shadow-sm">
-                                    {{-- Week Title & Stats --}}
-                                    <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-stone-200/70 dark:border-stone-800 mb-3.5">
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-sm font-bold text-stone-800 dark:text-stone-100">
-                                                {{ $week['period'] }}
-                                            </span>
-                                            @if($week['is_current'])
-                                                <span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-300/80 dark:border-amber-700/50">
-                                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-600 dark:bg-amber-400 animate-pulse"></span>
-                                                    Minggu Berjalan
-                                                </span>
-                                            @endif
-                                        </div>
-                                        <span class="text-xs font-bold px-3 py-1 rounded-full bg-[#6F4E37]/10 dark:bg-cyan-950/50 text-[#6F4E37] dark:text-neon-cyan border border-[#6F4E37]/20 dark:border-cyan-500/30">
-                                            {{ $week['total_transactions'] }} Transaksi
-                                        </span>
-                                    </div>
-
-                                    {{-- Grid Top 3 Aset & Top 3 Peminjam --}}
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {{-- Top 3 Aset --}}
-                                        <div>
-                                            <h4 class="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2 flex items-center gap-1.5">
-                                                <svg class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                                                </svg>
-                                                Top 3 Aset Dipinjam
-                                            </h4>
-                                            @if(count($week['top_assets']))
-                                                <div class="space-y-2">
-                                                    @foreach($week['top_assets'] as $idx => $asset)
-                                                        <div class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-[#131B2A] border border-stone-200/60 dark:border-stone-800 text-xs">
-                                                            <div class="flex items-center gap-2 truncate">
-                                                                <span class="w-5 h-5 rounded flex items-center justify-center font-bold text-[10px] {{ $idx === 0 ? 'bg-amber-400 text-white' : 'bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300' }} shrink-0">
-                                                                    #{{ $idx + 1 }}
-                                                                </span>
-                                                                <span class="font-medium text-stone-800 dark:text-stone-200 truncate" title="{{ $asset['name'] }}">
-                                                                    {{ $asset['name'] }}
-                                                                </span>
-                                                            </div>
-                                                            <span class="text-[11px] font-semibold text-[#6F4E37] dark:text-amber-300 shrink-0 ml-2">
-                                                                {{ $asset['count'] }}x pinjam
-                                                            </span>
-                                                        </div>
-                                                    @endforeach
-                                                </div>
-                                            @else
-                                                <p class="text-xs text-stone-400 dark:text-stone-500 italic py-2">
-                                                    Tidak ada peminjaman aset tercatat.
-                                                </p>
-                                            @endif
-                                        </div>
-
-                                        {{-- Top 3 Peminjam --}}
-                                        <div>
-                                            <h4 class="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2 flex items-center gap-1.5">
-                                                <svg class="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                                </svg>
-                                                Top 3 Peminjam Teraktif
-                                            </h4>
-                                            @if(count($week['top_borrowers']))
-                                                <div class="space-y-2">
-                                                    @foreach($week['top_borrowers'] as $idx => $borrower)
-                                                        <div class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-[#131B2A] border border-stone-200/60 dark:border-stone-800 text-xs">
-                                                            <div class="flex items-center gap-2 truncate">
-                                                                <span class="w-5 h-5 rounded flex items-center justify-center font-bold text-[10px] {{ $idx === 0 ? 'bg-blue-600 text-white' : 'bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300' }} shrink-0">
-                                                                    #{{ $idx + 1 }}
-                                                                </span>
-                                                                <div class="truncate">
-                                                                    <p class="font-medium text-stone-800 dark:text-stone-200 truncate">{{ $borrower['name'] }}</p>
-                                                                    <span class="text-[10px] text-stone-400">{{ $borrower['identity'] }}</span>
-                                                                </div>
-                                                            </div>
-                                                            <span class="text-[11px] font-semibold text-blue-700 dark:text-neon-cyan shrink-0 ml-2">
-                                                                {{ $borrower['count'] }} transaksi
-                                                            </span>
-                                                        </div>
-                                                    @endforeach
-                                                </div>
-                                            @else
-                                                <p class="text-xs text-stone-400 dark:text-stone-500 italic py-2">
-                                                    Tidak ada peminjam aktif tercatat.
-                                                </p>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        @else
-                            <div class="text-center py-8">
-                                <p class="text-sm text-stone-500 dark:text-stone-400">
-                                    Belum ada data riwayat mingguan yang tersedia.
-                                </p>
-                            </div>
-                        @endif
-                    </div>
-
-                    {{-- Modal Footer --}}
-                    <div class="px-6 py-3.5 border-t border-stone-200/80 dark:border-stone-800 flex justify-end bg-stone-50/50 dark:bg-[#0B0F17]/30">
-                        <button
-                            type="button"
-                            @click="showWeeklyHistoryModal = false"
-                            class="px-4 py-2 text-xs font-semibold rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 dark:bg-stone-800 dark:hover:bg-stone-700 dark:text-stone-200 border border-stone-200 dark:border-stone-700 transition-all active:scale-95 cursor-pointer"
-                        >
-                            Tutup
-                        </button>
+                    <div>
+                        <h3 class="text-base font-bold text-stone-900 dark:text-stone-100">Riwayat Performa Peminjaman Mingguan</h3>
+                        <p class="text-xs text-stone-500 dark:text-stone-400">Rekapitulasi aktivitas transaksi, aset terpopuler, dan peminjam teraktif per pekan.</p>
                     </div>
                 </div>
+                <button type="button" 
+                        @click="openHistory = false; $dispatch('weekly-history-state', { open: false })" 
+                        class="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 dark:hover:text-stone-200 dark:hover:bg-stone-800 transition interactive-btn"
+                        title="Tutup Seksi Riwayat">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Daftar Kartu Riwayat Pekan (Grid Responsif) -->
+            <div class="space-y-4 max-h-[500px] overflow-y-auto pr-2 [scrollbar-gutter:stable] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-stone-300 dark:[&::-webkit-scrollbar-thumb]:bg-stone-700 [&::-webkit-scrollbar-thumb]:rounded-full">
+                @forelse($weekly_history as $week)
+                    <div class="border {{ $week['is_current'] ? 'border-[#6F4E37]/50 dark:border-amber-500/40 ring-1 ring-[#6F4E37]/20 dark:ring-amber-500/20' : 'border-stone-200/70 dark:border-stone-800' }} rounded-xl p-4 sm:p-5 bg-stone-50/50 dark:bg-[#0E1420]/60 transition hover:shadow-xs">
+                        {{-- Week Title & Stats --}}
+                        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-stone-200/70 dark:border-stone-800 mb-3.5">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-bold text-stone-800 dark:text-stone-100">
+                                    {{ $week['period'] }}
+                                </span>
+                                @if($week['is_current'])
+                                    <span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-300/80 dark:border-amber-700/50">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-600 dark:bg-amber-400 animate-pulse"></span>
+                                        Minggu Berjalan
+                                    </span>
+                                @endif
+                            </div>
+                            <span class="text-xs font-bold px-3 py-1 rounded-full bg-[#6F4E37]/10 dark:bg-cyan-950/50 text-[#6F4E37] dark:text-neon-cyan border border-[#6F4E37]/20 dark:border-cyan-500/30">
+                                {{ $week['total_transactions'] }} Transaksi
+                            </span>
+                        </div>
+
+                        {{-- Grid Top 3 Aset & Top 3 Peminjam --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {{-- Top 3 Aset --}}
+                            <div>
+                                <h4 class="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2 flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                                    </svg>
+                                    Top 3 Aset Dipinjam
+                                </h4>
+                                @if(count($week['top_assets']))
+                                    <div class="space-y-2">
+                                        @foreach($week['top_assets'] as $idx => $asset)
+                                            <div class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-[#131B2A] border border-stone-200/60 dark:border-stone-800 text-xs">
+                                                <div class="flex items-center gap-2 truncate">
+                                                    <span class="w-5 h-5 rounded flex items-center justify-center font-bold text-[10px] {{ $idx === 0 ? 'bg-amber-400 text-white' : 'bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300' }} shrink-0">
+                                                        #{{ $idx + 1 }}
+                                                    </span>
+                                                    <span class="font-medium text-stone-800 dark:text-stone-200 truncate" title="{{ $asset['name'] }}">
+                                                        {{ $asset['name'] }}
+                                                    </span>
+                                                </div>
+                                                <span class="text-[11px] font-semibold text-[#6F4E37] dark:text-amber-300 shrink-0 ml-2">
+                                                    {{ $asset['count'] }}x pinjam
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <p class="text-xs text-stone-400 dark:text-stone-500 italic py-2">
+                                        Tidak ada peminjaman aset tercatat.
+                                    </p>
+                                @endif
+                            </div>
+
+                            {{-- Top 3 Peminjam --}}
+                            <div>
+                                <h4 class="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2 flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    Top 3 Peminjam Teraktif
+                                </h4>
+                                @if(count($week['top_borrowers']))
+                                    <div class="space-y-2">
+                                        @foreach($week['top_borrowers'] as $idx => $borrower)
+                                            <div class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-[#131B2A] border border-stone-200/60 dark:border-stone-800 text-xs">
+                                                <div class="flex items-center gap-2 truncate">
+                                                    <span class="w-5 h-5 rounded flex items-center justify-center font-bold text-[10px] {{ $idx === 0 ? 'bg-blue-600 text-white' : 'bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300' }} shrink-0">
+                                                        #{{ $idx + 1 }}
+                                                    </span>
+                                                    <div class="truncate">
+                                                        <p class="font-medium text-stone-800 dark:text-stone-200 truncate">{{ $borrower['name'] }}</p>
+                                                        <span class="text-[10px] text-stone-400">{{ $borrower['identity'] }}</span>
+                                                    </div>
+                                                </div>
+                                                <span class="text-[11px] font-semibold text-blue-700 dark:text-neon-cyan shrink-0 ml-2">
+                                                    {{ $borrower['count'] }} transaksi
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <p class="text-xs text-stone-400 dark:text-stone-500 italic py-2">
+                                        Tidak ada peminjam aktif tercatat.
+                                    </p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-center py-6 text-sm text-stone-400">Belum ada riwayat pekan sebelumnya.</p>
+                @endforelse
+            </div>
+
+            <!-- Footer Seksi: Tombol Tutup -->
+            <div class="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800 flex justify-end">
+                <button type="button" 
+                        @click="openHistory = false; $dispatch('weekly-history-state', { open: false })" 
+                        class="px-4 py-2 text-xs font-semibold rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 dark:bg-stone-800 dark:hover:bg-stone-700 dark:text-stone-200 border border-stone-200 dark:border-stone-700 transition active:scale-95 cursor-pointer interactive-btn">
+                    Tutup Riwayat Mingguan
+                </button>
             </div>
         </div>
     </div>
@@ -371,7 +371,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {{-- Top 5 Aset Populer --}}
-        <div class="bg-white border border-stone-200/80 shadow-sm rounded-2xl dark:bg-[#131B2A] dark:border-stone-800 p-6">
+        <div class="bg-white border border-stone-200/80 shadow-sm rounded-2xl dark:bg-[#131B2A] dark:border-stone-800 p-6 static-card">
             <div class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-stone-800 mb-4">
                 <div class="flex items-center gap-2.5">
                     <div class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-neon-glowamber border border-amber-200/40 dark:border-amber-500/30">
@@ -417,7 +417,7 @@
         </div>
 
         {{-- Top 5 Peminjam Teraktif --}}
-        <div class="bg-white border border-stone-200/80 shadow-sm rounded-2xl dark:bg-[#131B2A] dark:border-stone-800 p-6">
+        <div class="bg-white border border-stone-200/80 shadow-sm rounded-2xl dark:bg-[#131B2A] dark:border-stone-800 p-6 static-card">
             <div class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-stone-800 mb-4">
                 <div class="flex items-center gap-2.5">
                     <div class="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-neon-cyan border border-blue-200/40 dark:border-cyan-500/30">
@@ -475,7 +475,7 @@
 
     <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
         {{-- Siswa / Pengguna SIJUNA --}}
-        <a href="{{ route('sipintu.students.page') }}" class="stat-card" style="text-decoration: none; color: inherit; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.borderColor='var(--gold)';" onmouseout="this.style.transform='none'; this.style.borderColor='var(--cream-dark)';">
+        <a href="{{ route('sipintu.students.page') }}" class="stat-card interactive-card" style="text-decoration: none; color: inherit;">
             <div class="stat-top">
                 <div>
                     <p class="stat-label" style="margin-top:0; color: var(--gold); font-weight: 700;">
@@ -498,7 +498,7 @@
         </a>
 
         {{-- Dewan Guru SIJUNA --}}
-        <a href="{{ route('sipintu.teachers.page') }}" class="stat-card" style="text-decoration: none; color: inherit; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.borderColor='var(--brown)';" onmouseout="this.style.transform='none'; this.style.borderColor='var(--cream-dark)';">
+        <a href="{{ route('sipintu.teachers.page') }}" class="stat-card interactive-card" style="text-decoration: none; color: inherit;">
             <div class="stat-top">
                 <div>
                     <p class="stat-label" style="margin-top:0; color: var(--brown); font-weight: 700;">
@@ -521,7 +521,7 @@
         </a>
 
         {{-- Status Gateway API --}}
-        <a href="{{ route('sipintu.index') }}" class="stat-card" style="text-decoration: none; color: inherit; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.borderColor='#10B981';" onmouseout="this.style.transform='none'; this.style.borderColor='var(--cream-dark)';">
+        <a href="{{ route('sipintu.index') }}" class="stat-card interactive-card" style="text-decoration: none; color: inherit;">
             <div class="stat-top">
                 <div>
                     <p class="stat-label" style="margin-top:0; color: #059669; font-weight: 700;">

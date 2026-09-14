@@ -35,7 +35,7 @@
                 </div>
                 <button
                     type="submit"
-                    class="rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber px-4 py-2.5 text-sm font-medium transition-all duration-200 shadow-sm shrink-0"
+                    class="rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber px-4 py-2.5 text-sm font-medium transition-all duration-200 shadow-sm shrink-0 interactive-btn"
                 >
                     Cari
                 </button>
@@ -46,7 +46,7 @@
         <div class="mb-6 flex flex-wrap items-center gap-2.5">
             <a
                 href="{{ route('assets.index', array_filter(['search' => request('search')])) }}"
-                class="rounded-xl px-4 py-2 text-sm font-medium transition shadow-sm
+                class="rounded-xl px-4 py-2 text-sm font-medium transition shadow-sm interactive-btn
                     {{ !request('category')
                         ? 'bg-[#6F4E37] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:shadow-neon-amber'
                         : 'bg-white text-stone-700 hover:bg-stone-50 border border-stone-200/80 dark:bg-[#131B2A] dark:text-stone-300 dark:hover:bg-stone-800 dark:border-stone-800' }}"
@@ -60,7 +60,7 @@
                 @endphp
                 <a
                     href="{{ route('assets.index', array_filter(['category' => $cat->name, 'search' => request('search')])) }}"
-                    class="rounded-xl px-4 py-2 text-sm font-medium transition shadow-sm
+                    class="rounded-xl px-4 py-2 text-sm font-medium transition shadow-sm interactive-btn
                         {{ $isActive
                             ? 'bg-[#6F4E37] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:shadow-neon-amber'
                             : 'bg-white text-stone-700 hover:bg-stone-50 border border-stone-200/80 dark:bg-[#131B2A] dark:text-stone-300 dark:hover:bg-stone-800 dark:border-stone-800' }}"
@@ -82,7 +82,7 @@
                     @endphp
 
                     <article
-                        class="p-5 flex flex-col justify-between bg-white border border-stone-200/80 rounded-2xl shadow-sm dark:bg-[#131B2A] dark:border-stone-800 hover:border-[#6F4E37] dark:hover:border-cyan-500/50 transition-all duration-300 hover:-translate-y-1"
+                        class="p-5 flex flex-col justify-between bg-white border border-stone-200/80 rounded-2xl shadow-sm dark:bg-[#131B2A] dark:border-stone-800 hover:border-[#6F4E37] dark:hover:border-cyan-500/50 static-card"
                     >
 
                         <div>
@@ -182,7 +182,7 @@
                             @if ($statusValue === 'tersedia')
                                 <a
                                     href="{{ route('assets.borrow', $asset) }}"
-                                    class="block w-full rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber px-4 py-2.5 text-center text-sm font-semibold transition-all duration-200 shadow-sm active:scale-[0.98]"
+                                    class="block w-full rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber px-4 py-2.5 text-center text-sm font-semibold transition-all duration-200 shadow-sm active:scale-[0.98] interactive-btn"
                                 >
                                     Pinjam Barang
                                 </a>
@@ -228,7 +228,7 @@
                 <div class="mt-6">
                     <a
                         href="{{ route('assets.index') }}"
-                        class="inline-flex items-center gap-2 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber px-4 py-2 text-sm font-medium transition-all duration-200 shadow-sm"
+                        class="inline-flex items-center gap-2 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber px-4 py-2 text-sm font-medium transition-all duration-200 shadow-sm interactive-btn"
                     >
                         Reset Filter
                     </a>

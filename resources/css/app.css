@@ -4,6 +4,44 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  /* Hanya untuk kartu/kontainer yang BISA diklik (berupa link <a> atau tombol) */
+  .interactive-card {
+    @apply transition-all duration-200 ease-out hover:shadow-md active:scale-[0.99] cursor-pointer;
+  }
+  
+  /* Kartu informasi statis murni (tetap diam/stay tanpa gerak) */
+  .static-card {
+    @apply shadow-sm transition-none transform-none select-text;
+  }
+
+  /* Semua tombol & link aksi (empuk, ringan di sentuhan jari HP) */
+  .interactive-btn {
+    @apply transition-all duration-150 ease-out active:scale-95 hover:brightness-105 select-none;
+  }
+
+  .smooth-transition {
+    @apply transition duration-200 ease-in-out;
+  }
+
+  /* Transisi perpindahan halaman halus & super ringan (GPU only) */
+  .page-enter {
+    animation: pageFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
 /* ===========================
    TEVault Design System
 =========================== */

@@ -24,7 +24,7 @@
         <div class="flex items-center gap-3">
             <a
                 href="{{ route('admin.assets.create') }}"
-                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#8B5A2B] hover:bg-[#A06D3B] text-white text-sm font-semibold shadow-md hover:shadow-amber-500/20 border border-amber-600/30 transition-all duration-200 active:scale-95"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#8B5A2B] hover:bg-[#A06D3B] text-white text-sm font-semibold shadow-md hover:shadow-amber-500/20 border border-amber-600/30 interactive-btn"
             >
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -69,7 +69,7 @@
 
     {{-- Quick Stat Cards --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white dark:bg-[#131B2A] p-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center gap-4">
+        <div class="static-card bg-white dark:bg-[#131B2A] p-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-800/40 flex items-center justify-center text-[#6F4E37] dark:text-neon-glowamber shrink-0">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
@@ -81,7 +81,7 @@
             </div>
         </div>
 
-        <div class="bg-white dark:bg-[#131B2A] p-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center gap-4">
+        <div class="static-card bg-white dark:bg-[#131B2A] p-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -93,7 +93,7 @@
             </div>
         </div>
 
-        <div class="bg-white dark:bg-[#131B2A] p-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center gap-4">
+        <div class="static-card bg-white dark:bg-[#131B2A] p-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-800/40 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -105,7 +105,7 @@
             </div>
         </div>
 
-        <div class="bg-white dark:bg-[#131B2A] p-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center gap-4">
+        <div class="static-card bg-white dark:bg-[#131B2A] p-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-800/40 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
@@ -119,7 +119,7 @@
     </div>
 
     {{-- Filter & Search Card --}}
-    <div class="bg-white dark:bg-[#131B2A] rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 p-5 mb-6">
+    <div class="static-card bg-white dark:bg-[#131B2A] rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 p-5 mb-6">
         <form method="GET" action="{{ route('admin.assets.index') }}" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
             
             {{-- Kolom 1: Pencarian Kata Kunci (md:col-span-5) --}}
@@ -186,7 +186,7 @@
             <div class="md:col-span-2 flex items-center gap-2">
                 <button
                     type="submit"
-                    class="flex-1 px-5 h-11 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] dark:bg-none dark:bg-gradient-to-r dark:from-cyan-600 dark:to-teal-500 dark:hover:from-cyan-500 dark:hover:to-teal-400 text-white font-medium shadow-sm transition-all duration-200 flex items-center justify-center gap-2"
+                    class="flex-1 px-5 h-11 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] dark:bg-none dark:bg-gradient-to-r dark:from-cyan-600 dark:to-teal-500 dark:hover:from-cyan-500 dark:hover:to-teal-400 text-white font-medium shadow-sm interactive-btn flex items-center justify-center gap-2"
                 >
                     <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
@@ -197,7 +197,7 @@
                 @if(request()->hasAny(['search', 'category', 'availability_status', 'condition']))
                     <a
                         href="{{ route('admin.assets.index') }}"
-                        class="h-11 px-3.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 flex items-center justify-center text-sm font-medium transition active:scale-95 shrink-0"
+                        class="h-11 px-3.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 flex items-center justify-center text-sm font-medium interactive-btn shrink-0"
                         title="Reset Filter"
                     >
                         <span>Reset</span>
@@ -209,7 +209,7 @@
     </div>
 
     {{-- Asset Table Card --}}
-    <div class="bg-white dark:bg-[#131B2A] rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 overflow-hidden">
+    <div class="static-card bg-white dark:bg-[#131B2A] rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 overflow-hidden">
         <div class="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-stone-700">
             <table class="w-full min-w-[720px] text-left text-xs text-stone-600 dark:text-stone-300">
                 <thead class="bg-stone-50/80 dark:bg-[#0E1420] border-b border-stone-200 dark:border-stone-800 text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
@@ -352,7 +352,7 @@
                                 <div class="inline-flex items-center gap-1.5">
                                     <a
                                         href="{{ route('admin.assets.show', $asset) }}"
-                                        class="p-1.5 rounded-lg border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition"
+                                        class="p-1.5 rounded-lg border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 interactive-btn"
                                         title="Lihat Detail & Riwayat Aset"
                                     >
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -363,7 +363,7 @@
 
                                     <a
                                         href="{{ route('admin.assets.edit', $asset) }}"
-                                        class="p-1.5 rounded-lg border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:text-amber-700 dark:hover:text-amber-400 hover:border-amber-300 dark:hover:border-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition"
+                                        class="p-1.5 rounded-lg border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:text-amber-700 dark:hover:text-amber-400 hover:border-amber-300 dark:hover:border-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 interactive-btn"
                                         title="Edit Informasi Aset"
                                     >
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -379,7 +379,7 @@
                                             deleteAssetName = '{{ addslashes($asset->name) }}';
                                             deleteAssetCode = '{{ addslashes($asset->asset_code) }}';
                                         "
-                                        class="p-1.5 rounded-lg border border-stone-200 dark:border-stone-700 text-rose-500 hover:text-rose-700 dark:hover:text-rose-400 hover:border-rose-300 dark:hover:border-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition"
+                                        class="p-1.5 rounded-lg border border-stone-200 dark:border-stone-700 text-rose-500 hover:text-rose-700 dark:hover:text-rose-400 hover:border-rose-300 dark:hover:border-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 interactive-btn"
                                         title="Hapus Aset"
                                     >
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -462,7 +462,7 @@
                 <button
                     type="button"
                     @click="deleteModalOpen = false"
-                    class="px-4 py-2 rounded-xl border border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300 text-xs font-semibold hover:bg-stone-50 dark:hover:bg-stone-800 transition"
+                    class="px-4 py-2 rounded-xl border border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300 text-xs font-semibold hover:bg-stone-50 dark:hover:bg-stone-800 interactive-btn"
                 >
                     Batal
                 </button>
@@ -472,7 +472,7 @@
                     @method('DELETE')
                     <button
                         type="submit"
-                        class="px-4 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 shadow-sm transition"
+                        class="px-4 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 shadow-sm interactive-btn"
                     >
                         Ya, Hapus Aset
                     </button>

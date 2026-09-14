@@ -41,7 +41,7 @@
                     $isReturnPending = $status === 'return_pending_verification';
                     $isReturned = $status === 'returned';
                 @endphp
-                <div class="bg-white/95 dark:bg-[#131B2A]/90 backdrop-blur-md rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] border border-stone-200/70 dark:border-stone-800/80 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition hover:shadow-md hover:border-[#6F4E37] dark:hover:border-cyan-500/50 dark:hover:shadow-neon-sm duration-300">
+                <div class="bg-white/95 dark:bg-[#131B2A]/90 backdrop-blur-md rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] border border-stone-200/70 dark:border-stone-800/80 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition hover:shadow-md hover:border-[#6F4E37] dark:hover:border-cyan-500/50 dark:hover:shadow-neon-sm duration-300 interactive-card">
 
                     <div class="flex items-start gap-4">
                         {{-- Thumbnail --}}
@@ -117,17 +117,15 @@
 
                         <span class="px-3 py-1 text-xs font-semibold rounded-full border {{ $statusLabel[1] }}">
                             {{ $statusLabel[0] }}
-                        </span>
-
-                        @if ($isApproved)
+                        </span>                        @if ($isApproved)
                             <button
                                 type="button"
                                 @click="openCheckoutModal({{ $borrowing->id }}, '{{ addslashes($borrowing->asset->name ?? 'Aset') }}', '{{ $borrowing->asset->asset_code ?? '' }}')"
-                                class="px-4 py-2 text-xs font-bold rounded-xl transition-all duration-200 bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+                                class="px-4 py-2 text-xs font-bold rounded-xl transition-all duration-200 bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer interactive-btn"
                             >
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="15" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 </svg>
                                 Ambil Barang / Serah Terima
                             </button>
@@ -137,7 +135,7 @@
                             <button
                                 type="button"
                                 @click="openReturnModal({{ $borrowing->id }}, '{{ addslashes($borrowing->asset->name ?? 'Aset') }}', '{{ $borrowing->asset->asset_code ?? '' }}')"
-                                class="px-4 py-2 text-xs font-bold rounded-xl transition-all duration-200 bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+                                class="px-4 py-2 text-xs font-bold rounded-xl transition-all duration-200 bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer interactive-btn"
                             >
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
@@ -166,7 +164,7 @@
             <h3 class="text-base font-bold text-stone-800 dark:text-stone-100">Belum Ada Riwayat Peminjaman</h3>
             <p class="text-stone-500 dark:text-stone-400 text-xs mt-1">Kamu belum pernah meminjam barang inventaris.</p>
             <div class="mt-5">
-                <a href="{{ route('assets.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber text-xs font-semibold transition-all duration-200 shadow-sm">
+                <a href="{{ route('assets.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber text-xs font-semibold transition-all duration-200 shadow-sm interactive-btn">
                     Lihat Katalog Barang
                 </a>
             </div>
@@ -177,16 +175,33 @@
     {{-- Modal Checkout / Serah Terima Barang (Saat Status Approved) --}}
     <div
         x-show="checkoutModalOpen"
-        class="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+        class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4"
         x-cloak
-        x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0 scale-95"
-        x-transition:enter-end="opacity-100 scale-100"
-        x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="opacity-100 scale-100"
-        x-transition:leave-end="opacity-0 scale-95"
     >
-        <div class="max-w-lg w-full mx-auto rounded-2xl bg-white/95 dark:bg-[#131B2A] backdrop-blur-md shadow-2xl border border-stone-200/70 dark:border-stone-800 overflow-hidden" @click.away="closeCheckoutModal()">
+        {{-- Backdrop Overlay --}}
+        <div
+            x-show="checkoutModalOpen"
+            class="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            @click="closeCheckoutModal()"
+        ></div>
+
+        {{-- Modal Dialog Card --}}
+        <div
+            x-show="checkoutModalOpen"
+            class="relative z-10 max-w-lg w-full mx-auto rounded-2xl bg-white/95 dark:bg-[#131B2A] backdrop-blur-md shadow-2xl border border-stone-200/70 dark:border-stone-800 overflow-hidden"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+            x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+        >
             
             {{-- Header --}}
             <div class="bg-gradient-to-r from-amber-50/70 to-orange-50/50 dark:from-stone-900/90 dark:to-[#131B2A] px-6 py-4 border-b border-stone-200/70 dark:border-stone-800 flex items-center justify-between">
@@ -194,7 +209,7 @@
                     <h3 class="text-lg font-bold text-stone-800 dark:text-stone-100">Serah Terima Barang TEFA</h3>
                     <p class="text-xs text-stone-500 dark:text-stone-400 mt-0.5" x-text="activeAssetName + ' (' + activeAssetCode + ')'"></p>
                 </div>
-                <button type="button" @click="closeCheckoutModal()" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 text-lg font-bold p-1 cursor-pointer">
+                <button type="button" @click="closeCheckoutModal()" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 text-lg font-bold p-1 cursor-pointer interactive-btn">
                     ✕
                 </button>
             </div>
@@ -255,7 +270,7 @@
                                 <button
                                     type="button"
                                     @click="openCheckoutCamera()"
-                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber text-xs font-semibold transition-all duration-200 shadow-md active:scale-95 cursor-pointer"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber text-xs font-semibold transition-all duration-200 shadow-md active:scale-95 cursor-pointer interactive-btn"
                                 >
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
@@ -271,7 +286,7 @@
                                 <button 
                                     type="button" 
                                     @click="takeCheckoutSnapshot()" 
-                                    class="w-14 h-14 rounded-full border-4 border-[#6F4E37] dark:border-amber-500 bg-white shadow-lg active:scale-95 transition-transform flex items-center justify-center hover:bg-stone-50 dark:ring-4 dark:ring-amber-500/20 cursor-pointer"
+                                    class="w-14 h-14 rounded-full border-4 border-[#6F4E37] dark:border-amber-500 bg-white shadow-lg active:scale-95 transition-transform flex items-center justify-center hover:bg-stone-50 dark:ring-4 dark:ring-amber-500/20 cursor-pointer interactive-btn"
                                     title="Ambil Foto Serah Terima">
                                     <div class="w-10 h-10 rounded-full bg-[#6F4E37] dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] flex items-center justify-center text-white">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -284,7 +299,7 @@
                                 <button
                                     type="button"
                                     @click="switchCheckoutCamera()"
-                                    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 text-xs font-medium transition shadow-xs active:scale-95 cursor-pointer"
+                                    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 text-xs font-medium transition shadow-xs active:scale-95 cursor-pointer interactive-btn"
                                 >
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -304,7 +319,7 @@
                                 <button
                                     type="button"
                                     @click="retakeCheckoutSnapshot()"
-                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold shadow-xs transition active:scale-95 cursor-pointer"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold shadow-xs transition active:scale-95 cursor-pointer interactive-btn"
                                 >
                                     <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -320,10 +335,10 @@
 
                 {{-- Footer --}}
                 <div class="flex items-center justify-end gap-3 pt-3 border-t border-stone-100 dark:border-stone-800">
-                    <button type="button" @click="closeCheckoutModal()" class="px-4 py-2.5 rounded-xl text-sm font-medium transition-colors text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800/80 dark:text-stone-300 dark:hover:text-white dark:hover:bg-stone-700 cursor-pointer">
+                    <button type="button" @click="closeCheckoutModal()" class="px-4 py-2.5 rounded-xl text-sm font-medium transition-colors text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800/80 dark:text-stone-300 dark:hover:text-white dark:hover:bg-stone-700 cursor-pointer interactive-btn">
                         Batal
                     </button>
-                    <button type="submit" class="px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 shadow-sm text-white bg-[#6F4E37] hover:bg-[#5a3f2c] active:scale-95 dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                    <button type="submit" class="px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 shadow-sm text-white bg-[#6F4E37] hover:bg-[#5a3f2c] active:scale-95 dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer interactive-btn">
                         Konfirmasi Serah Terima
                     </button>
                 </div>
@@ -336,16 +351,33 @@
     {{-- Modal Pengembalian Barang Real-Time Webcam (Saat Status Borrowed) --}}
     <div
         x-show="modalOpen"
-        class="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+        class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4"
         x-cloak
-        x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0 scale-95"
-        x-transition:enter-end="opacity-100 scale-100"
-        x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="opacity-100 scale-100"
-        x-transition:leave-end="opacity-0 scale-95"
     >
-        <div class="max-w-lg w-full mx-auto rounded-2xl bg-white/95 dark:bg-[#131B2A] backdrop-blur-md shadow-2xl border border-stone-200/70 dark:border-stone-800 overflow-hidden" @click.away="closeReturnModal()">
+        {{-- Backdrop Overlay --}}
+        <div
+            x-show="modalOpen"
+            class="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            @click="closeReturnModal()"
+        ></div>
+
+        {{-- Modal Dialog Card --}}
+        <div
+            x-show="modalOpen"
+            class="relative z-10 max-w-lg w-full mx-auto rounded-2xl bg-white/95 dark:bg-[#131B2A] backdrop-blur-md shadow-2xl border border-stone-200/70 dark:border-stone-800 overflow-hidden"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+            x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+        >
             
             {{-- Modal Header --}}
             <div class="bg-gradient-to-r from-amber-50/70 to-orange-50/50 dark:from-stone-900/90 dark:to-[#131B2A] px-6 py-4 border-b border-stone-200/70 dark:border-stone-800 flex items-center justify-between">
@@ -353,7 +385,7 @@
                     <h3 class="text-lg font-bold text-stone-800 dark:text-stone-100">Form Pengembalian Barang</h3>
                     <p class="text-xs text-stone-500 dark:text-stone-400 mt-0.5" x-text="activeAssetName + ' (' + activeAssetCode + ')'"></p>
                 </div>
-                <button type="button" @click="closeReturnModal()" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 text-lg font-bold p-1 cursor-pointer">
+                <button type="button" @click="closeReturnModal()" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 text-lg font-bold p-1 cursor-pointer interactive-btn">
                     ✕
                 </button>
             </div>
@@ -424,7 +456,7 @@
                                 <button
                                     type="button"
                                     @click="openModalCamera()"
-                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber text-xs font-semibold transition-all duration-200 shadow-md active:scale-95 cursor-pointer"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber text-xs font-semibold transition-all duration-200 shadow-md active:scale-95 cursor-pointer interactive-btn"
                                 >
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
@@ -440,7 +472,7 @@
                                 <button 
                                     type="button" 
                                     @click="takeSnapshot()" 
-                                    class="w-14 h-14 rounded-full border-4 border-[#6F4E37] dark:border-amber-500 bg-white shadow-lg active:scale-95 transition-transform flex items-center justify-center hover:bg-stone-50 dark:ring-4 dark:ring-amber-500/20 cursor-pointer"
+                                    class="w-14 h-14 rounded-full border-4 border-[#6F4E37] dark:border-amber-500 bg-white shadow-lg active:scale-95 transition-transform flex items-center justify-center hover:bg-stone-50 dark:ring-4 dark:ring-amber-500/20 cursor-pointer interactive-btn"
                                     title="Ambil Foto Bukti">
                                     <div class="w-10 h-10 rounded-full bg-[#6F4E37] dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] flex items-center justify-center text-white">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -453,7 +485,7 @@
                                 <button
                                     type="button"
                                     @click="switchCamera()"
-                                    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 text-xs font-medium transition shadow-xs active:scale-95 cursor-pointer"
+                                    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 text-xs font-medium transition shadow-xs active:scale-95 cursor-pointer interactive-btn"
                                     title="Ganti Kamera Depan/Belakang"
                                 >
                                     <svg class="w-4 h-4 text-stone-600 dark:text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -474,7 +506,7 @@
                                 <button
                                     type="button"
                                     @click="retakePhoto()"
-                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold shadow-xs transition active:scale-95 cursor-pointer"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold shadow-xs transition active:scale-95 cursor-pointer interactive-btn"
                                 >
                                     <svg class="w-3.5 h-3.5 text-amber-600 dark:text-neon-glowamber" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -504,10 +536,10 @@
 
                 {{-- Modal Buttons --}}
                 <div class="flex items-center justify-end gap-3 pt-3 border-t border-stone-100 dark:border-stone-800">
-                    <button type="button" @click="closeReturnModal()" class="px-4 py-2.5 rounded-xl text-sm font-medium transition-colors text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800/80 dark:text-stone-300 dark:hover:text-white dark:hover:bg-stone-700 cursor-pointer">
+                    <button type="button" @click="closeReturnModal()" class="px-4 py-2.5 rounded-xl text-sm font-medium transition-colors text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800/80 dark:text-stone-300 dark:hover:text-white dark:hover:bg-stone-700 cursor-pointer interactive-btn">
                         Batal
                     </button>
-                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-gradient-to-r dark:from-emerald-600 dark:to-teal-600 dark:hover:from-emerald-500 dark:hover:to-teal-500 dark:shadow-[0_0_15px_-2px_rgba(16,185,129,0.45)] text-sm font-medium transition-all duration-200 shadow-sm cursor-pointer">
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-gradient-to-r dark:from-emerald-600 dark:to-teal-600 dark:hover:from-emerald-500 dark:hover:to-teal-500 dark:shadow-[0_0_15px_-2px_rgba(16,185,129,0.45)] text-sm font-medium transition-all duration-200 shadow-sm cursor-pointer interactive-btn">
                         Ajukan Pengembalian
                     </button>
                 </div>

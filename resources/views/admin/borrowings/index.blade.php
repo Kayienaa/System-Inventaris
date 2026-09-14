@@ -52,7 +52,7 @@
         <div class="flex flex-wrap items-center gap-2.5">
             <a
                 href="{{ route('admin.borrowings.export-excel') }}"
-                class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-sm transition active:scale-95"
+                class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-sm transition active:scale-95 interactive-btn"
             >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -63,7 +63,7 @@
             <a
                 href="{{ route('admin.borrowings.export-pdf') }}"
                 target="_blank"
-                class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] text-white text-xs font-semibold shadow-sm transition active:scale-95"
+                class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] text-white text-xs font-semibold shadow-sm transition active:scale-95 interactive-btn"
             >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
@@ -85,44 +85,44 @@
     {{-- Stats Overview Cards --}}
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 mb-6">
         {{-- Total --}}
-        <div class="bg-white dark:bg-[#131B2A] border border-stone-200/70 dark:border-stone-800 rounded-2xl shadow-sm p-4 transition hover:shadow-md">
+        <div class="bg-white dark:bg-[#131B2A] border border-stone-200/70 dark:border-stone-800 rounded-2xl p-4 static-card">
             <span class="text-[11px] font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider block truncate">Total Transaksi</span>
             <p class="text-2xl font-bold text-stone-900 dark:text-stone-100 mt-1.5">{{ number_format($stats['total'] ?? 0) }}</p>
         </div>
 
         {{-- Pending --}}
-        <div class="bg-white dark:bg-[#131B2A] border border-yellow-200/70 dark:border-yellow-900/50 rounded-2xl shadow-sm p-4 transition hover:shadow-md">
+        <div class="bg-white dark:bg-[#131B2A] border border-yellow-200/70 dark:border-yellow-900/50 rounded-2xl p-4 static-card">
             <span class="text-[11px] font-semibold text-yellow-700 dark:text-yellow-400 uppercase tracking-wider block truncate">Menunggu Persetujuan</span>
             <p class="text-2xl font-bold text-yellow-700 dark:text-yellow-400 mt-1.5">{{ number_format($stats['pending'] ?? 0) }}</p>
         </div>
 
         {{-- Dipinjam --}}
-        <div class="bg-white dark:bg-[#131B2A] border border-amber-200/70 dark:border-amber-900/50 rounded-2xl shadow-sm p-4 transition hover:shadow-md">
+        <div class="bg-white dark:bg-[#131B2A] border border-amber-200/70 dark:border-amber-900/50 rounded-2xl p-4 static-card">
             <span class="text-[11px] font-semibold text-amber-800 dark:text-neon-glowamber uppercase tracking-wider block truncate">Sedang Dipinjam</span>
             <p class="text-2xl font-bold text-amber-800 dark:text-neon-glowamber mt-1.5">{{ number_format($stats['borrowed'] ?? 0) }}</p>
         </div>
 
         {{-- Return Pending --}}
-        <div class="bg-white dark:bg-[#131B2A] border border-purple-200/70 dark:border-purple-900/50 rounded-2xl shadow-sm p-4 transition hover:shadow-md">
+        <div class="bg-white dark:bg-[#131B2A] border border-purple-200/70 dark:border-purple-900/50 rounded-2xl p-4 static-card">
             <span class="text-[11px] font-semibold text-purple-700 dark:text-purple-400 uppercase tracking-wider block truncate">Menunggu Verifikasi</span>
             <p class="text-2xl font-bold text-purple-700 dark:text-purple-400 mt-1.5">{{ number_format($stats['return_pending'] ?? 0) }}</p>
         </div>
 
         {{-- Dikembalikan --}}
-        <div class="bg-white dark:bg-[#131B2A] border border-emerald-200/70 dark:border-emerald-900/50 rounded-2xl shadow-sm p-4 transition hover:shadow-md">
+        <div class="bg-white dark:bg-[#131B2A] border border-emerald-200/70 dark:border-emerald-900/50 rounded-2xl p-4 static-card">
             <span class="text-[11px] font-semibold text-emerald-800 dark:text-neon-emerald uppercase tracking-wider block truncate">Selesai Kembali</span>
             <p class="text-2xl font-bold text-emerald-800 dark:text-neon-emerald mt-1.5">{{ number_format($stats['returned'] ?? 0) }}</p>
         </div>
 
         {{-- Overdue --}}
-        <div class="bg-white dark:bg-[#131B2A] border border-rose-200/70 dark:border-rose-900/50 rounded-2xl shadow-sm p-4 transition hover:shadow-md">
+        <div class="bg-white dark:bg-[#131B2A] border border-rose-200/70 dark:border-rose-900/50 rounded-2xl p-4 static-card">
             <span class="text-[11px] font-semibold text-rose-800 dark:text-rose-400 uppercase tracking-wider block truncate">Overdue</span>
             <p class="text-2xl font-bold text-rose-800 dark:text-rose-400 mt-1.5">{{ number_format($stats['overdue'] ?? 0) }}</p>
         </div>
     </div>
 
     {{-- Filter & Pencarian --}}
-    <div class="bg-white dark:bg-[#131B2A] border border-stone-200 dark:border-stone-800 rounded-2xl shadow-sm p-5 mb-6">
+    <div class="bg-white dark:bg-[#131B2A] border border-stone-200 dark:border-stone-800 rounded-2xl p-5 mb-6 static-card">
         <form action="{{ route('admin.borrowings.index') }}" method="GET" class="grid grid-cols-1 sm:grid-cols-12 gap-3">
             {{-- Search Bar --}}
             <div class="sm:col-span-6">
@@ -144,7 +144,7 @@
                 </div>
             </div>
 
-            {{-- Status Filter --}}
+            {{-- Filter Status --}}
             <div class="sm:col-span-3">
                 <label for="status" class="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
                     Status Peminjaman
@@ -152,15 +152,16 @@
                 <select
                     id="status"
                     name="status"
-                    class="w-full py-2 px-3 text-xs rounded-xl bg-stone-50 dark:bg-[#0B0F17] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:border-amber-600 dark:focus:border-cyan-500 focus:ring-1 focus:ring-amber-600 dark:focus:ring-cyan-500 shadow-sm"
+                    class="w-full py-2 px-3 text-xs rounded-xl bg-stone-50 dark:bg-[#0B0F17] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:border-amber-600 dark:focus:border-cyan-500 focus:ring-1 focus:ring-amber-600 dark:focus:ring-cyan-500 shadow-sm cursor-pointer"
                 >
-                    <option value="">Semua Status</option>
+                    <option value="">Semua Status Transaksi</option>
                     <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Menunggu Persetujuan</option>
-                    <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Disetujui (Siap Ambil)</option>
-                    <option value="borrowed" {{ request('status') === 'borrowed' ? 'selected' : '' }}>Dipinjam (Aktif)</option>
-                    <option value="return_pending_verification" {{ request('status') === 'return_pending_verification' ? 'selected' : '' }}>Menunggu Verifikasi Pengembalian</option>
-                    <option value="returned" {{ request('status') === 'returned' ? 'selected' : '' }}>Selesai (Kembali)</option>
-                    <option value="overdue" {{ request('status') === 'overdue' ? 'selected' : '' }}>Overdue (Terlambat)</option>
+                    <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Disetujui</option>
+                    <option value="borrowed" {{ request('status') === 'borrowed' ? 'selected' : '' }}>Sedang Dipinjam</option>
+                    <option value="return_pending_verification" {{ request('status') === 'return_pending_verification' ? 'selected' : '' }}>Menunggu Verifikasi</option>
+                    <option value="returned" {{ request('status') === 'returned' ? 'selected' : '' }}>Dikembalikan</option>
+                    <option value="overdue" {{ request('status') === 'overdue' ? 'selected' : '' }}>Terlambat (Overdue)</option>
+                    <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Ditolak</option>
                 </select>
             </div>
 
@@ -168,7 +169,7 @@
             <div class="sm:col-span-3 flex items-end gap-2">
                 <button
                     type="submit"
-                    class="flex-1 py-2 px-4 rounded-xl bg-[#6F4E37] text-white text-xs font-bold hover:bg-[#5a3f2c] dark:bg-cyan-600 dark:hover:bg-cyan-500 dark:shadow-neon-cyan transition shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                    class="flex-1 py-2 px-4 rounded-xl bg-[#6F4E37] text-white text-xs font-bold hover:bg-[#5a3f2c] dark:bg-cyan-600 dark:hover:bg-cyan-500 dark:shadow-neon-cyan transition shadow-sm flex items-center justify-center gap-1.5 cursor-pointer interactive-btn"
                 >
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
@@ -179,7 +180,7 @@
                 @if(request()->hasAny(['search', 'status']))
                     <a
                         href="{{ route('admin.borrowings.index') }}"
-                        class="py-2 px-3 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-600 dark:text-stone-300 text-xs font-medium hover:bg-stone-100 dark:hover:bg-stone-700 transition flex items-center justify-center"
+                        class="py-2 px-3 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-600 dark:text-stone-300 text-xs font-medium hover:bg-stone-100 dark:hover:bg-stone-700 transition flex items-center justify-center interactive-btn"
                         title="Reset Filter"
                     >
                         Reset
@@ -190,7 +191,7 @@
     </div>
 
     {{-- Tabel Monitoring Transaksi --}}
-    <div class="bg-white dark:bg-[#131B2A] rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 overflow-hidden">
+    <div class="bg-white dark:bg-[#131B2A] rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden static-card">
         <div class="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-stone-700">
             <table class="w-full min-w-[768px] text-left text-xs text-stone-600 dark:text-stone-300">
                 <thead class="bg-stone-50/80 dark:bg-[#0E1420] border-b border-stone-200 dark:border-stone-800 text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
@@ -467,18 +468,32 @@
     {{-- Modal Detail Transaksi & Kelola Aksi --}}
     <div
         x-show="selectedBorrowing !== null"
-        class="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+        class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4"
         x-cloak
-        x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0 scale-95"
-        x-transition:enter-end="opacity-100 scale-100"
-        x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="opacity-100 scale-100"
-        x-transition:leave-end="opacity-0 scale-95"
     >
+        {{-- Backdrop Overlay --}}
         <div
-            class="max-w-3xl w-full mx-auto rounded-2xl bg-white dark:bg-[#131B2A] shadow-2xl border border-stone-200 dark:border-stone-800 overflow-hidden"
-            @click.away="closeDetail()"
+            x-show="selectedBorrowing !== null"
+            class="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            @click="closeDetail()"
+        ></div>
+
+        {{-- Modal Dialog Card --}}
+        <div
+            x-show="selectedBorrowing !== null"
+            class="relative z-10 max-w-3xl w-full mx-auto rounded-2xl bg-white dark:bg-[#131B2A] shadow-2xl border border-stone-200 dark:border-stone-800 overflow-hidden"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+            x-transition:leave-end="opacity-0 scale-95 translate-y-2"
         >
             {{-- Modal Header --}}
             <div class="bg-gradient-to-r from-stone-50 to-stone-100 dark:from-stone-900 dark:to-[#131B2A] px-6 py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
@@ -524,7 +539,7 @@
                 <button
                     type="button"
                     @click="closeDetail()"
-                    class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition cursor-pointer"
+                    class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition cursor-pointer interactive-btn"
                 >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -554,7 +569,7 @@
                                 @csrf
                                 <button
                                     type="submit"
-                                    class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                                    class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition active:scale-95 flex items-center gap-1.5 cursor-pointer interactive-btn"
                                 >
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -567,7 +582,7 @@
                             <button
                                 type="button"
                                 @click="rejectModalOpen = !rejectModalOpen"
-                                class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm transition active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                                class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm transition active:scale-95 flex items-center gap-1.5 cursor-pointer interactive-btn"
                             >
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -591,8 +606,8 @@
                                     >
                                 </div>
                                 <div class="flex justify-end gap-2">
-                                    <button type="button" @click="rejectModalOpen = false" class="px-3 py-1.5 rounded-lg border border-stone-300 text-xs">Batal</button>
-                                    <button type="submit" class="px-4 py-1.5 rounded-lg bg-rose-600 text-white font-bold text-xs">Konfirmasi Tolak</button>
+                                    <button type="button" @click="rejectModalOpen = false" class="px-3 py-1.5 rounded-lg border border-stone-300 text-xs interactive-btn">Batal</button>
+                                    <button type="submit" class="px-4 py-1.5 rounded-lg bg-rose-600 text-white font-bold text-xs interactive-btn">Konfirmasi Tolak</button>
                                 </div>
                             </form>
                         </div>
@@ -636,7 +651,7 @@
                             <div class="flex justify-end pt-2">
                                 <button
                                     type="submit"
-                                    class="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                                    class="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition active:scale-95 flex items-center gap-1.5 cursor-pointer interactive-btn"
                                 >
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -832,7 +847,7 @@
                             :href="selectedBorrowing?.wa_url"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm active:scale-95"
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm active:scale-95 interactive-btn"
                         >
                             <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
                                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
@@ -843,7 +858,7 @@
                     <button
                         type="button"
                         @click="closeDetail()"
-                        class="px-5 py-2 rounded-xl bg-[#6F4E37] text-white text-xs font-bold hover:bg-[#5a3f2c] transition shadow-sm cursor-pointer"
+                        class="px-5 py-2 rounded-xl bg-[#6F4E37] text-white text-xs font-bold hover:bg-[#5a3f2c] transition shadow-sm cursor-pointer interactive-btn"
                     >
                         Tutup
                     </button>
@@ -855,23 +870,40 @@
     {{-- Lightbox Zoom Foto Bukti --}}
     <div
         x-show="previewImage !== null"
-        class="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+        class="fixed inset-0 z-[70] flex items-center justify-center p-4"
         x-cloak
-        x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0"
         @keydown.escape.window.stop="previewImage = null"
-        @click="previewImage = null"
     >
-        <div class="relative z-[80] max-w-4xl max-h-[90vh]" @click.stop>
+        {{-- Backdrop Overlay --}}
+        <div
+            x-show="previewImage !== null"
+            class="fixed inset-0 bg-black/80 backdrop-blur-sm"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            @click="previewImage = null"
+        ></div>
+
+        {{-- Lightbox Content --}}
+        <div
+            x-show="previewImage !== null"
+            class="relative z-[80] max-w-4xl max-h-[90vh]"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+            x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+            @click.stop
+        >
             <img :src="previewImage" class="max-w-full max-h-[85vh] rounded-xl object-contain shadow-2xl border border-white/20" alt="Preview Foto Bukti">
             <button
                 type="button"
                 @click="previewImage = null"
-                class="absolute -top-10 right-0 text-white hover:text-white font-bold text-sm bg-black/50 hover:bg-black/75 px-3 py-1 rounded-lg backdrop-blur-md transition shadow-md cursor-pointer border border-white/20"
+                class="absolute -top-10 right-0 text-white hover:text-white font-bold text-sm bg-black/50 hover:bg-black/75 px-3 py-1 rounded-lg backdrop-blur-md transition shadow-md cursor-pointer border border-white/20 interactive-btn"
             >
                 ✕ Tutup Gambar
             </button>
