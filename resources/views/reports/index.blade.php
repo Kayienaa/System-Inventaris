@@ -7,7 +7,7 @@
             {{-- Page heading --}}
             <div class="page-heading" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
                 <div>
-                    <h1 class="brand-font">
+                    <h1 class="brand-font font-heading font-bold">
                         Laporan
                     </h1>
                     <p>
@@ -46,17 +46,17 @@
 
                 <div class="stat-card">
                     <p class="stat-label">Total Aset</p>
-                    <p class="stat-value">{{ $total_aset }}</p>
+                    <p class="stat-value font-heading font-bold">{{ $total_aset }}</p>
                 </div>
 
                 <div class="stat-card">
                     <p class="stat-label">Kategori Terdaftar</p>
-                    <p class="stat-value">{{ $per_kategori->count() }}</p>
+                    <p class="stat-value font-heading font-bold">{{ $per_kategori->count() }}</p>
                 </div>
 
                 <div class="stat-card">
                     <p class="stat-label">Peminjaman Terlambat</p>
-                    <p class="stat-value">{{ $overdue->count() }}</p>
+                    <p class="stat-value font-heading font-bold">{{ $overdue->count() }}</p>
                 </div>
 
             </div>

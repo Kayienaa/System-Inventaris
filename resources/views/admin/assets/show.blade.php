@@ -21,7 +21,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <div class="flex items-center gap-2.5 flex-wrap">
-                    <h1 class="text-2xl sm:text-3xl font-extrabold text-stone-900 dark:text-stone-100 tracking-tight">
+                    <h1 class="text-2xl sm:text-3xl font-extrabold font-heading text-stone-900 dark:text-stone-100 tracking-tight">
                         {{ $asset->name }}
                     </h1>
                     <span class="px-2.5 py-1 rounded-lg font-mono text-xs font-bold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-300 dark:border-stone-700">

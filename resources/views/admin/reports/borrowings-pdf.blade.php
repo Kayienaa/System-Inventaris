@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Rekapitulasi Peminjaman Aset | SITEFA</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
     <style>
         * {
             box-sizing: border-box;
@@ -16,7 +12,7 @@
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Times New Roman', Times, serif;
             color: #1a1a1a;
             background: #f8fafc;
             padding: 24px;
@@ -257,7 +253,7 @@
         }
     </style>
 </head>
-<body>
+<body class="font-serif">
 
     {{-- Action Bar (Hidden on Print) --}}
     <div class="no-print-bar">
@@ -359,8 +355,8 @@
                         <td>
                             <strong>{{ $b->borrower?->name ?? 'Pengguna' }}</strong>
                         </td>
-                        <td style="font-family: monospace; font-size: 8.5pt;">{{ $identity }}</td>
-                        <td style="font-family: monospace; font-size: 8.5pt;">
+                        <td style="font-size: 8.5pt;">{{ $identity }}</td>
+                        <td style="font-size: 8.5pt;">
                             <div>{{ $b->asset?->asset_code ?? '-' }}</div>
                             <div style="color: #64748b; font-size: 8pt;">{{ $b->asset?->serial_number ?? '' }}</div>
                         </td>

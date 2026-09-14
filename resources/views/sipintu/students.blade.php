@@ -115,7 +115,7 @@
         border: 1.5px solid var(--cream-dark);
         border-radius: 0.75rem;
         font-size: 0.875rem;
-        font-family: 'Inter', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         background: var(--cream);
         color: var(--text);
         transition: all 0.2s;
@@ -322,7 +322,7 @@
     {{-- Header --}}
     <div class="sip-header">
         <div class="sip-header-info">
-            <h1 class="brand-font">Data Pengguna &amp; Siswa SIJUNA</h1>
+            <h1 class="brand-font font-heading font-bold">Data Pengguna &amp; Siswa SIJUNA</h1>
             <p>Daftar seluruh siswa SMKN 1 Bangsri terintegrasi langsung via SiPintu Identity &amp; Gateway.</p>
         </div>
 

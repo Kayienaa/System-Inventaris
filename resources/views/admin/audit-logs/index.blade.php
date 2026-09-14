@@ -10,7 +10,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
             <div class="flex items-center gap-2">
-                <h1 class="text-3xl font-bold text-stone-900 dark:text-stone-100">
+                <h1 class="text-3xl font-bold font-heading text-stone-900 dark:text-stone-100">
                     Audit Log Sistem
                 </h1>
                 <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60">
@@ -238,7 +238,7 @@
         >
             <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-stone-900 dark:to-stone-800 px-6 py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
                 <div>
-                    <h3 class="text-base font-bold text-stone-800 dark:text-stone-100">
+                    <h3 class="text-base font-bold font-heading text-stone-800 dark:text-stone-100">
                         Detail Perubahan Audit #<span x-text="selectedLog?.id"></span>
                     </h3>
                     <p class="text-xs text-stone-500 dark:text-stone-400 mt-0.5" x-text="selectedLog?.action + ' pada ' + selectedLog?.entity"></p>

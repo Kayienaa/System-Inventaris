@@ -20,7 +20,7 @@
 
         <div class="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-3">
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">
+                <h1 class="text-2xl sm:text-3xl font-bold font-heading text-gray-800">
                     Transaksi {{ $detail['transaction_code'] }}
                 </h1>
                 @if($detail['is_overdue'])

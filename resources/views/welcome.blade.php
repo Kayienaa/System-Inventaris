@@ -10,21 +10,24 @@
     <link rel="icon" type="image/png" href="{{ asset('images/favicon-circle.png') }}">
     <link rel="shortcut icon" type="image/png" href="{{ asset('images/favicon-circle.png') }}">
 
+    {{-- Google Fonts: Plus Jakarta Sans & Poppins --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
-
         * {
             box-sizing: border-box;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         .title-font {
-            font-family: 'Playfair Display', serif;
+            font-family: 'Poppins', sans-serif;
         }
 
         .card {
@@ -95,7 +98,7 @@
     </style>
 </head>
 
-<body style="
+<body class="font-sans antialiased" style="
     min-height: 100vh;
     margin: 0;
     display: flex;
@@ -133,19 +136,14 @@
         pointer-events: none;
     "></div>
 
-    <div class="card" style="
+    <div class="card w-full max-w-lg sm:max-w-xl md:max-w-2xl px-6 sm:px-12 py-10" style="
         position: relative;
         z-index: 1;
-
-        width: 100%;
-        max-width: 650px;
 
         background: #FFFDF9;
 
         border: 1px solid #E8DCCF;
         border-radius: 1.25rem;
-
-        padding: 3rem 3.5rem;
 
         text-align: center;
     ">
@@ -167,9 +165,8 @@
                         stroke-linejoin="round"
                         d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5
                         M10 11.25h4
-                        M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-.375
-                        c0-.621-.504-1.125-1.125-1.125H3.375
-                        c-.621 0-1.125.504-1.125 1.125v.375
+                        M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125V6c0-.621-.504-1.125-1.125-1.125H3.375
+                        C2.754 4.875 2.25 5.379 2.25 6v.375
                         c0 .621.504 1.125 1.125 1.125z"
                     />
                 </svg>
@@ -178,7 +175,7 @@
 
         {{-- Brand --}}
         <div style="margin-bottom: 1.5rem;">
-            <p style="
+            <p class="font-heading font-bold" style="
                 margin: 0 0 0.45rem;
 
                 font-size: 0.78rem;
@@ -190,19 +187,7 @@
                 SITEFA
             </p>
 
-            <h1
-                class="title-font"
-                style="
-                    margin: 0;
-
-                    font-size: clamp(2rem, 5vw, 2.7rem);
-                    line-height: 1.15;
-
-                    color: #4F3524;
-                "
-            >
-                Sistem Inventaris Barang
-            </h1>
+            <h1 class="font-heading font-bold text-2xl sm:text-3xl text-stone-900 dark:text-stone-100 whitespace-nowrap tracking-tight">Sistem Inventaris Barang</h1>
 
             <div style="
                 display: flex;

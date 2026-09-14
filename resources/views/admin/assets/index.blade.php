@@ -9,7 +9,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
             <div class="flex items-center gap-2.5">
-                <h1 class="text-3xl font-bold text-stone-900 dark:text-stone-100 tracking-tight">
+                <h1 class="text-3xl font-bold font-heading text-stone-900 dark:text-stone-100 tracking-tight">
                     Manajemen Master Aset
                 </h1>
                 <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60 shadow-sm">
@@ -444,7 +444,7 @@
                 </svg>
             </div>
 
-            <h3 class="text-lg font-bold text-stone-900 dark:text-stone-100">Konfirmasi Hapus Aset</h3>
+            <h3 class="text-lg font-bold font-heading text-stone-900 dark:text-stone-100">Konfirmasi Hapus Aset</h3>
             <p class="text-xs text-stone-500 dark:text-stone-400 mt-1">
                 Apakah Anda yakin ingin menghapus aset berikut dari master inventaris?
             </p>

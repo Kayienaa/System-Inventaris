@@ -11,10 +11,10 @@
     <link rel="icon" type="image/png" href="{{ asset('images/favicon-circle.png') }}">
     <link rel="shortcut icon" type="image/png" href="{{ asset('images/favicon-circle.png') }}">
 
-    <!-- Google Fonts: Plus Jakarta Sans -->
+    <!-- Google Fonts: Plus Jakarta Sans & Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,7 +27,8 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                        sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                        heading: ['"Poppins"', 'sans-serif'],
                     },
                     colors: {
     brand: {
@@ -177,7 +178,7 @@
                             </svg>
                         </div>
                     @endif
-                    <h1 class="text-base font-extrabold text-slate-900 tracking-tight leading-snug">
+                    <h1 class="text-base font-extrabold font-heading text-slate-900 tracking-tight leading-snug">
                         Sistem Inventaris Barang
                     </h1>
                     <p class="text-sm font-semibold mt-0.5" style="color:#A97832;">SMK Negeri 1 Bangsri</p>
@@ -185,7 +186,7 @@
 
                 <!-- ── Heading ── -->
                 <div class="mb-6">
-                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Selamat Datang </h2>
+                    <h2 class="text-2xl font-extrabold font-heading text-slate-900 tracking-tight">Selamat Datang </h2>
                     <p class="text-sm text-slate-500 mt-1.5 leading-relaxed">
                         Silakan masuk ke akun Anda untuk mengakses Sistem Inventaris Barang SMK Negeri 1 Bangsri.
                     </p>

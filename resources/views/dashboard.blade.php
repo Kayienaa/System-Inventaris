@@ -6,7 +6,7 @@
 
     {{-- Page heading --}}
     <div class="page-heading">
-        <h1 class="brand-font">
+        <h1 class="brand-font font-heading font-bold">
             Dashboard
         </h1>
         <p>
@@ -19,7 +19,7 @@
         <p class="welcome-small">
             {{ auth()->user()->hasRole('admin') ? 'Administrator Panel' : 'Panel Peminjam' }}
         </p>
-        <h2 class="brand-font welcome-title">
+        <h2 class="brand-font welcome-title font-heading font-bold">
             Selamat datang kembali, {{ auth()->user()->name }}.
         </h2>
         <p class="welcome-description">
@@ -30,7 +30,7 @@
 
     {{-- Statistics Overview --}}
     <div class="section-heading">
-        <h2>
+        <h2 class="font-heading font-semibold">
             Ringkasan Inventaris
         </h2>
         <span>
@@ -56,7 +56,7 @@
                     </svg>
                 </div>
             </div>
-            <p class="stat-value">
+            <p class="stat-value font-heading font-bold">
                 {{ $total_aset }}
             </p>
         </div>
@@ -75,7 +75,7 @@
                     </svg>
                 </div>
             </div>
-            <p class="stat-value" style="color: #059669;">
+            <p class="stat-value font-heading font-bold" style="color: #059669;">
                 {{ $barang_tersedia ?? ($status_aset['tersedia'] ?? 0) }}
             </p>
         </div>
@@ -95,7 +95,7 @@
                     </svg>
                 </div>
             </div>
-            <p class="stat-value" style="color: var(--gold);">
+            <p class="stat-value font-heading font-bold" style="color: var(--gold);">
                 {{ $barang_dipinjam ?? ($status_aset['dipinjam'] ?? 0) }}
             </p>
         </div>
@@ -115,7 +115,7 @@
                     </svg>
                 </div>
             </div>
-            <p class="stat-value" style="color: #dc2626;">
+            <p class="stat-value font-heading font-bold" style="color: #dc2626;">
                 {{ $total_overdue ?? count($overdue) }}
             </p>
         </div>
@@ -488,7 +488,7 @@
                     </svg>
                 </div>
             </div>
-            <p class="stat-value">
+            <p class="stat-value font-heading font-bold">
                 {{ number_format($sipintu_summary['total_students'] ?? 2306) }}
             </p>
             <span style="font-size: 0.78rem; color: var(--muted); font-weight: 500; display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--cream-dark);">
@@ -511,7 +511,7 @@
                     </svg>
                 </div>
             </div>
-            <p class="stat-value">
+            <p class="stat-value font-heading font-bold">
                 {{ number_format($sipintu_summary['total_teachers'] ?? 71) }}
             </p>
             <span style="font-size: 0.78rem; color: var(--muted); font-weight: 500; display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--cream-dark);">
@@ -534,7 +534,7 @@
                     </svg>
                 </div>
             </div>
-            <p class="stat-value" style="font-size: 1.5rem; color: #059669;">
+            <p class="stat-value font-heading font-bold" style="font-size: 1.5rem; color: #059669;">
                 {{ ($sipintu_summary['is_connected'] ?? false) ? 'Terhubung' : 'Offline' }}
             </p>
             <span style="font-size: 0.78rem; color: var(--muted); font-weight: 500; display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--cream-dark);">

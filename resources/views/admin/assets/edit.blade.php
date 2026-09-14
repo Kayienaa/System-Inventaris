@@ -25,7 +25,7 @@
         </div>
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold text-stone-900 dark:text-stone-100 tracking-tight">
+                <h1 class="text-3xl font-bold font-heading text-stone-900 dark:text-stone-100 tracking-tight">
                     Edit Informasi Aset
                 </h1>
                 <p class="text-stone-500 dark:text-stone-400 text-sm mt-1">

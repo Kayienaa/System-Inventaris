@@ -118,7 +118,7 @@
                 Kembali ke Katalog
             </a>
 
-            <h1 class="mt-4 text-3xl font-bold text-stone-800 dark:text-stone-100">
+            <h1 class="mt-4 text-3xl font-bold font-heading text-stone-800 dark:text-stone-100">
                 Pengajuan Peminjaman Aset
             </h1>
 

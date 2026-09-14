@@ -38,7 +38,7 @@
             </div>
 
             {{-- Brand name --}}
-            <span class="brand-font text-2xl tracking-wide text-[#F8F6F2] dark:text-stone-100">SITEFA</span>
+            <span class="brand-font font-heading font-bold text-2xl tracking-wide text-[#F8F6F2] dark:text-stone-100">SITEFA</span>
             <span class="text-xs font-medium mt-0.5 text-center leading-tight uppercase tracking-wider text-white/60 dark:text-stone-400">
                 SISTEM INVENTARIS
             </span>
@@ -297,7 +297,7 @@
                      onerror="this.onerror=null; this.src='{{ asset('images/logo-tefa.png') }}';">
             </div>
 
-            <span class="brand-font text-lg tracking-wide text-[#F8F6F2]">SITEFA</span>
+            <span class="brand-font font-heading font-bold text-lg tracking-wide text-[#F8F6F2]">SITEFA</span>
         </div>
 
         <div class="flex items-center gap-2">

@@ -13,7 +13,9 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['"Plus Jakarta Sans"', ...defaultTheme.fontFamily.sans],
+                heading: ['"Poppins"', ...defaultTheme.fontFamily.sans],
+                serif: ['"Times New Roman"', 'Times', ...defaultTheme.fontFamily.serif],
             },
             colors: {
                 vintage: {

@@ -26,7 +26,7 @@
             @csrf
             @method('delete')
 
-            <h2 class="text-lg font-bold text-stone-900 dark:text-white">
+            <h2 class="text-lg font-bold font-heading text-stone-900 dark:text-white">
                 {{ __('Apakah Anda yakin ingin menghapus akun ini?') }}
             </h2>
 

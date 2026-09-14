@@ -11,10 +11,10 @@
     <link rel="icon" type="image/png" href="{{ asset('images/favicon-circle.png') }}">
     <link rel="shortcut icon" type="image/png" href="{{ asset('images/favicon-circle.png') }}">
 
-    <!-- Google Fonts: Plus Jakarta Sans -->
+    <!-- Google Fonts: Plus Jakarta Sans & Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,7 +27,8 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                        sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                        heading: ['"Poppins"', 'sans-serif'],
                     },
                     colors: {
                         brand: {
@@ -126,7 +127,7 @@
                 <div class="h-6 w-px bg-brand-200"></div>
                 <img src="{{ asset('images/logo-smk.png') }}" alt="Logo SMKN 1 Bangsri" class="h-10 w-auto object-contain" onerror="this.style.display='none'">
             </div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-brand-900 tracking-tight">
+            <h1 class="text-2xl sm:text-3xl font-extrabold font-heading text-brand-900 tracking-tight">
                 SITEFA
             </h1>
             <p class="text-xs sm:text-sm font-semibold text-brand-700 tracking-wider uppercase mt-0.5">

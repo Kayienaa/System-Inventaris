@@ -206,7 +206,7 @@
     {{-- Page Heading --}}
     <div class="sip-header">
         <div class="sip-header-info">
-            <h1 class="brand-font">SiPintu Identity &amp; API Gateway</h1>
+            <h1 class="brand-font font-heading font-bold">SiPintu Identity &amp; API Gateway</h1>
             <p>Pusat integrasi data terpadu SIJUNA (Siswa &amp; Guru) untuk TEVault Inventaris.</p>
         </div>
 

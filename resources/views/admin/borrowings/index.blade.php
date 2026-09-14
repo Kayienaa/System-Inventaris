@@ -39,7 +39,7 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-2xl sm:text-3xl font-bold text-stone-800 dark:text-stone-100 tracking-tight">
+                    <h1 class="text-2xl sm:text-3xl font-bold font-heading text-stone-800 dark:text-stone-100 tracking-tight">
                         Pusat Monitoring Peminjaman
                     </h1>
                     <p class="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-0.5">
@@ -499,7 +499,7 @@
             <div class="bg-gradient-to-r from-stone-50 to-stone-100 dark:from-stone-900 dark:to-[#131B2A] px-6 py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
                 <div>
                     <div class="flex items-center gap-2">
-                        <h3 class="text-base font-bold text-stone-800 dark:text-stone-100" x-text="'Transaksi ' + selectedBorrowing?.transaction_code"></h3>
+                        <h3 class="text-base font-bold font-heading text-stone-800 dark:text-stone-100" x-text="'Transaksi ' + selectedBorrowing?.transaction_code"></h3>
                         <template x-if="selectedBorrowing?.raw_status === 'pending'">
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-100 text-yellow-800 border border-yellow-300">
                                 ● Menunggu Persetujuan Admin

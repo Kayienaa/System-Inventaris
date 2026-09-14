@@ -7,7 +7,7 @@
 <div class="max-w-5xl mx-auto px-6 py-8">
 
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-stone-800 dark:text-stone-100">Kategori Barang</h1>
+            <h1 class="text-3xl font-bold font-heading text-stone-800 dark:text-stone-100">Kategori Barang</h1>
             <p class="text-stone-500 dark:text-stone-400 mt-1">Daftar kategori inventaris TEFA</p>
         </div>
 

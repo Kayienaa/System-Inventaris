@@ -11,7 +11,7 @@
             {{-- Page Heading --}}
             <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-stone-800 dark:text-stone-100 tracking-tight">
+                    <h1 class="text-3xl font-bold font-heading text-stone-800 dark:text-stone-100 tracking-tight">
                         Profil Pengguna
                     </h1>
                     <p class="text-stone-500 dark:text-stone-400 mt-1 text-sm">

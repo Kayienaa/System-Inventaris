@@ -21,14 +21,10 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    {{-- Google Fonts --}}
+    {{-- Google Fonts: Plus Jakarta Sans & Poppins --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap"
-        rel="stylesheet"
-    >
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -236,14 +232,14 @@
 
         body {
             margin: 0;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background: var(--cream);
             color: var(--text);
             overflow-x: hidden;
         }
 
         .brand-font {
-            font-family: 'DM Serif Display', serif;
+            font-family: 'Poppins', sans-serif;
         }
 
         .mobile-overlay {
@@ -659,6 +655,7 @@
         .stat-value {
             margin: 4px 0 0;
             color: var(--brown-dark);
+            font-family: 'Poppins', sans-serif;
             font-size: 29px;
             font-weight: 700;
         }
@@ -976,7 +973,7 @@
                      class="w-full h-full object-contain">
             </div>
 
-            <h1 class="brand-font brand-name">SITEFA</h1>
+            <h1 class="brand-font brand-name font-heading font-bold">SITEFA</h1>
 
             <p class="brand-subtitle">
                 SISTEM INVENTARIS
@@ -1258,7 +1255,7 @@
                      onerror="this.onerror=null; this.src='{{ asset('images/logo-tefa.png') }}';">
             </div>
 
-            <span class="brand-font mobile-brand">
+            <span class="brand-font mobile-brand font-heading font-bold">
                 SITEFA
             </span>
         </div>

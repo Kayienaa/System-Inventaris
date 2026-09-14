@@ -7,7 +7,7 @@
 <div class="max-w-5xl mx-auto px-6 py-8" x-data="mineBorrowingsHandler()">
 
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-stone-800 dark:text-stone-100">Peminjaman Saya</h1>
+        <h1 class="text-3xl font-bold font-heading text-stone-800 dark:text-stone-100">Peminjaman Saya</h1>
         <p class="text-stone-500 dark:text-stone-400 mt-1">Riwayat & status peminjaman barang inventaris kamu</p>
     </div>
 
@@ -206,7 +206,7 @@
             {{-- Header --}}
             <div class="bg-gradient-to-r from-amber-50/70 to-orange-50/50 dark:from-stone-900/90 dark:to-[#131B2A] px-6 py-4 border-b border-stone-200/70 dark:border-stone-800 flex items-center justify-between">
                 <div>
-                    <h3 class="text-lg font-bold text-stone-800 dark:text-stone-100">Serah Terima Barang TEFA</h3>
+                    <h3 class="text-lg font-bold font-heading text-stone-800 dark:text-stone-100">Serah Terima Barang TEFA</h3>
                     <p class="text-xs text-stone-500 dark:text-stone-400 mt-0.5" x-text="activeAssetName + ' (' + activeAssetCode + ')'"></p>
                 </div>
                 <button type="button" @click="closeCheckoutModal()" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 text-lg font-bold p-1 cursor-pointer interactive-btn">
@@ -382,7 +382,7 @@
             {{-- Modal Header --}}
             <div class="bg-gradient-to-r from-amber-50/70 to-orange-50/50 dark:from-stone-900/90 dark:to-[#131B2A] px-6 py-4 border-b border-stone-200/70 dark:border-stone-800 flex items-center justify-between">
                 <div>
-                    <h3 class="text-lg font-bold text-stone-800 dark:text-stone-100">Form Pengembalian Barang</h3>
+                    <h3 class="text-lg font-bold font-heading text-stone-800 dark:text-stone-100">Form Pengembalian Barang</h3>
                     <p class="text-xs text-stone-500 dark:text-stone-400 mt-0.5" x-text="activeAssetName + ' (' + activeAssetCode + ')'"></p>
                 </div>
                 <button type="button" @click="closeReturnModal()" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 text-lg font-bold p-1 cursor-pointer interactive-btn">
