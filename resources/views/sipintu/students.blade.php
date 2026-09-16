@@ -442,7 +442,34 @@
                     </tr>
                 </thead>
                 <tbody id="students-tbody">
-                    {{-- Populated by JavaScript for instant search & pagination --}}
+                    @forelse(array_slice($students['data'] ?? [], 0, 25) as $index => $student)
+                        @php
+                            $displayPhone = $student['hp'] 
+                                ?? $student['phone'] 
+                                ?? ($localPhones[$student['nis']] ?? null);
+                        @endphp
+                        <tr>
+                            <td style="color: var(--muted); font-weight: 600;">{{ $index + 1 }}</td>
+                            <td><span class="badge-nis">{{ $student['nis'] ?? '-' }}</span></td>
+                            <td style="font-weight: 600; color: var(--brown-dark);">{{ $student['nama'] ?? '-' }}</td>
+                            <td class="hidden md:table-cell">
+                                @if(($student['jk'] ?? null) == 1)
+                                    <span class="badge-gender l">L</span>
+                                @elseif(($student['jk'] ?? null) == 2)
+                                    <span class="badge-gender p">P</span>
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td style="color: #4b5563; font-size: 0.8rem;">{{ $student['user']['email'] ?? '-' }}</td>
+                            <td style="font-size: 0.825rem;">
+                                {{ $displayPhone ?: '-' }}
+                            </td>
+                            <td style="color: var(--muted); max-width: 220px; font-size: 0.8rem;" class="truncate">{{ (!empty($student['alamat']) && $student['alamat'] !== '-') ? $student['alamat'] : '-' }}</td>
+                        </tr>
+                    @empty
+                        {{-- Populated by JavaScript for instant search & pagination --}}
+                    @endforelse
                 </tbody>
             </table>
 
@@ -471,6 +498,7 @@
 
 <script>
     // Initial dataset passed from controller (or loaded via AJAX)
+    const localPhones = @json($localPhones ?? []);
     let allStudents = @json($students['data'] ?? []);
     let filteredStudents = [...allStudents];
     let currentPage = 1;
@@ -513,7 +541,7 @@
                 const nama = (s.nama || '').toLowerCase();
                 const nis = String(s.nis || '');
                 const email = (s.user?.email || '').toLowerCase();
-                const hp = String(s.hp || '');
+                const hp = String(s.hp || s.phone || (s.nis && localPhones[s.nis]) || '');
                 const alamat = (s.alamat || '').toLowerCase();
 
                 return nama.includes(query) || nis.includes(query) || email.includes(query) || hp.includes(query) || alamat.includes(query);
@@ -565,7 +593,8 @@
             const nama = student.nama || '-';
             const jk = (student.jk == 1) ? '<span class="badge-gender l">L</span>' : ((student.jk == 2) ? '<span class="badge-gender p">P</span>' : '-');
             const email = student.user?.email || '-';
-            const hp = student.hp || '-';
+            const rawHp = student.hp || student.phone || (student.nis && localPhones[student.nis]) || null;
+            const hp = (rawHp && rawHp !== '-') ? rawHp : '-';
             const alamat = student.alamat && student.alamat !== '-' ? student.alamat : '-';
 
             html += `

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\GuruProfile;
+use App\Models\SiswaProfile;
 use App\Services\SiPintuService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -37,17 +38,31 @@ class SiPintuController extends Controller
         @ini_set('max_execution_time', 300);
         @set_time_limit(300);
 
+        $localPhones = SiswaProfile::whereNotNull('phone')->pluck('phone', 'nis')->toArray();
+
         try {
             $search = $request->query('search', '');
             $nis = $request->query('nis', '');
             $studentsResult = $this->sipintu->getStudents(['search' => $search, 'nis' => $nis]);
             $pingResult = $this->sipintu->ping();
 
+            if (!empty($studentsResult['data']) && is_array($studentsResult['data'])) {
+                foreach ($studentsResult['data'] as &$item) {
+                    $nisKey = (string) ($item['nis'] ?? '');
+                    $hpVal = $item['hp'] ?? null;
+                    if (empty($hpVal) || $hpVal === '-') {
+                        $item['hp'] = $localPhones[$nisKey] ?? null;
+                    }
+                }
+                unset($item);
+            }
+
             return view('sipintu.students', [
-                'students'   => $studentsResult,
-                'connection' => $pingResult,
-                'search'     => $search,
-                'nis'        => $nis,
+                'students'    => $studentsResult,
+                'connection'  => $pingResult,
+                'search'      => $search,
+                'nis'         => $nis,
+                'localPhones' => $localPhones,
             ]);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('SiPintu studentsPage error: ' . $e->getMessage());
@@ -60,9 +75,10 @@ class SiPintuController extends Controller
                     'data'    => [],
                     'message' => 'Gagal memuat data siswa dari SiPintu Gateway: ' . $e->getMessage(),
                 ],
-                'connection' => ['connected' => false, 'error' => $e->getMessage()],
-                'search'     => $request->query('search', ''),
-                'nis'        => $request->query('nis', ''),
+                'connection'  => ['connected' => false, 'error' => $e->getMessage()],
+                'search'      => $request->query('search', ''),
+                'nis'         => $request->query('nis', ''),
+                'localPhones' => $localPhones,
             ])->with('error', 'Gagal memuat data dari SiPintu: ' . $e->getMessage());
         }
     }
@@ -118,6 +134,18 @@ class SiPintuController extends Controller
             $forceRefresh = $request->boolean('refresh', false);
 
             $result = $this->sipintu->getStudents($params, $forceRefresh);
+
+            $localPhones = SiswaProfile::whereNotNull('phone')->pluck('phone', 'nis')->toArray();
+            if (!empty($result['data']) && is_array($result['data'])) {
+                foreach ($result['data'] as &$item) {
+                    $nisKey = (string) ($item['nis'] ?? '');
+                    $hpVal = $item['hp'] ?? null;
+                    if (empty($hpVal) || $hpVal === '-') {
+                        $item['hp'] = $localPhones[$nisKey] ?? null;
+                    }
+                }
+                unset($item);
+            }
 
             return response()->json($result);
         } catch (\Throwable $e) {
