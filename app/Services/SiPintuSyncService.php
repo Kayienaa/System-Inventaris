@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\BorrowingStatus;
 use App\Models\GuruProfile;
 use App\Models\SiswaProfile;
 use App\Models\User;
@@ -104,6 +105,21 @@ class SiPintuSyncService
                 ) {
                     foreach ($chunk as $studentData) {
                         try {
+                            $isGraduate = filter_var(
+                                $studentData['graduate'] 
+                                ?? $studentData['is_graduate'] 
+                                ?? $studentData['graduated']
+                                ?? $studentData['is_graduated']
+                                ?? ($studentData['user']['graduate'] ?? null)
+                                ?? ($studentData['user']['graduated'] ?? false), 
+                                FILTER_VALIDATE_BOOLEAN
+                            );
+
+                            // Jika siswa berstatus alumni/lulus, lewati (skip) agar tidak dibuatkan/diperbarui akunnya
+                            if ($isGraduate) {
+                                continue;
+                            }
+
                             // Log sample data siswa yang memiliki no HP untuk verifikasi JSON gateway
                             if (! $loggedStudentSample && (! empty($studentData['hp']) || ! empty($studentData['phone']) || ! empty($studentData['no_hp']) || ! empty($studentData['nomor_hp']))) {
                                 Log::info('SiPintu Student JSON Sample with Phone: ' . json_encode($studentData));
@@ -410,5 +426,173 @@ class SiPintuSyncService
             'students' => $students,
             'teachers' => $teachers,
         ];
+    }
+
+    /**
+     * Bersihkan akun alumni / siswa yang sudah lulus dari database lokal berdasarkan data SiPintu.
+     * Hanya menghapus akun siswa yang TIDAK sedang memiliki transaksi pinjam aktif/borrowed.
+     */
+    public function purgeAlumni(bool $dryRun = false): array
+    {
+        @set_time_limit(0);
+        @ini_set('max_execution_time', '0');
+        @ini_set('memory_limit', '512M');
+
+        try {
+            $response = $this->client()->get('/api/v1/sijuna/students');
+
+            if (! $response->successful()) {
+                $errorMsg = 'Gagal mengambil data siswa dari SiPintu: HTTP ' . $response->status();
+                Log::error($errorMsg . ' - Body: ' . $response->body());
+
+                return [
+                    'success'                   => false,
+                    'message'                   => $errorMsg,
+                    'total_graduates'           => 0,
+                    'purged_users'              => 0,
+                    'purged_profiles'           => 0,
+                    'skipped_active_borrowings' => 0,
+                ];
+            }
+
+            $payload = $response->json();
+            $students = $payload['data'] ?? (is_array($payload) ? $payload : []);
+
+            $graduateNisList = [];
+            $graduateEmailList = [];
+            $totalGraduates = 0;
+
+            foreach ($students as $studentData) {
+                $isGraduate = filter_var(
+                    $studentData['graduate'] 
+                    ?? $studentData['is_graduate'] 
+                    ?? $studentData['graduated']
+                    ?? $studentData['is_graduated']
+                    ?? ($studentData['user']['graduate'] ?? null)
+                    ?? ($studentData['user']['graduated'] ?? false), 
+                    FILTER_VALIDATE_BOOLEAN
+                );
+
+                if ($isGraduate) {
+                    $totalGraduates++;
+                    $nis = trim((string) ($studentData['nis'] ?? ''));
+                    $email = trim((string) ($studentData['user']['email'] ?? ($studentData['email'] ?? '')));
+
+                    if ($nis !== '') {
+                        $graduateNisList[] = $nis;
+                    }
+                    if ($email !== '') {
+                        $graduateEmailList[] = $email;
+                    }
+                }
+            }
+
+            $graduateNisList = array_values(array_unique(array_filter($graduateNisList)));
+            $graduateEmailList = array_values(array_unique(array_filter($graduateEmailList)));
+
+            // Temukan profil siswa lokal berdasarkan NIS atau email user
+            $matchingProfiles = SiswaProfile::with('user.roles', 'user.borrowings')
+                ->whereIn('nis', $graduateNisList)
+                ->orWhereHas('user', function ($q) use ($graduateEmailList) {
+                    $q->whereIn('email', $graduateEmailList);
+                })
+                ->get();
+
+            $purgedUsers = 0;
+            $purgedProfiles = 0;
+            $skippedBorrowings = 0;
+
+            $activeStatuses = [
+                BorrowingStatus::Borrowed,
+                BorrowingStatus::Pending,
+                BorrowingStatus::Approved,
+                BorrowingStatus::ReturnPendingVerification,
+            ];
+
+            foreach ($matchingProfiles as $profile) {
+                $user = $profile->user;
+
+                // Cek apakah user memiliki peminjaman aktif
+                $hasActiveBorrowing = false;
+                if ($user) {
+                    $hasActiveBorrowing = $user->borrowings->contains(function ($b) use ($activeStatuses) {
+                        return in_array($b->status, $activeStatuses, true);
+                    });
+                }
+
+                if ($hasActiveBorrowing) {
+                    $skippedBorrowings++;
+                    Log::info("Skip purge alumni NIS {$profile->nis} (User ID: {$profile->user_id}) - memiliki transaksi peminjaman aktif.");
+                    continue;
+                }
+
+                if (! $dryRun) {
+                    DB::transaction(function () use ($profile, $user, &$purgedProfiles, &$purgedUsers) {
+                        $profile->delete();
+                        $purgedProfiles++;
+
+                        if ($user) {
+                            // Jangan hapus akun jika memiliki role non-siswa (misal guru/admin)
+                            $hasOtherRole = $user->roles->contains(function ($role) {
+                                return ! in_array($role->name, ['siswa', 'student'], true);
+                            });
+
+                            // Jika user memiliki riwayat peminjaman lama selesai (returned/rejected/cancelled),
+                            // foreign key borrowings(borrower_user_id) restrictOnDelete akan memblokir penghapusan user.
+                            // Kita nonaktifkan akunnya daripada terjadi error database.
+                            $hasBorrowingHistory = $user->borrowings->isNotEmpty();
+
+                            if ($hasOtherRole) {
+                                if ($user->hasRole('siswa')) {
+                                    $user->removeRole('siswa');
+                                }
+                            } elseif ($hasBorrowingHistory) {
+                                $user->update([
+                                    'is_active'      => false,
+                                    'deactivated_at' => now(),
+                                ]);
+                                if ($user->hasRole('siswa')) {
+                                    $user->removeRole('siswa');
+                                }
+                            } else {
+                                $user->delete();
+                                $purgedUsers++;
+                            }
+                        }
+                    });
+                } else {
+                    $purgedProfiles++;
+                    if ($user) {
+                        $hasOtherRole = $user->roles->contains(function ($role) {
+                            return ! in_array($role->name, ['siswa', 'student'], true);
+                        });
+                        $hasBorrowingHistory = $user->borrowings->isNotEmpty();
+                        if (! $hasOtherRole && ! $hasBorrowingHistory) {
+                            $purgedUsers++;
+                        }
+                    }
+                }
+            }
+
+            return [
+                'success'                   => true,
+                'dry_run'                   => $dryRun,
+                'total_graduates'           => $totalGraduates,
+                'purged_users'              => $purgedUsers,
+                'purged_profiles'           => $purgedProfiles,
+                'skipped_active_borrowings' => $skippedBorrowings,
+            ];
+        } catch (\Throwable $e) {
+            Log::error('SiPintu purgeAlumni exception: ' . $e->getMessage());
+
+            return [
+                'success'                   => false,
+                'message'                   => $e->getMessage(),
+                'total_graduates'           => 0,
+                'purged_users'              => 0,
+                'purged_profiles'           => 0,
+                'skipped_active_borrowings' => 0,
+            ];
+        }
     }
 }

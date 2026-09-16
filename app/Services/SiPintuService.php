@@ -125,6 +125,20 @@ class SiPintuService
                 // Compact data using foreach to save memory and avoid duplicate array allocations
                 $compactList = [];
                 foreach ($rawList as $s) {
+                    $isGraduate = filter_var(
+                        $s['graduate'] 
+                        ?? $s['is_graduate'] 
+                        ?? $s['graduated']
+                        ?? $s['is_graduated']
+                        ?? ($s['user']['graduate'] ?? null)
+                        ?? ($s['user']['graduated'] ?? false), 
+                        FILTER_VALIDATE_BOOLEAN
+                    );
+
+                    if ($isGraduate) {
+                        continue;
+                    }
+
                     $compactList[] = [
                         'id'     => $s['id'] ?? null,
                         'nis'    => $s['nis'] ?? null,
@@ -143,7 +157,7 @@ class SiPintuService
 
                 $result = [
                     'success' => true,
-                    'count'   => $json['count'] ?? count($compactList),
+                    'count'   => count($compactList),
                     'data'    => $compactList,
                     'source'  => $json['source'] ?? 'SiPintu Gateway',
                 ];
@@ -418,12 +432,17 @@ class SiPintuService
         $ping = $this->ping();
         $isConnected = $ping['connected'] ?? false;
 
-        $studentCount = 2306;
+        $studentCount = 1505;
         $teacherCount = 71;
 
         if ($isConnected) {
             if ($this->cacheStore()->has('sipintu_all_students_raw')) {
                 $studentCount = $this->cacheStore()->get('sipintu_all_students_raw')['count'] ?? $studentCount;
+            } else {
+                $students = $this->getAllStudentsRaw();
+                if ($students['success']) {
+                    $studentCount = $students['count'];
+                }
             }
             if ($this->cacheStore()->has('sipintu_all_teachers_raw')) {
                 $teacherCount = $this->cacheStore()->get('sipintu_all_teachers_raw')['count'] ?? $teacherCount;

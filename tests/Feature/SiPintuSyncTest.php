@@ -366,5 +366,155 @@ class SiPintuSyncTest extends TestCase
         $this->assertStringContainsString('"nip":"199301162022211008"', $ajaxResponse->getContent());
         $this->assertStringNotContainsString('199301162022211000', $ajaxResponse->getContent());
     }
+
+    public function test_sync_students_skips_graduated_students(): void
+    {
+        $mockUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/') . '/api/v1/sijuna/students';
+
+        Http::fake([
+            $mockUrl => Http::response([
+                'success' => true,
+                'count' => 2,
+                'data' => [
+                    [
+                        'id' => 101,
+                        'nis' => '212210001',
+                        'nama' => 'Active Student',
+                        'graduated' => false,
+                        'user' => [
+                            'email' => 'active@smkn1bangsri.sch.id',
+                            'name' => 'Active Student',
+                        ],
+                    ],
+                    [
+                        'id' => 102,
+                        'nis' => '212210002',
+                        'nama' => 'Alumni Student',
+                        'graduated' => true,
+                        'user' => [
+                            'email' => 'alumni@smkn1bangsri.sch.id',
+                            'name' => 'Alumni Student',
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $service = app(SiPintuSyncService::class);
+        $result = $service->syncStudents();
+
+        $this->assertTrue($result['success']);
+        $this->assertEquals(1, $result['created']);
+
+        $this->assertDatabaseHas('users', ['email' => 'active@smkn1bangsri.sch.id']);
+        $this->assertDatabaseMissing('users', ['email' => 'alumni@smkn1bangsri.sch.id']);
+        $this->assertDatabaseMissing('siswa_profiles', ['nis' => '212210002']);
+    }
+
+    public function test_sipintu_service_raw_students_filters_out_graduates(): void
+    {
+        $mockUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/') . '/api/v1/sijuna/students';
+
+        Http::fake([
+            $mockUrl => Http::response([
+                'success' => true,
+                'count' => 2,
+                'data' => [
+                    [
+                        'id' => 1,
+                        'nis' => '111',
+                        'nama' => 'Siswa Aktif',
+                        'graduated' => false,
+                        'user' => ['email' => 'aktif@test.com'],
+                    ],
+                    [
+                        'id' => 2,
+                        'nis' => '222',
+                        'nama' => 'Siswa Lulus',
+                        'graduate' => true,
+                        'user' => ['email' => 'lulus@test.com'],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $service = app(\App\Services\SiPintuService::class);
+        $result = $service->getAllStudentsRaw(true);
+
+        $this->assertTrue($result['success']);
+        $this->assertEquals(1, $result['count']);
+        $this->assertEquals('111', $result['data'][0]['nis']);
+    }
+
+    public function test_purge_alumni_artisan_command_deletes_only_graduates_without_active_borrowings(): void
+    {
+        $mockUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/') . '/api/v1/sijuna/students';
+
+        // Buat user alumni A yang punya peminjaman aktif
+        $alumniA = User::factory()->create(['name' => 'Alumni With Loan', 'email' => 'alumni.loan@smkn1bangsri.sch.id']);
+        $alumniA->assignRole('siswa');
+        SiswaProfile::create(['user_id' => $alumniA->id, 'nis' => '99001']);
+
+        $category = \App\Models\AssetCategory::create([
+            'code' => 'LAB-KOMP',
+            'name' => 'Lab Komputer',
+        ]);
+        $asset = \App\Models\Asset::create([
+            'asset_category_id' => $category->id,
+            'name' => 'Laptop Dell',
+            'asset_code' => 'AST-001',
+            'condition' => \App\Enums\AssetCondition::Baik,
+            'availability_status' => \App\Enums\AssetAvailabilityStatus::Dipinjam,
+        ]);
+
+        \App\Models\Borrowing::create([
+            'borrower_user_id' => $alumniA->id,
+            'asset_id' => $asset->id,
+            'status' => \App\Enums\BorrowingStatus::Borrowed,
+            'requested_at' => now()->subDays(2),
+            'borrowed_at' => now()->subDays(2),
+            'due_at' => now()->addDays(2),
+        ]);
+
+        // Buat user alumni B yang TIDAK punya peminjaman
+        $alumniB = User::factory()->create(['name' => 'Alumni Clear', 'email' => 'alumni.clear@smkn1bangsri.sch.id']);
+        $alumniB->assignRole('siswa');
+        SiswaProfile::create(['user_id' => $alumniB->id, 'nis' => '99002']);
+
+        // Mock API SiPintu mengembalikan keduanya sebagai graduated: true
+        Http::fake([
+            $mockUrl => Http::response([
+                'success' => true,
+                'data' => [
+                    [
+                        'id' => 901,
+                        'nis' => '99001',
+                        'graduated' => true,
+                        'user' => ['email' => 'alumni.loan@smkn1bangsri.sch.id'],
+                    ],
+                    [
+                        'id' => 902,
+                        'nis' => '99002',
+                        'graduate' => true,
+                        'user' => ['email' => 'alumni.clear@smkn1bangsri.sch.id'],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        // Jalankan purge command
+        $this->artisan('sipintu:purge-alumni')
+            ->expectsOutputToContain('Pembersihan akun alumni')
+            ->assertSuccessful();
+
+        // Verifikasi Alumni B terhapus
+        $this->assertDatabaseMissing('users', ['id' => $alumniB->id]);
+        $this->assertDatabaseMissing('siswa_profiles', ['nis' => '99002']);
+
+        // Verifikasi Alumni A tetap ada karena punya pinjaman aktif
+        $this->assertDatabaseHas('users', ['id' => $alumniA->id]);
+        $this->assertDatabaseHas('siswa_profiles', ['nis' => '99001']);
+    }
 }
+
 

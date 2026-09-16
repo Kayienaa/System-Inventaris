@@ -88,6 +88,20 @@ class OAuthController extends Controller
             return redirect()->route('login')->with('error', 'Data pengguna dari SiPintu tidak valid.');
         }
 
+        $isGraduate = filter_var(
+            $sipintuUser['graduate'] 
+            ?? $sipintuUser['is_graduate'] 
+            ?? $sipintuUser['graduated']
+            ?? $sipintuUser['is_graduated']
+            ?? ($sipintuUser['user']['graduate'] ?? null)
+            ?? ($sipintuUser['user']['graduated'] ?? false), 
+            FILTER_VALIDATE_BOOLEAN
+        );
+
+        if ($isGraduate) {
+            return redirect()->route('login')->with('error', 'Akses ditolak: Sistem TE-VAULT hanya dikhususkan bagi siswa & guru aktif SMK.');
+        }
+
         // 4. Auto-Provisioning & Pemetaan User Lokal
         $email = trim((string) ($sipintuUser['email'] ?? ''));
         $externalId = trim((string) ($sipintuUser['external_id'] ?? ($sipintuUser['username'] ?? ($sipintuUser['nis'] ?? ($sipintuUser['nip'] ?? '')))));
@@ -223,6 +237,23 @@ class OAuthController extends Controller
 
         if (! $userData) {
             return response()->json(['status' => 'error', 'message' => 'Missing user payload'], 400);
+        }
+
+        $isGraduate = filter_var(
+            $userData['graduate'] 
+            ?? $userData['is_graduate'] 
+            ?? $userData['graduated'] 
+            ?? $userData['is_graduated'] 
+            ?? ($userData['user']['graduate'] ?? null) 
+            ?? ($userData['user']['graduated'] ?? false), 
+            FILTER_VALIDATE_BOOLEAN
+        );
+
+        if ($isGraduate) {
+            return response()->json([
+                'status'  => 'skipped',
+                'message' => 'User is graduate/alumni and not eligible for TE-VAULT sync.',
+            ]);
         }
 
         $email = trim((string) ($userData['email'] ?? ''));
