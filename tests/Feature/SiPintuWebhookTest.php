@@ -174,4 +174,50 @@ class SiPintuWebhookTest extends TestCase
         $this->assertEquals($initialPasswordHash, $existingUser->password);
         $this->assertTrue(Hash::check('original_secure_password', $existingUser->password));
     }
+
+    public function test_webhook_cannot_overwrite_admin_or_super_admin_account(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Utama',
+            'email' => 'admin.utama@smkn1bangsri.sch.id',
+            'password' => Hash::make('admin_password'),
+            'email_verified_at' => now(),
+            'is_active' => true,
+        ]);
+        $admin->assignRole('admin');
+
+        $payload = [
+            'user' => [
+                'name' => 'Hijacked Admin Name',
+                'email' => 'admin.utama@smkn1bangsri.sch.id',
+                'external_id' => '99999',
+                'role' => 'siswa',
+            ],
+        ];
+
+        $content = json_encode($payload);
+        $signature = $this->generateValidSignature($content);
+
+        $response = $this->call(
+            'POST',
+            '/api/sipintu/sync-user',
+            [],
+            [],
+            [],
+            [
+                'HTTP_X-SiPintu-Signature' => $signature,
+                'CONTENT_TYPE' => 'application/json',
+            ],
+            $content
+        );
+
+        $response->assertStatus(403);
+        $response->assertJson([
+            'status' => 'error',
+            'message' => 'Cannot overwrite administrative accounts',
+        ]);
+
+        $admin->refresh();
+        $this->assertEquals('Admin Utama', $admin->name);
+    }
 }

@@ -10,8 +10,8 @@ use Illuminate\Http\Client\ConnectionException;
 class SiPintuService
 {
     protected string $baseUrl;
-    protected string $clientId;
-    protected string $clientSecret;
+    protected ?string $clientId;
+    protected ?string $clientSecret;
     protected int $timeout;
     protected int $connectTimeout;
     protected int $cacheTtl;
@@ -19,8 +19,8 @@ class SiPintuService
     public function __construct()
     {
         $this->baseUrl = rtrim(env('SIPINTU_BASE_URL', config('services.sipintu.base_url', config('sipintu.api_url', 'http://sipintu.smkn1bangsri.sch.id'))), '/');
-        $this->clientId = env('SIPINTU_CLIENT_ID', config('services.sipintu.client_id', config('sipintu.client_id', 'app_44rtj8sanrpy')));
-        $this->clientSecret = env('SIPINTU_CLIENT_SECRET', config('services.sipintu.client_secret', config('sipintu.client_secret', 'sec_fPitvBwUAC6PT6cGMNXeUmn50uvWtdri')));
+        $this->clientId = config('sipintu.client_id', config('services.sipintu.client_id'));
+        $this->clientSecret = config('sipintu.client_secret', config('services.sipintu.client_secret'));
         $this->timeout = (int) config('sipintu.timeout', 60);
         $this->connectTimeout = (int) config('sipintu.connect_timeout', 10);
         $this->cacheTtl = (int) config('sipintu.cache_ttl', 1800);

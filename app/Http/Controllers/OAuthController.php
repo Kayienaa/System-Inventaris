@@ -279,11 +279,27 @@ class OAuthController extends Controller
         // 2. Temukan user berdasarkan email baru, email lama, atau external_id
         $user = null;
         if ($email !== '') {
-            $user = User::where('email', $email)->first();
+            $candidate = User::where('email', $email)->first();
+
+            if ($candidate && $candidate->hasAnyRole(['admin', 'super_admin'])) {
+                Log::warning("Webhook sync-user blocked: Upaya modifikasi akun admin/super_admin {$email}");
+
+                return response()->json(['status' => 'error', 'message' => 'Cannot overwrite administrative accounts'], 403);
+            }
+
+            $user = $candidate;
         }
 
         if (! $user && $prevEmail !== '') {
-            $user = User::where('email', $prevEmail)->first();
+            $candidate = User::where('email', $prevEmail)->first();
+
+            if ($candidate && $candidate->hasAnyRole(['admin', 'super_admin'])) {
+                Log::warning("Webhook sync-user blocked: Upaya modifikasi akun admin/super_admin {$prevEmail}");
+
+                return response()->json(['status' => 'error', 'message' => 'Cannot overwrite administrative accounts'], 403);
+            }
+
+            $user = $candidate;
         }
 
         if (! $user && $externalId !== '') {
@@ -297,6 +313,12 @@ class OAuthController extends Controller
                 if ($guru) {
                     $user = $guru->user;
                 }
+            }
+
+            if ($user && $user->hasAnyRole(['admin', 'super_admin'])) {
+                Log::warning("Webhook sync-user blocked: Upaya modifikasi akun admin/super_admin via external_id {$externalId}");
+
+                return response()->json(['status' => 'error', 'message' => 'Cannot overwrite administrative accounts'], 403);
             }
         }
 
