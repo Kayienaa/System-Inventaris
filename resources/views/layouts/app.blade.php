@@ -995,14 +995,14 @@
 
         </div>
 
-        <div class="user-area">
+        <a href="{{ route('profile.edit') }}" class="user-area hover:opacity-90 transition-all cursor-pointer block group" title="Buka Pengaturan Profil">
 
-            <div class="avatar">
+            <div class="avatar group-hover:scale-105 transition-transform">
                 {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
             </div>
 
             <div style="min-width:0;">
-                <p class="user-name">
+                <p class="user-name group-hover:text-amber-300 transition-colors">
                     {{ auth()->user()->name }}
                 </p>
 
@@ -1019,7 +1019,7 @@
                 </p>
             </div>
 
-        </div>
+        </a>
 
         <nav class="menu overflow-y-auto scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-[#8B5A2B]/40 [&::-webkit-scrollbar-thumb]:rounded-full">
 
@@ -1273,9 +1273,9 @@
                 </svg>
             </button>
 
-            <div class="mobile-user">
+            <a href="{{ route('profile.edit') }}" class="mobile-user hover:opacity-90 transition-all active:scale-95 cursor-pointer block" title="Profil Saya">
                 {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-            </div>
+            </a>
         </div>
 
     </div>
@@ -1294,7 +1294,7 @@
                 </p>
             </div>
 
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3 sm:gap-4">
                 {{-- Tombol Toggle Switch Dark/Light Mode --}}
                 <button id="theme-toggle" type="button" 
                         class="p-2 rounded-xl text-stone-500 hover:text-stone-900 bg-stone-100/80 hover:bg-stone-200/80 dark:bg-stone-900/90 dark:text-neon-glowcyan dark:hover:text-neon-cyan dark:border dark:border-cyan-500/30 dark:shadow-neon-sm interactive-btn cursor-pointer"
@@ -1312,6 +1312,18 @@
                 <div class="topbar-date">
                     {{ now()->translatedFormat('l, d F Y') }}
                 </div>
+
+                {{-- Link Profil Pojok Kanan Atas --}}
+                <a href="{{ route('profile.edit') }}"
+                   class="flex items-center gap-2 p-1.5 pr-2.5 rounded-xl hover:bg-stone-100/80 dark:hover:bg-stone-800/80 border border-transparent hover:border-stone-200 dark:hover:border-stone-700 transition-all group cursor-pointer"
+                   title="Buka Pengaturan Profil">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-[#C89B3C] text-[#3B2610] shadow-xs group-hover:scale-105 transition-transform">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    </div>
+                    <span class="hidden md:inline-block text-xs font-semibold text-stone-800 dark:text-stone-200 group-hover:text-[#6F4E37] dark:group-hover:text-amber-400 transition-colors truncate max-w-[120px]">
+                        {{ auth()->user()->name }}
+                    </span>
+                </a>
             </div>
 
         </header>

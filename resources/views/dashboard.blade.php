@@ -40,7 +40,9 @@
 
     <div class="stats-grid">
         {{-- Total Aset --}}
-        <div class="stat-card static-card">
+        <a href="{{ auth()->user()->hasAnyRole(['admin', 'super_admin']) ? route('admin.assets.index') : route('assets.index') }}"
+           class="stat-card static-card cursor-pointer transition-transform duration-150 active:scale-95 block hover:shadow-md"
+           title="Lihat Daftar Aset">
             <div class="stat-top">
                 <div>
                     <p class="stat-label" style="margin-top:0;">
@@ -59,10 +61,12 @@
             <p class="stat-value font-heading font-bold">
                 {{ $total_aset }}
             </p>
-        </div>
+        </a>
 
         {{-- Barang Tersedia --}}
-        <div class="stat-card static-card">
+        <a href="{{ auth()->user()->hasAnyRole(['admin', 'super_admin']) ? route('admin.assets.index') : route('assets.index') }}"
+           class="stat-card static-card cursor-pointer transition-transform duration-150 active:scale-95 block hover:shadow-md"
+           title="Lihat Barang Tersedia">
             <div class="stat-top">
                 <div>
                     <p class="stat-label" style="margin-top:0; color: #059669;">
@@ -78,7 +82,7 @@
             <p class="stat-value font-heading font-bold" style="color: #059669;">
                 {{ $barang_tersedia ?? ($status_aset['tersedia'] ?? 0) }}
             </p>
-        </div>
+        </a>
 
         {{-- Barang Dipinjam --}}
         <div class="stat-card static-card">

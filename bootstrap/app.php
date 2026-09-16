@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'oauth/callback',
             'api/*',
+            'sipintu/*',
         ]);
 
         $middleware->appendToGroup('web', [

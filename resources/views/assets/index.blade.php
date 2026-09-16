@@ -21,17 +21,33 @@
                 @if (request('category'))
                     <input type="hidden" name="category" value="{{ request('category') }}">
                 @endif
-                <div class="relative w-full">
+                <div class="relative w-full" x-data="{ query: '{{ addslashes(request('search', '')) }}' }">
                     <input
                         type="text"
                         name="search"
-                        value="{{ request('search') }}"
+                        x-model="query"
                         placeholder="Cari nama, kode, atau merk..."
-                        class="w-full rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] px-4 py-2.5 pl-10 text-sm text-stone-900 dark:text-stone-100 shadow-sm focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-neon-cyan focus:border-transparent outline-none transition"
+                        class="w-full rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] px-4 py-2.5 pl-10 pr-9 text-sm text-stone-900 dark:text-stone-100 shadow-sm focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-neon-cyan focus:border-transparent outline-none transition"
                     >
-                    <svg class="absolute left-3.5 top-3 h-4 w-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="absolute left-3.5 top-3 h-4 w-4 text-stone-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
+                    @if (request('search'))
+                        <a href="{{ route('assets.index', array_filter(['category' => request('category')])) }}"
+                           class="absolute right-3 top-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-stone-200 hover:bg-stone-300 dark:bg-stone-700 dark:hover:bg-stone-600 text-stone-600 dark:text-stone-300 text-xs font-bold transition cursor-pointer"
+                           title="Hapus pencarian">
+                            ✕
+                        </a>
+                    @else
+                        <button type="button"
+                                x-show="query.length > 0"
+                                @click="query = ''; $el.closest('form').submit();"
+                                class="absolute right-3 top-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-stone-200 hover:bg-stone-300 dark:bg-stone-700 dark:hover:bg-stone-600 text-stone-600 dark:text-stone-300 text-xs font-bold transition cursor-pointer"
+                                title="Hapus pencarian"
+                                x-cloak>
+                            ✕
+                        </button>
+                    @endif
                 </div>
                 <button
                     type="submit"
@@ -45,7 +61,7 @@
         {{-- Filter Kategori --}}
         <div class="mb-6 flex flex-wrap items-center gap-2.5">
             <a
-                href="{{ route('assets.index', array_filter(['search' => request('search')])) }}"
+                href="{{ route('assets.index') }}"
                 class="rounded-xl px-4 py-2 text-sm font-medium transition shadow-sm interactive-btn
                     {{ !request('category')
                         ? 'bg-[#6F4E37] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:shadow-neon-amber'
@@ -59,7 +75,7 @@
                     $isActive = request('category') === $cat->name || request('category') === $cat->code;
                 @endphp
                 <a
-                    href="{{ route('assets.index', array_filter(['category' => $cat->name, 'search' => request('search')])) }}"
+                    href="{{ route('assets.index', ['category' => $cat->name]) }}"
                     class="rounded-xl px-4 py-2 text-sm font-medium transition shadow-sm interactive-btn
                         {{ $isActive
                             ? 'bg-[#6F4E37] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:shadow-neon-amber'
@@ -204,9 +220,11 @@
             </div>
 
             {{-- Pagination --}}
-            <div class="mt-8">
-                {{ $assets->links() }}
-            </div>
+            @if ($assets->hasPages())
+                <div class="mt-8">
+                    {{ $assets->links() }}
+                </div>
+            @endif
 
         @else
 

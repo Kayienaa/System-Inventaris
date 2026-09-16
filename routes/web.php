@@ -25,6 +25,18 @@ Route::get('/health', function () {
     ], 200);
 });
 
+Route::match(['get', 'post'], '/sipintu/sync-user', function (\Illuminate\Http\Request $request, \App\Http\Controllers\OAuthController $controller) {
+    if ($request->isMethod('get')) {
+        return response()->json(['status' => 'ok', 'message' => 'SiPintu webhook sync-user ready'], 200);
+    }
+
+    return $controller->syncUser($request);
+});
+
+Route::match(['get', 'post'], '/sipintu/sync-password', function () {
+    return response()->json(['status' => 'ok', 'message' => 'SiPintu password sync acknowledged'], 200);
+});
+
 Route::get('/', function () {
     return view('welcome');
 });

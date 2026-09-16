@@ -220,4 +220,46 @@ class SiPintuWebhookTest extends TestCase
         $admin->refresh();
         $this->assertEquals('Admin Utama', $admin->name);
     }
+
+    public function test_get_webhook_sync_user_returns_ready_status(): void
+    {
+        $response = $this->getJson('/api/sipintu/sync-user');
+
+        $response->assertOk();
+        $response->assertJson([
+            'status' => 'ok',
+            'message' => 'SiPintu webhook sync-user ready',
+        ]);
+
+        $webResponse = $this->getJson('/sipintu/sync-user');
+        $webResponse->assertOk();
+        $webResponse->assertJson([
+            'status' => 'ok',
+            'message' => 'SiPintu webhook sync-user ready',
+        ]);
+    }
+
+    public function test_sync_password_endpoint_acknowledges_requests(): void
+    {
+        $getResponse = $this->getJson('/api/sipintu/sync-password');
+        $getResponse->assertOk();
+        $getResponse->assertJson([
+            'status' => 'ok',
+            'message' => 'SiPintu password sync is acknowledged',
+        ]);
+
+        $postResponse = $this->postJson('/api/sipintu/sync-password');
+        $postResponse->assertOk();
+        $postResponse->assertJson([
+            'status' => 'ok',
+            'message' => 'SiPintu password sync is acknowledged',
+        ]);
+
+        $webResponse = $this->getJson('/sipintu/sync-password');
+        $webResponse->assertOk();
+        $webResponse->assertJson([
+            'status' => 'ok',
+            'message' => 'SiPintu password sync acknowledged',
+        ]);
+    }
 }
