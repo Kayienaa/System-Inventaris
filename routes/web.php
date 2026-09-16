@@ -17,6 +17,14 @@ use Illuminate\Support\Facades\Storage;
 */
 Route::get('/oauth/callback', [OAuthController::class, 'callback'])->name('oauth.callback');
 
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'app' => 'SITEFA',
+        'timestamp' => now()->toIso8601String(),
+    ], 200);
+});
+
 Route::get('/', function () {
     return view('welcome');
 });
