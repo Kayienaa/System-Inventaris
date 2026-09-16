@@ -20,9 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->validateCsrfTokens(except: [
-            'oauth/*',
+            'oauth/callback',
             'api/*',
-            'api/sipintu/sync-user',
         ]);
 
         $middleware->appendToGroup('web', [

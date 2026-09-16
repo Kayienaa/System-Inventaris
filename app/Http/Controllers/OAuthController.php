@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\GuruProfile;
 use App\Models\SiswaProfile;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -27,6 +29,14 @@ class OAuthController extends Controller
 
         if (! $code) {
             return redirect()->route('login')->with('error', 'Otorisasi SSO SiPintu gagal: Kode otorisasi tidak ditemukan.');
+        }
+
+        // Replay Protection (Single-Use Code)
+        $codeHash = hash('sha256', $code);
+        if (! Cache::add("sso_code:{$codeHash}", true, now()->addMinutes(2))) {
+            Log::warning('SSO authorization code replay terdeteksi.');
+
+            return redirect()->route('login')->with('error', 'Kode otorisasi sudah digunakan. Silakan login ulang.');
         }
 
         $baseUrl      = rtrim(env('SIPINTU_BASE_URL', config('services.sipintu.base_url', config('sipintu.api_url', 'http://localhost:8000'))), '/');
@@ -110,107 +120,113 @@ class OAuthController extends Controller
         $classroom = trim((string) ($sipintuUser['classroom'] ?? ($sipintuUser['class_name'] ?? ($sipintuUser['kelas'] ?? '')))) ?: null;
         $roleName = strtolower(trim((string) ($sipintuUser['role'] ?? '')));
 
-        // Cari user lokal berdasarkan email atau external_id (NIS/NIP)
+        // Urutan Pencocokan Akun (External ID First)
         $user = null;
-        if ($email !== '') {
-            $user = User::where('email', $email)->first();
+        if ($externalId !== '') {
+            $user = User::where('sipintu_external_id', $externalId)->first();
         }
 
-        if (! $user && $externalId !== '') {
-            $siswa = SiswaProfile::where('nis', $externalId)->first();
-            if ($siswa) {
-                $user = $siswa->user;
+        if (! $user && $email !== '') {
+            $candidate = User::where('email', $email)->first();
+
+            if ($candidate && $candidate->hasAnyRole(['admin', 'super_admin'])) {
+                Log::warning("SSO link attempt blocked: external_id={$externalId} mencoba klaim email admin {$email}");
+
+                return redirect()->route('login')->with('error', 'Akun ini tidak dapat ditautkan otomatis via SSO. Hubungi administrator.');
             }
 
-            if (! $user) {
-                $guru = GuruProfile::where('nip', $externalId)->first();
-                if ($guru) {
-                    $user = $guru->user;
-                }
-            }
+            $user = $candidate;
         }
 
-        $incomingPassword = $sipintuUser['password'] ?? ($sipintuUser['password_hash'] ?? null);
+        // Kunci External ID: Jika akun ditemukan tapi sipintu_external_id sudah terisi dengan ID lain, tolak login
+        if ($user && $user->sipintu_external_id !== null && $externalId !== '' && $user->sipintu_external_id !== $externalId) {
+            Log::warning("SSO identity conflict: user_id={$user->id} already linked to external_id={$user->sipintu_external_id}, attempted login with external_id={$externalId}");
 
-        if ($user) {
-            $user->name = $name;
-            if ($email !== '' && $user->email !== $email) {
-                $user->email = $email;
-            }
-            if ($user->email_verified_at === null) {
-                $user->email_verified_at = now();
-            }
-            $user->save();
-        } else {
-            $fallbackEmail = $email !== '' ? $email : ($externalId !== '' ? "{$externalId}@smkn1bangsri.sch.id" : 'user_' . Str::random(8) . '@smkn1bangsri.sch.id');
-
-            $user = User::create([
-                'name'              => $name,
-                'email'             => $fallbackEmail,
-                'password'          => Hash::make(Str::random(24)),
-                'email_verified_at' => now(),
-                'is_active'         => true,
-            ]);
+            return redirect()->route('login')->with('error', 'Konflik identitas akun SSO. Hubungi administrator.');
         }
 
-        // Sinkronisasi hash kata sandi tanpa re-hash ganda
-        if (! empty($incomingPassword)) {
-            DB::table('users')->where('id', $user->id)->update(['password' => $incomingPassword]);
-            $user->refresh();
-        }
+        // DB Transaction & Catch QueryException
+        try {
+            DB::transaction(function () use (&$user, $name, $email, $externalId, $phone, $classroom, $roleName) {
+                if ($user) {
+                    $user->name = $name;
+                    if ($email !== '' && $user->email !== $email) {
+                        $user->email = $email;
+                    }
+                    if ($externalId !== '' && empty($user->sipintu_external_id)) {
+                        $user->sipintu_external_id = $externalId;
+                    }
+                    if ($user->email_verified_at === null) {
+                        $user->email_verified_at = now();
+                    }
+                    $user->save();
+                } else {
+                    $fallbackEmail = $email !== '' ? $email : ($externalId !== '' ? "{$externalId}@smkn1bangsri.sch.id" : 'user_' . Str::random(8) . '@smkn1bangsri.sch.id');
 
-        // Sinkronkan relasi profile dan role Spatie
-        $isStudent = in_array($roleName, ['student', 'siswa']) || ! empty($classroom) || ($externalId !== '' && ! in_array($roleName, ['teacher', 'guru', 'admin', 'super_admin']));
-        $isTeacher = in_array($roleName, ['teacher', 'guru', 'pengajar']);
-        $isAdmin = in_array($roleName, ['admin', 'administrator']);
-        $isSuperAdmin = in_array($roleName, ['super_admin', 'superadmin']);
+                    $user = User::create([
+                        'name'                => $name,
+                        'email'               => $fallbackEmail,
+                        'sipintu_external_id' => $externalId !== '' ? $externalId : null,
+                        'password'            => Hash::make(Str::random(24)),
+                        'email_verified_at'   => now(),
+                        'is_active'           => true,
+                    ]);
+                }
 
-        if ($isStudent) {
-            if ($externalId !== '' || $phone || $classroom) {
-                $profile = SiswaProfile::firstOrNew(['user_id' => $user->id]);
-                if ($externalId !== '') {
-                    $profile->nis = $externalId;
-                }
-                if ($classroom) {
-                    $profile->class_name = $classroom;
-                }
-                if ($phone) {
-                    $profile->phone = $phone;
-                }
-                $profile->save();
-            }
+                // Sinkronkan relasi profile dan role Spatie (Hanya role operasional: siswa dan guru)
+                $isStudent = in_array($roleName, ['student', 'siswa']) || ! empty($classroom) || ($externalId !== '' && ! in_array($roleName, ['teacher', 'guru', 'admin', 'super_admin']));
+                $isTeacher = in_array($roleName, ['teacher', 'guru', 'pengajar']);
 
-            if (! $user->hasAnyRole(['admin', 'super_admin']) && ! $user->hasRole('siswa')) {
-                $user->assignRole('siswa');
-            }
-        } elseif ($isTeacher) {
-            if ($externalId !== '' || $phone) {
-                $profile = GuruProfile::firstOrNew(['user_id' => $user->id]);
-                if ($externalId !== '') {
-                    $profile->nip = $externalId;
-                }
-                if ($phone) {
-                    $profile->phone = $phone;
-                }
-                $profile->save();
-            }
+                if ($isStudent) {
+                    if ($externalId !== '' || $phone || $classroom) {
+                        $profile = SiswaProfile::firstOrNew(['user_id' => $user->id]);
+                        if ($externalId !== '') {
+                            $profile->nis = $externalId;
+                        }
+                        if ($classroom) {
+                            $profile->class_name = $classroom;
+                        }
+                        if ($phone) {
+                            $profile->phone = $phone;
+                        }
+                        $profile->save();
+                    }
 
-            if (! $user->hasAnyRole(['admin', 'super_admin']) && ! $user->hasRole('guru')) {
-                $user->assignRole('guru');
-            }
-        } elseif ($isSuperAdmin) {
-            if (! $user->hasRole('super_admin')) {
-                $user->assignRole('super_admin');
-            }
-        } elseif ($isAdmin) {
-            if (! $user->hasAnyRole(['admin', 'super_admin'])) {
-                $user->assignRole('admin');
-            }
+                    if (! $user->hasAnyRole(['admin', 'super_admin']) && ! $user->hasRole('siswa')) {
+                        $user->assignRole('siswa');
+                    }
+                } elseif ($isTeacher) {
+                    if ($externalId !== '' || $phone) {
+                        $profile = GuruProfile::firstOrNew(['user_id' => $user->id]);
+                        if ($externalId !== '') {
+                            $profile->nip = $externalId;
+                        }
+                        if ($phone) {
+                            $profile->phone = $phone;
+                        }
+                        $profile->save();
+                    }
+
+                    if (! $user->hasAnyRole(['admin', 'super_admin']) && ! $user->hasRole('guru')) {
+                        $user->assignRole('guru');
+                    }
+                }
+            });
+        } catch (QueryException $e) {
+            Log::error('SiPintu SSO DB QueryException: ' . $e->getMessage());
+
+            return redirect()->route('login')->with('error', 'Terjadi kesalahan basis data saat sinkronisasi akun. Silakan coba lagi atau hubungi administrator.');
         }
 
         // 5. Loginkan pengguna ke sesi lokal aplikasi
         Auth::login($user, true);
         $request->session()->regenerate();
+
+        // Open Redirect Guard
+        $intended = session('url.intended');
+        if ($intended && ! Str::startsWith($intended, url('/'))) {
+            session()->forget('url.intended');
+        }
 
         // 6. Langsung arahkan ke Dashboard (Tanpa melihat form login!)
         return redirect()->intended('/dashboard')->with('success', "Selamat datang kembali, {$user->name}!");
