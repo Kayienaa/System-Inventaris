@@ -41,14 +41,44 @@ class BorrowingPolicy
 
     public function checkout(User $user, Borrowing $borrowing): bool
     {
-        return $user->hasAnyRole(['super_admin', 'admin']) || ($this->owns($user, $borrowing)
-            && $borrowing->status === BorrowingStatus::Approved);
+        $statusValue = $borrowing->status instanceof BorrowingStatus
+            ? $borrowing->status->value
+            : (string) $borrowing->status;
+
+        // Transaksi serah terima fisik hanya diizinkan jika sudah disetujui (approved)
+        if ($statusValue !== 'approved') {
+            return false;
+        }
+
+        // Admin & Super Admin diizinkan melakukan konfirmasi serah terima transaksi approved
+        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+            return true;
+        }
+
+        // Siswa dan Guru diizinkan jika transaksi milik mereka sendiri
+        return $this->owns($user, $borrowing);
+    }
+
+    public function update(User $user, Borrowing $borrowing): bool
+    {
+        return $this->checkout($user, $borrowing);
     }
 
     public function submitReturn(User $user, Borrowing $borrowing): bool
     {
-        return $user->hasAnyRole(['super_admin', 'admin']) || ($this->owns($user, $borrowing)
-            && $borrowing->status === BorrowingStatus::Borrowed);
+        $statusValue = $borrowing->status instanceof BorrowingStatus
+            ? $borrowing->status->value
+            : (string) $borrowing->status;
+
+        if ($statusValue !== 'borrowed') {
+            return false;
+        }
+
+        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+            return true;
+        }
+
+        return $this->owns($user, $borrowing);
     }
 
     public function verifyReturn(User $user, Borrowing $borrowing): bool
@@ -58,6 +88,8 @@ class BorrowingPolicy
 
     private function owns(User $user, Borrowing $borrowing): bool
     {
-        return $borrowing->borrower_user_id === $user->id;
+        $borrowerId = $borrowing->borrower_user_id ?? $borrowing->user_id ?? null;
+
+        return $borrowerId !== null && (int) $borrowerId === (int) $user->id;
     }
 }

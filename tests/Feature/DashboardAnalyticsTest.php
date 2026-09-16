@@ -86,5 +86,24 @@ class DashboardAnalyticsTest extends TestCase
         $response->assertDontSee('DATA PENGGUNA (SISWA)');
         $response->assertDontSee('DATA GURU');
         $response->assertDontSee('GATEWAY STATUS');
+
+        // Banner Aksi Cepat (Quick Action CTA) peminjam wajib terlihat
+        $response->assertSee('Butuh Perangkat untuk Praktik TEFA?');
+        $response->assertSee('Ajukan peminjaman laptop atau smartphone inventaris TEFA SMKN 1 Bangsri dengan mudah dan transparan.');
+        $response->assertSee('Mulai Pinjam Barang');
+        $response->assertSee(route('assets.index'));
+        $response->assertSee('Mas Donny');
+    }
+
+    public function test_admin_does_not_see_borrower_quick_action_cta_banner(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $response = $this->actingAs($admin)->get(route('dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertDontSee('Butuh Perangkat untuk Praktik TEFA?');
+        $response->assertDontSee('Mulai Pinjam Barang');
     }
 }

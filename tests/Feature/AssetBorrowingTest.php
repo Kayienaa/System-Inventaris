@@ -321,4 +321,71 @@ class AssetBorrowingTest extends TestCase
 
         $response->assertStatus(422);
     }
+
+    public function test_borrower_cannot_checkout_pending_borrowing(): void
+    {
+        $siswa = $this->createSiswa();
+        $asset = Asset::first();
+
+        $borrowing = Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::Pending,
+            'requested_at' => now(),
+            'due_at' => now()->addDays(3),
+        ]);
+
+        $response = $this->actingAs($siswa)->post(route('borrowings.checkout', $borrowing), [
+            'borrowing_evidence' => $this->createTestBase64Image(),
+        ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_borrower_cannot_checkout_other_users_borrowing(): void
+    {
+        $siswaA = $this->createSiswa();
+        $siswaB = $this->createSiswa();
+        $asset = Asset::first();
+
+        $borrowing = Borrowing::create([
+            'borrower_user_id' => $siswaA->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::Approved,
+            'requested_at' => now(),
+            'due_at' => now()->addDays(3),
+        ]);
+
+        $response = $this->actingAs($siswaB)->post(route('borrowings.checkout', $borrowing), [
+            'borrowing_evidence' => $this->createTestBase64Image(),
+        ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_guru_can_checkout_own_approved_borrowing(): void
+    {
+        Storage::fake('public');
+        $guru = $this->createGuru();
+        $asset = Asset::first();
+        $asset->update(['availability_status' => AssetAvailabilityStatus::Dipesan]);
+
+        $borrowing = Borrowing::create([
+            'borrower_user_id' => $guru->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::Approved,
+            'requested_at' => now(),
+            'due_at' => now()->addDays(3),
+        ]);
+
+        $response = $this->actingAs($guru)->post(route('borrowings.checkout', $borrowing), [
+            'borrowing_evidence' => $this->createTestBase64Image(),
+        ]);
+
+        $response->assertRedirect(route('borrowings.mine'));
+        $response->assertSessionHas('success');
+
+        $borrowing->refresh();
+        $this->assertEquals(BorrowingStatus::Borrowed, $borrowing->status);
+    }
 }

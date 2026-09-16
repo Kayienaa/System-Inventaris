@@ -254,6 +254,8 @@ class BorrowingController extends Controller
 
     public function checkout(CheckoutBorrowingRequest $request, Borrowing $borrowing, CheckoutBorrowingAction $action, AuditLogService $audit): BorrowingResource
     {
+        $this->authorize('checkout', $borrowing);
+
         $evidencePath = $this->storeEvidenceImage($request, 'borrowing_evidence', 'borrowing-evidence')
             ?? $request->input('borrowing_evidence_path');
 

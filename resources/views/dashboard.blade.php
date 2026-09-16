@@ -122,6 +122,90 @@
     </div>
 
     {{-- =========================================
+         BANNER AKSI CEPAT (QUICK ACTION CTA) PEMINJAM
+    ========================================== --}}
+    @unlessrole('admin|super_admin')
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#6F4E37] via-[#7E583F] to-[#5A3C2A] dark:from-[#131B2A] dark:via-[#1A2436] dark:to-[#0E1420] text-white p-6 sm:p-7 shadow-lg border border-[#8B5A2B]/40 dark:border-amber-500/30 my-6 transition-all static-card">
+        {{-- Ambient Decorative Background Glows --}}
+        <div class="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-amber-400/10 dark:bg-amber-500/5 blur-2xl pointer-events-none"></div>
+        <div class="absolute -left-12 -bottom-12 w-48 h-48 rounded-full bg-[#8B5A2B]/20 dark:bg-cyan-500/5 blur-xl pointer-events-none"></div>
+
+        {{-- Bagian Atas: Headline & Tombol CTA --}}
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div class="max-w-2xl space-y-2">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-amber-400/20 text-amber-200 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/30">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-300 dark:bg-amber-400 animate-pulse"></span>
+                    <span>Aksi Cepat Peminjaman</span>
+                </div>
+                <h2 class="brand-font font-heading font-bold text-xl sm:text-2xl text-white tracking-tight">
+                    Butuh Perangkat untuk Praktik TEFA?
+                </h2>
+                <p class="text-sm text-stone-200 dark:text-stone-300 leading-relaxed">
+                    Ajukan peminjaman laptop atau smartphone inventaris TEFA SMKN 1 Bangsri dengan mudah dan transparan.
+                </p>
+            </div>
+
+            <div class="shrink-0 flex items-center">
+                <a href="{{ route('assets.index') }}"
+                   class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold text-sm sm:text-base shadow-lg shadow-amber-950/25 dark:bg-gradient-to-r dark:from-amber-400 dark:to-amber-500 dark:hover:from-amber-300 dark:hover:to-amber-400 active:scale-95 transition-all duration-200 interactive-btn cursor-pointer group">
+                    <svg class="w-5 h-5 text-stone-950 transition-transform duration-200 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    <span>Mulai Pinjam Barang</span>
+                    <svg class="w-4 h-4 text-stone-950 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+
+        {{-- Langkah Panduan Singkat (3 Langkah Horisontal) --}}
+        <div class="relative z-10 mt-6 pt-5 border-t border-white/15 dark:border-stone-800/80">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-amber-200/90 dark:text-amber-400 mb-3 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                <span>Alur Peminjaman Praktik (3 Langkah Mudah)</span>
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {{-- Langkah 1 --}}
+                <div class="flex items-start gap-3 p-3.5 rounded-xl bg-black/15 hover:bg-black/25 dark:bg-stone-900/50 dark:hover:bg-stone-900/70 border border-white/10 dark:border-stone-800/80 backdrop-blur-xs transition-all duration-200">
+                    <div class="w-7 h-7 rounded-lg bg-amber-400 text-stone-950 font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                        1
+                    </div>
+                    <div class="text-xs leading-relaxed text-stone-100 dark:text-stone-200">
+                        <p class="font-semibold text-white mb-0.5">Pilih Perangkat</p>
+                        Pilih unit yang berstatus <span class="text-emerald-300 font-semibold">Tersedia</span> di katalog.
+                    </div>
+                </div>
+
+                {{-- Langkah 2 --}}
+                <div class="flex items-start gap-3 p-3.5 rounded-xl bg-black/15 hover:bg-black/25 dark:bg-stone-900/50 dark:hover:bg-stone-900/70 border border-white/10 dark:border-stone-800/80 backdrop-blur-xs transition-all duration-200">
+                    <div class="w-7 h-7 rounded-lg bg-amber-400 text-stone-950 font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                        2
+                    </div>
+                    <div class="text-xs leading-relaxed text-stone-100 dark:text-stone-200">
+                        <p class="font-semibold text-white mb-0.5">Ajukan Peminjaman</p>
+                        Isi keperluan pinjam &amp; ajukan formulir.
+                    </div>
+                </div>
+
+                {{-- Langkah 3 --}}
+                <div class="flex items-start gap-3 p-3.5 rounded-xl bg-black/15 hover:bg-black/25 dark:bg-stone-900/50 dark:hover:bg-stone-900/70 border border-white/10 dark:border-stone-800/80 backdrop-blur-xs transition-all duration-200">
+                    <div class="w-7 h-7 rounded-lg bg-amber-400 text-stone-950 font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                        3
+                    </div>
+                    <div class="text-xs leading-relaxed text-stone-100 dark:text-stone-200">
+                        <p class="font-semibold text-white mb-0.5">Serah Terima Fisik</p>
+                        Temui Admin <span class="text-amber-200 dark:text-amber-300 font-semibold">(Mas Donny)</span> di ruang TEFA untuk serah terima fisik.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endunlessrole
+
+    {{-- =========================================
          VISUALISASI GRAFIK TREN PEMINJAMAN (CHART.JS)
     ========================================== --}}
     <div class="section-heading" style="margin-top: 2.25rem;">

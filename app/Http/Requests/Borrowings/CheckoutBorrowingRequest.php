@@ -10,21 +10,22 @@ class CheckoutBorrowingRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $borrowing = $this->route('borrowing');
-        if ($this->user()?->hasAnyRole(['admin', 'super_admin'])) {
-            return true;
-        }
-
-        return $borrowing && $this->user()?->id === $borrowing->borrower_user_id;
+        return true; // Otorisasi detail ditangani di Controller / Policy
     }
 
     public function rules(): array
     {
-        return ['checkout_condition' => ['required', Rule::enum(AssetCondition::class)]];
+        return [
+            'checkout_condition' => ['nullable', Rule::enum(AssetCondition::class)],
+            'borrowing_evidence' => ['nullable'],
+            'borrowing_evidence_path' => ['nullable', 'string'],
+        ];
     }
 
     public function messages(): array
     {
-        return ['checkout_condition.required' => 'Checkout condition is required.'];
+        return [
+            'checkout_condition.enum' => 'Kondisi barang saat checkout tidak valid.',
+        ];
     }
 }

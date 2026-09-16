@@ -66,6 +66,11 @@ class Borrowing extends Model
         ];
     }
 
+    public function getUserIdAttribute(): ?int
+    {
+        return $this->borrower_user_id ? (int) $this->borrower_user_id : null;
+    }
+
     public function borrower(): BelongsTo
     {
         return $this->belongsTo(User::class, 'borrower_user_id');
