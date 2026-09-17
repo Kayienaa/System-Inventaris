@@ -36,10 +36,10 @@ class EnsurePhoneIsFilled
         $user = $request->user();
 
         if ($user && $user->hasAnyRole(['siswa', 'guru'])) {
-            $phone = $user->siswaProfile?->phone ?: $user->guruProfile?->phone;
+            $phone = trim((string) ($user->siswaProfile?->phone ?? $user->guruProfile?->phone ?? ''));
 
-            // Jika nomor HP kosong atau baris profil belum ada di database
-            if (empty($phone)) {
+            // Hanya cegat dan alihkan pengguna ke /complete-phone jika kolom phone bernilai NULL atau kosong
+            if ($phone === '') {
                 if ($request->routeIs($this->exceptRoutes)) {
                     return $next($request);
                 }

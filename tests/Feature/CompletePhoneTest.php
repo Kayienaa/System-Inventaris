@@ -337,4 +337,105 @@ class CompletePhoneTest extends TestCase
         $siswaProfile->refresh();
         $this->assertEquals('082100000004', $siswaProfile->phone);
     }
+
+    public function test_siswa_with_phone_can_access_catalog_without_redirect(): void
+    {
+        $siswa = User::factory()->create();
+        $siswa->assignRole('siswa');
+        SiswaProfile::create([
+            'user_id' => $siswa->id,
+            'nis' => '1010',
+            'phone' => '6281234567890',
+        ]);
+
+        $response = $this->actingAs($siswa)->get(route('assets.index'));
+        $response->assertOk();
+    }
+
+    public function test_siswa_without_phone_is_redirected_to_complete_phone_when_accessing_catalog(): void
+    {
+        $siswa = User::factory()->create();
+        $siswa->assignRole('siswa');
+        SiswaProfile::create([
+            'user_id' => $siswa->id,
+            'nis' => '1011',
+            'phone' => null,
+        ]);
+
+        $response = $this->actingAs($siswa)->get(route('assets.index'));
+        $response->assertRedirect(route('complete-phone'));
+    }
+
+    public function test_guru_with_phone_can_access_catalog_without_redirect(): void
+    {
+        $guru = User::factory()->create();
+        $guru->assignRole('guru');
+        GuruProfile::create([
+            'user_id' => $guru->id,
+            'nip' => '198501012010011055',
+            'phone' => '628987654321',
+        ]);
+
+        $response = $this->actingAs($guru)->get(route('assets.index'));
+        $response->assertOk();
+    }
+
+    public function test_guru_without_phone_is_redirected_to_complete_phone_when_accessing_catalog(): void
+    {
+        $guru = User::factory()->create();
+        $guru->assignRole('guru');
+        GuruProfile::create([
+            'user_id' => $guru->id,
+            'nip' => '198501012010011056',
+            'phone' => null,
+        ]);
+
+        $response = $this->actingAs($guru)->get(route('assets.index'));
+        $response->assertRedirect(route('complete-phone'));
+    }
+
+    public function test_profile_update_rejects_invalid_phone_number_for_siswa(): void
+    {
+        $siswa = User::factory()->create();
+        $siswa->assignRole('siswa');
+        SiswaProfile::create([
+            'user_id' => $siswa->id,
+            'nis' => '1012',
+            'phone' => '628111111111',
+        ]);
+
+        $invalidNumbers = ['12345', '0217654321', 'abcd123456', '0800123456'];
+
+        foreach ($invalidNumbers as $invalid) {
+            $response = $this->actingAs($siswa)->patch('/profile', [
+                'phone' => $invalid,
+            ]);
+
+            $response->assertSessionHasErrors(['phone']);
+        }
+
+        $siswa->refresh();
+        $this->assertEquals('628111111111', $siswa->siswaProfile->phone);
+    }
+
+    public function test_guru_can_update_phone_number_from_profile_page(): void
+    {
+        $guru = User::factory()->create();
+        $guru->assignRole('guru');
+        GuruProfile::create([
+            'user_id' => $guru->id,
+            'nip' => '198501012010011057',
+            'phone' => '628111222333',
+        ]);
+
+        $response = $this->actingAs($guru)->patch('/profile', [
+            'phone' => '085712345678',
+        ]);
+
+        $response->assertRedirect(route('profile.edit'));
+        $response->assertSessionHas('success', 'Nomor telepon berhasil diperbarui.');
+
+        $guru->refresh();
+        $this->assertEquals('6285712345678', $guru->guruProfile->phone);
+    }
 }

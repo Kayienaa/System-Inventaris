@@ -23,8 +23,8 @@ class CompletePhoneController extends Controller
             return redirect()->route('dashboard');
         }
 
-        $currentPhone = $user->siswaProfile?->phone ?: $user->guruProfile?->phone;
-        if (! empty($currentPhone)) {
+        $currentPhone = trim((string) ($user->siswaProfile?->phone ?? $user->guruProfile?->phone ?? ''));
+        if ($currentPhone !== '') {
             return redirect()->route('dashboard');
         }
 

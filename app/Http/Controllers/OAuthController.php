@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\GuruProfile;
 use App\Models\SiswaProfile;
 use App\Models\User;
+use App\Services\SiPintuSyncService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -178,7 +179,7 @@ class OAuthController extends Controller
                 $isTeacher = in_array($roleName, ['teacher', 'guru', 'pengajar']);
 
                 if ($isStudent) {
-                    if ($externalId !== '' || $phone || $classroom) {
+                    if ($externalId !== '' || SiPintuSyncService::isValidPhoneNumber($phone) || $classroom) {
                         $profile = SiswaProfile::firstOrNew(['user_id' => $user->id]);
                         if ($externalId !== '') {
                             $profile->nis = $externalId;
@@ -186,7 +187,7 @@ class OAuthController extends Controller
                         if ($classroom) {
                             $profile->class_name = $classroom;
                         }
-                        if ($phone) {
+                        if (SiPintuSyncService::isValidPhoneNumber($phone)) {
                             $profile->phone = $phone;
                         }
                         $profile->save();
@@ -196,12 +197,12 @@ class OAuthController extends Controller
                         $user->assignRole('siswa');
                     }
                 } elseif ($isTeacher) {
-                    if ($externalId !== '' || $phone) {
+                    if ($externalId !== '' || SiPintuSyncService::isValidPhoneNumber($phone)) {
                         $profile = GuruProfile::firstOrNew(['user_id' => $user->id]);
                         if ($externalId !== '') {
                             $profile->nip = $externalId;
                         }
-                        if ($phone) {
+                        if (SiPintuSyncService::isValidPhoneNumber($phone)) {
                             $profile->phone = $phone;
                         }
                         $profile->save();
@@ -349,7 +350,7 @@ class OAuthController extends Controller
         $isTeacher = in_array($roleName, ['teacher', 'guru', 'pengajar']);
 
         if ($isStudent) {
-            if ($externalId !== '' || $phone || $classroom) {
+            if ($externalId !== '' || SiPintuSyncService::isValidPhoneNumber($phone) || $classroom) {
                 $profile = SiswaProfile::firstOrNew(['user_id' => $user->id]);
                 if ($externalId !== '') {
                     $profile->nis = $externalId;
@@ -357,7 +358,7 @@ class OAuthController extends Controller
                 if ($classroom) {
                     $profile->class_name = $classroom;
                 }
-                if ($phone) {
+                if (SiPintuSyncService::isValidPhoneNumber($phone)) {
                     $profile->phone = $phone;
                 }
                 $profile->save();
@@ -367,12 +368,12 @@ class OAuthController extends Controller
                 $user->assignRole('siswa');
             }
         } elseif ($isTeacher) {
-            if ($externalId !== '' || $phone) {
+            if ($externalId !== '' || SiPintuSyncService::isValidPhoneNumber($phone)) {
                 $profile = GuruProfile::firstOrNew(['user_id' => $user->id]);
                 if ($externalId !== '') {
                     $profile->nip = $externalId;
                 }
-                if ($phone) {
+                if (SiPintuSyncService::isValidPhoneNumber($phone)) {
                     $profile->phone = $phone;
                 }
                 $profile->save();

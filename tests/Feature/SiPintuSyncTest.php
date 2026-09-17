@@ -515,6 +515,223 @@ class SiPintuSyncTest extends TestCase
         $this->assertDatabaseHas('users', ['id' => $alumniA->id]);
         $this->assertDatabaseHas('siswa_profiles', ['nis' => '99001']);
     }
+
+    public function test_sync_students_preserves_existing_local_phone_when_sipintu_sends_null_or_empty(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'safesync.siswa@smkn1bangsri.sch.id',
+            'name' => 'Siswa Safe Sync',
+        ]);
+        $user->assignRole('siswa');
+        $profile = SiswaProfile::create([
+            'user_id' => $user->id,
+            'nis' => '88001',
+            'phone' => '6281234567890',
+        ]);
+
+        $mockUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/') . '/api/v1/sijuna/students';
+
+        // SiPintu mengirimkan nomor telepon null / kosong
+        Http::fake([
+            $mockUrl => Http::response([
+                'success' => true,
+                'count' => 1,
+                'data' => [
+                    [
+                        'id' => 801,
+                        'nis' => '88001',
+                        'nama' => 'Siswa Safe Sync Updated',
+                        'hp' => null,
+                        'kelas' => 'XII RPL 1',
+                        'user' => [
+                            'email' => 'safesync.siswa@smkn1bangsri.sch.id',
+                            'name' => 'Siswa Safe Sync Updated',
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $service = app(SiPintuSyncService::class);
+        $result = $service->syncStudents();
+
+        $this->assertTrue($result['success']);
+        $profile->refresh();
+        $this->assertEquals('6281234567890', $profile->phone, 'Nomor telepon lokal siswa harus dipertahankan saat SiPintu mengirimkan null');
+    }
+
+    public function test_sync_students_updates_phone_when_sipintu_sends_valid_phone(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'updatephone.siswa@smkn1bangsri.sch.id',
+            'name' => 'Siswa Phone Update',
+        ]);
+        $user->assignRole('siswa');
+        $profile = SiswaProfile::create([
+            'user_id' => $user->id,
+            'nis' => '88002',
+            'phone' => '628111111111',
+        ]);
+
+        $mockUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/') . '/api/v1/sijuna/students';
+
+        Http::fake([
+            $mockUrl => Http::response([
+                'success' => true,
+                'count' => 1,
+                'data' => [
+                    [
+                        'id' => 802,
+                        'nis' => '88002',
+                        'nama' => 'Siswa Phone Update',
+                        'hp' => '082299887766',
+                        'user' => [
+                            'email' => 'updatephone.siswa@smkn1bangsri.sch.id',
+                            'name' => 'Siswa Phone Update',
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $service = app(SiPintuSyncService::class);
+        $result = $service->syncStudents();
+
+        $this->assertTrue($result['success']);
+        $profile->refresh();
+        $this->assertEquals('082299887766', $profile->phone, 'Nomor telepon siswa harus diperbarui jika SiPintu mengirim nomor valid');
+    }
+
+    public function test_sync_teachers_preserves_existing_local_phone_when_sipintu_sends_null_or_empty(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'safesync.guru@smkn1bangsri.sch.id',
+            'name' => 'Guru Safe Sync',
+        ]);
+        $user->assignRole('guru');
+        $profile = GuruProfile::create([
+            'user_id' => $user->id,
+            'nip' => '198501012010011091',
+            'phone' => '628999888777',
+        ]);
+
+        $mockUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/') . '/api/v1/sijuna/teachers';
+
+        // SiPintu mengirimkan nomor telepon kosong / null
+        Http::fake([
+            $mockUrl => Http::response([
+                'success' => true,
+                'count' => 1,
+                'data' => [
+                    [
+                        'id' => 803,
+                        'nip' => '198501012010011091',
+                        'nama' => 'Guru Safe Sync Updated',
+                        'hp' => '',
+                        'user' => [
+                            'email' => 'safesync.guru@smkn1bangsri.sch.id',
+                            'name' => 'Guru Safe Sync Updated',
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $service = app(SiPintuSyncService::class);
+        $result = $service->syncTeachers();
+
+        $this->assertTrue($result['success']);
+        $profile->refresh();
+        $this->assertEquals('628999888777', $profile->phone, 'Nomor telepon lokal guru harus dipertahankan saat SiPintu mengirim string kosong');
+    }
+
+    public function test_sync_teachers_updates_phone_when_sipintu_sends_valid_phone(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'updatephone.guru@smkn1bangsri.sch.id',
+            'name' => 'Guru Phone Update',
+        ]);
+        $user->assignRole('guru');
+        $profile = GuruProfile::create([
+            'user_id' => $user->id,
+            'nip' => '198501012010011092',
+            'phone' => '628111111111',
+        ]);
+
+        $mockUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/') . '/api/v1/sijuna/teachers';
+
+        Http::fake([
+            $mockUrl => Http::response([
+                'success' => true,
+                'count' => 1,
+                'data' => [
+                    [
+                        'id' => 804,
+                        'nip' => '198501012010011092',
+                        'nama' => 'Guru Phone Update',
+                        'hp' => '087788990011',
+                        'user' => [
+                            'email' => 'updatephone.guru@smkn1bangsri.sch.id',
+                            'name' => 'Guru Phone Update',
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $service = app(SiPintuSyncService::class);
+        $result = $service->syncTeachers();
+
+        $this->assertTrue($result['success']);
+        $profile->refresh();
+        $this->assertEquals('087788990011', $profile->phone, 'Nomor telepon guru harus diperbarui jika SiPintu mengirim nomor valid');
+    }
+
+    public function test_webhook_sync_user_preserves_existing_local_phone_when_phone_is_empty(): void
+    {
+        config(['sipintu.client_secret' => 'testsecret123']);
+
+        $user = User::factory()->create([
+            'email' => 'webhook.siswa@smkn1bangsri.sch.id',
+            'name' => 'Webhook Siswa',
+        ]);
+        $user->assignRole('siswa');
+        $profile = SiswaProfile::create([
+            'user_id' => $user->id,
+            'nis' => '88003',
+            'phone' => '628555666777',
+        ]);
+
+        $payload = [
+            'user' => [
+                'name' => 'Webhook Siswa Updated',
+                'email' => 'webhook.siswa@smkn1bangsri.sch.id',
+                'external_id' => '88003',
+                'role' => 'siswa',
+                'phone' => null, // nomor telepon kosong dari gateway
+            ],
+        ];
+
+        $content = json_encode($payload);
+        $signature = hash_hmac('sha256', $content, 'testsecret123');
+
+        $response = $this->call(
+            'POST',
+            '/sipintu/sync-user',
+            [],
+            [],
+            [],
+            [
+                'HTTP_X_SIPINTU_SIGNATURE' => $signature,
+                'CONTENT_TYPE' => 'application/json',
+            ],
+            $content
+        );
+
+        $response->assertOk();
+        $profile->refresh();
+        $this->assertEquals('628555666777', $profile->phone, 'Nomor telepon lokal harus dipertahankan saat webhook mengirim phone null');
+    }
 }
 
 

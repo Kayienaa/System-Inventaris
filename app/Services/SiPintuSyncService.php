@@ -41,6 +41,30 @@ class SiPintuSyncService
     }
 
     /**
+     * Periksa apakah nomor telepon yang dikirim dari SiPintu Gateway valid
+     * (bukan null, kosong, placeholder dummy seperti '-', '0', 'null', dan memiliki minimal 8 digit angka).
+     */
+    public static function isValidPhoneNumber(?string $phone): bool
+    {
+        if ($phone === null) {
+            return false;
+        }
+
+        $trimmed = trim($phone);
+        if ($trimmed === '') {
+            return false;
+        }
+
+        if (in_array(strtolower($trimmed), ['null', 'none', 'n/a', '-', '--', '0', 'undefined'], true)) {
+            return false;
+        }
+
+        $digits = preg_replace('/[^0-9]/', '', $trimmed);
+
+        return strlen($digits) >= 8;
+    }
+
+    /**
      * Sinkronisasi data Siswa dari SiPintu Gateway ke database lokal.
      * Endpoint: GET {base_url}/api/v1/sijuna/students
      */
@@ -191,7 +215,7 @@ class SiPintuSyncService
                                 $siswaProfile->nisn = $nisn;
                                 $siswaProfile->class_name = $className;
 
-                                if (! empty($phone)) {
+                                if (self::isValidPhoneNumber($phone)) {
                                     $siswaProfile->phone = $phone;
                                 }
 
@@ -357,19 +381,25 @@ class SiPintuSyncService
                                 $created++;
                             }
 
-                            // 2. Simpan / update GuruProfile (selalu menimpa phone jika disediakan dari SiPintu)
+                            // 2. Simpan / update GuruProfile (Safe-sync: jangan timpa nomor lokal jika SiPintu null/kosong)
                             if ($nip !== '') {
-                                $existingProfile = $existingProfilesByUserId[$user->id] 
-                                    ?? ($existingProfilesByNip[$nip] ?? null);
+                                $guruProfile = $existingProfilesByUserId[$user->id] 
+                                    ?? ($existingProfilesByNip[$nip] ?? GuruProfile::where('user_id', $user->id)->first());
 
-                                $guruProfile = GuruProfile::updateOrCreate(
-                                    ['user_id' => $user->id],
-                                    [
-                                        'nip'   => (string) $nip,
-                                        'code'  => $code ?: ($existingProfile?->code ?? null),
-                                        'phone' => $phone ?? $existingProfile?->phone,
-                                    ]
-                                );
+                                if (! $guruProfile) {
+                                    $guruProfile = new GuruProfile(['user_id' => $user->id]);
+                                }
+
+                                $guruProfile->user_id = $user->id;
+                                $guruProfile->nip = (string) $nip;
+                                if ($code !== '') {
+                                    $guruProfile->code = $code;
+                                }
+                                if (self::isValidPhoneNumber($phone)) {
+                                    $guruProfile->phone = $phone;
+                                }
+
+                                $guruProfile->save();
 
                                 $existingProfilesByNip[$nip] = $guruProfile;
                                 $existingProfilesByUserId[$user->id] = $guruProfile;
