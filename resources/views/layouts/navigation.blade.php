@@ -47,9 +47,19 @@
         {{-- ── User Info & Theme Toggle ── --}}
         <div class="flex items-center justify-between px-5 py-4 border-b border-white/10 dark:border-stone-800">
             <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 overflow-hidden group cursor-pointer hover:opacity-90 transition-opacity" title="Buka Pengaturan Profil">
-                <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 bg-[#C89B3C] text-[#3B2610] group-hover:scale-105 transition-transform">
-                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                </div>
+                @if(Auth::user()->avatar)
+                    <img src="{{ Auth::user()->avatar }}" 
+                         alt="{{ Auth::user()->name }}" 
+                         class="w-9 h-9 rounded-full object-cover border border-stone-200 dark:border-stone-700 shadow-sm shrink-0 group-hover:scale-105 transition-transform"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="w-9 h-9 rounded-full bg-amber-600 text-white items-center justify-center font-bold text-sm hidden shadow-sm shrink-0">
+                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    </div>
+                @else
+                    <div class="w-9 h-9 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
+                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    </div>
+                @endif
                 <div class="overflow-hidden">
                     <p class="text-sm font-semibold truncate text-[#F8F6F2] dark:text-stone-100 group-hover:text-amber-300 transition-colors">{{ Auth::user()->name }}</p>
                     <p class="text-xs truncate font-medium text-white/60 dark:text-stone-400">
@@ -312,8 +322,20 @@
                 </svg>
             </button>
 
-            <a href="{{ route('profile.edit') }}" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-[#C89B3C] text-[#3B2610] hover:opacity-90 transition-all active:scale-95 cursor-pointer block" title="Profil Saya">
-                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+            <a href="{{ route('profile.edit') }}" class="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold hover:opacity-90 transition-all active:scale-95 cursor-pointer block" title="Profil Saya">
+                @if(Auth::user()->avatar)
+                    <img src="{{ Auth::user()->avatar }}" 
+                         alt="{{ Auth::user()->name }}" 
+                         class="w-full h-full object-cover border border-stone-200 dark:border-stone-700 shadow-sm"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="w-full h-full bg-amber-600 text-white items-center justify-center font-bold text-xs hidden shadow-sm">
+                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    </div>
+                @else
+                    <div class="w-full h-full bg-amber-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    </div>
+                @endif
             </a>
         </div>
     </div>

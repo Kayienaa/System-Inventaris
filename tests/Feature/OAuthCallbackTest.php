@@ -276,4 +276,33 @@ class OAuthCallbackTest extends TestCase
         $secondResponse->assertRedirect(route('login'));
         $secondResponse->assertSessionHas('error', 'Kode otorisasi sudah digunakan. Silakan login ulang.');
     }
+
+    public function test_callback_saves_avatar_to_user(): void
+    {
+        $baseUrl = $this->getBaseUrl();
+
+        Http::fake([
+            "{$baseUrl}/oauth/token" => Http::response([
+                'access_token' => 'mock_access_token_avatar',
+                'token_type' => 'Bearer',
+            ], 200),
+            "{$baseUrl}/api/v1/user" => Http::response([
+                'data' => [
+                    'name' => 'Siswa Avatar SSO',
+                    'email' => 'siswa.avatar@smkn1bangsri.sch.id',
+                    'external_id' => '10099',
+                    'role' => 'siswa',
+                    'phone' => '081234567890',
+                    'avatar' => 'https://sipintu.smkn1bangsri.sch.id/photos/siswa_10099.jpg',
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->get('/oauth/callback?code=valid_avatar_code_123');
+
+        $response->assertRedirect('/dashboard');
+        $user = User::where('email', 'siswa.avatar@smkn1bangsri.sch.id')->first();
+        $this->assertNotNull($user);
+        $this->assertEquals('https://sipintu.smkn1bangsri.sch.id/photos/siswa_10099.jpg', $user->avatar);
+    }
 }

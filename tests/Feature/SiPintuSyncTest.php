@@ -208,7 +208,7 @@ class SiPintuSyncTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $response->assertSessionHas('success', 'Sinkronisasi telah dijadwalkan dan sedang berjalan di background. Data akan diperbarui dalam beberapa saat — pastikan queue worker aktif (php artisan queue:work).');
+        $response->assertSessionHas('success', 'Sinkronisasi berhasil! Seluruh data siswa dan dewan guru telah diperbarui.');
         $this->assertDatabaseHas('audit_logs', [
             'action' => 'sipintu.sync_requested',
         ]);
@@ -230,7 +230,7 @@ class SiPintuSyncTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $response->assertSessionHas('success', 'Sinkronisasi telah dijadwalkan dan sedang berjalan di background. Data akan diperbarui dalam beberapa saat — pastikan queue worker aktif (php artisan queue:work).');
+        $response->assertSessionHas('success', 'Sinkronisasi berhasil! Data siswa telah diperbarui.');
     }
 
     public function test_admin_can_trigger_sync_teachers_via_web_interface(): void
@@ -249,7 +249,7 @@ class SiPintuSyncTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $response->assertSessionHas('success', 'Sinkronisasi telah dijadwalkan dan sedang berjalan di background. Data akan diperbarui dalam beberapa saat — pastikan queue worker aktif (php artisan queue:work).');
+        $response->assertSessionHas('success', 'Sinkronisasi berhasil! Data dewan guru telah diperbarui.');
     }
 
     public function test_non_admin_cannot_trigger_sync_via_web_interface(): void
@@ -731,6 +731,157 @@ class SiPintuSyncTest extends TestCase
         $response->assertOk();
         $profile->refresh();
         $this->assertEquals('628555666777', $profile->phone, 'Nomor telepon lokal harus dipertahankan saat webhook mengirim phone null');
+    }
+
+    public function test_sync_students_saves_avatar_from_sipintu_payload(): void
+    {
+        $mockUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/') . '/api/v1/sijuna/students';
+
+        Http::fake([
+            $mockUrl => Http::response([
+                'success' => true,
+                'count' => 1,
+                'data' => [
+                    [
+                        'id' => 301,
+                        'nis' => '212210003',
+                        'nama' => 'Student Avatar Test',
+                        'photo' => 'https://sipintu.smkn1bangsri.sch.id/uploads/students/avatar1.jpg',
+                        'hp' => '081234567899',
+                        'user' => [
+                            'email' => 'student.avatar@smkn1bangsri.sch.id',
+                            'name' => 'Student Avatar Test',
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $service = app(SiPintuSyncService::class);
+        $result = $service->syncStudents();
+
+        $this->assertTrue($result['success']);
+        $studentUser = User::where('email', 'student.avatar@smkn1bangsri.sch.id')->first();
+        $this->assertNotNull($studentUser);
+        $this->assertEquals('https://sipintu.smkn1bangsri.sch.id/uploads/students/avatar1.jpg', $studentUser->avatar);
+    }
+
+    public function test_sync_teachers_saves_avatar_from_sipintu_payload(): void
+    {
+        $mockUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/') . '/api/v1/sijuna/teachers';
+
+        Http::fake([
+            $mockUrl => Http::response([
+                'success' => true,
+                'count' => 1,
+                'data' => [
+                    [
+                        'id' => 302,
+                        'nip' => '198202022006021002',
+                        'nama' => 'Teacher Avatar Test',
+                        'avatar' => 'https://sipintu.smkn1bangsri.sch.id/uploads/teachers/guru1.jpg',
+                        'hp' => '081234567888',
+                        'user' => [
+                            'email' => 'teacher.avatar@smkn1bangsri.sch.id',
+                            'name' => 'Teacher Avatar Test',
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $service = app(SiPintuSyncService::class);
+        $result = $service->syncTeachers();
+
+        $this->assertTrue($result['success']);
+        $teacherUser = User::where('email', 'teacher.avatar@smkn1bangsri.sch.id')->first();
+        $this->assertNotNull($teacherUser);
+        $this->assertEquals('https://sipintu.smkn1bangsri.sch.id/uploads/teachers/guru1.jpg', $teacherUser->avatar);
+    }
+
+    public function test_webhook_sync_user_updates_avatar_and_phone(): void
+    {
+        config(['sipintu.client_secret' => 'testsecret123']);
+
+        $user = User::factory()->create([
+            'email' => 'webhook.avatar@smkn1bangsri.sch.id',
+            'name' => 'Webhook Avatar Siswa',
+        ]);
+        $user->assignRole('siswa');
+        $profile = SiswaProfile::create([
+            'user_id' => $user->id,
+            'nis' => '88004',
+            'phone' => '628111222333',
+        ]);
+
+        $payload = [
+            'user' => [
+                'name' => 'Webhook Avatar Siswa Updated',
+                'email' => 'webhook.avatar@smkn1bangsri.sch.id',
+                'external_id' => '88004',
+                'role' => 'siswa',
+                'avatar' => 'https://sipintu.smkn1bangsri.sch.id/uploads/avatar-webhook.jpg',
+                'phone' => '089988776655',
+            ],
+        ];
+
+        $content = json_encode($payload);
+        $signature = hash_hmac('sha256', $content, 'testsecret123');
+
+        $response = $this->call(
+            'POST',
+            '/sipintu/sync-user',
+            [],
+            [],
+            [],
+            [
+                'HTTP_X_SIPINTU_SIGNATURE' => $signature,
+                'CONTENT_TYPE' => 'application/json',
+            ],
+            $content
+        );
+
+        $response->assertOk();
+        $user->refresh();
+        $profile->refresh();
+        $this->assertEquals('https://sipintu.smkn1bangsri.sch.id/uploads/avatar-webhook.jpg', $user->avatar);
+        $this->assertEquals('089988776655', $profile->phone);
+    }
+
+    public function test_sync_teachers_handles_nested_teachers_payload_and_fallback_nip(): void
+    {
+        $mockUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/') . '/api/v1/sijuna/teachers';
+
+        Http::fake([
+            $mockUrl => Http::response([
+                'success' => true,
+                'data' => [
+                    'teachers' => [
+                        [
+                            'id' => 401,
+                            'nama' => 'Teacher Nested Format',
+                            'user' => [
+                                'nip' => '198303032007031003',
+                            ],
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $service = app(SiPintuSyncService::class);
+        $result = $service->syncTeachers();
+
+        $this->assertTrue($result['success']);
+        $this->assertEquals(1, $result['created']);
+
+        $user = User::where('email', '198303032007031003@smkn1bangsri.sch.id')->first();
+        $this->assertNotNull($user);
+        $this->assertTrue($user->hasRole('guru'));
+
+        $profile = GuruProfile::where('user_id', $user->id)->first();
+        $this->assertNotNull($profile);
+        $this->assertEquals('198303032007031003', $profile->nip);
     }
 }
 

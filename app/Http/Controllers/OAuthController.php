@@ -117,7 +117,21 @@ class OAuthController extends Controller
         $email = trim((string) ($sipintuUser['email'] ?? ''));
         $externalId = trim((string) ($sipintuUser['external_id'] ?? ($sipintuUser['username'] ?? ($sipintuUser['nis'] ?? ($sipintuUser['nip'] ?? '')))));
         $name = trim((string) ($sipintuUser['name'] ?? 'User'));
-        $phone = trim((string) ($sipintuUser['phone'] ?? ($sipintuUser['hp'] ?? ($sipintuUser['no_hp'] ?? '')))) ?: null;
+        $phone = trim((string) (
+            $sipintuUser['phone']
+            ?? $sipintuUser['hp']
+            ?? $sipintuUser['no_hp']
+            ?? $sipintuUser['telepon']
+            ?? ($sipintuUser['user']['phone'] ?? null)
+            ?? ($sipintuUser['user']['hp'] ?? null)
+            ?? ''
+        )) ?: null;
+        $avatar = $sipintuUser['avatar']
+            ?? $sipintuUser['photo']
+            ?? $sipintuUser['foto']
+            ?? ($sipintuUser['user']['avatar'] ?? null)
+            ?? ($sipintuUser['user']['foto'] ?? null)
+            ?? null;
         $classroom = trim((string) ($sipintuUser['classroom'] ?? ($sipintuUser['class_name'] ?? ($sipintuUser['kelas'] ?? '')))) ?: null;
         $roleName = strtolower(trim((string) ($sipintuUser['role'] ?? '')));
 
@@ -148,7 +162,7 @@ class OAuthController extends Controller
 
         // DB Transaction & Catch QueryException
         try {
-            DB::transaction(function () use (&$user, $name, $email, $externalId, $phone, $classroom, $roleName) {
+            DB::transaction(function () use (&$user, $name, $email, $externalId, $phone, $classroom, $roleName, $avatar) {
                 if ($user) {
                     $user->name = $name;
                     if ($email !== '' && $user->email !== $email) {
@@ -160,6 +174,9 @@ class OAuthController extends Controller
                     if ($user->email_verified_at === null) {
                         $user->email_verified_at = now();
                     }
+                    if (! empty($avatar)) {
+                        $user->avatar = $avatar;
+                    }
                     $user->save();
                 } else {
                     $fallbackEmail = $email !== '' ? $email : ($externalId !== '' ? "{$externalId}@smkn1bangsri.sch.id" : 'user_' . Str::random(8) . '@smkn1bangsri.sch.id');
@@ -168,6 +185,7 @@ class OAuthController extends Controller
                         'name'                => $name,
                         'email'               => $fallbackEmail,
                         'sipintu_external_id' => $externalId !== '' ? $externalId : null,
+                        'avatar'              => ! empty($avatar) ? $avatar : null,
                         'password'            => Hash::make(Str::random(24)),
                         'email_verified_at'   => now(),
                         'is_active'           => true,
@@ -323,11 +341,22 @@ class OAuthController extends Controller
             }
         }
 
+        $avatar = $userData['avatar']
+            ?? $userData['photo']
+            ?? $userData['foto']
+            ?? ($userData['user']['avatar'] ?? null)
+            ?? ($userData['user']['foto'] ?? null)
+            ?? null;
+
         // 3. Siapkan data pembaruan
         $updateFields = [
             'name'  => $userData['name'] ?? 'User',
             'email' => $email ?: ($user?->email ?? ($externalId ? "{$externalId}@smkn1bangsri.sch.id" : 'user_' . Str::random(8) . '@smkn1bangsri.sch.id')),
         ];
+
+        if (! empty($avatar)) {
+            $updateFields['avatar'] = $avatar;
+        }
 
         // 4. Update jika user sudah ada, atau buat baru
         if ($user) {
@@ -344,7 +373,15 @@ class OAuthController extends Controller
         // 5. Sinkronkan profil Siswa / Guru & role
         $roleName = strtolower(trim((string) ($userData['role'] ?? '')));
         $classroom = trim((string) ($userData['classroom'] ?? ($userData['class_name'] ?? ($userData['kelas'] ?? '')))) ?: null;
-        $phone = trim((string) ($userData['phone'] ?? ($userData['hp'] ?? ($userData['no_hp'] ?? '')))) ?: null;
+        $phone = trim((string) (
+            $userData['phone']
+            ?? $userData['hp']
+            ?? $userData['no_hp']
+            ?? $userData['telepon']
+            ?? ($userData['user']['phone'] ?? null)
+            ?? ($userData['user']['hp'] ?? null)
+            ?? ''
+        )) ?: null;
 
         $isStudent = in_array($roleName, ['student', 'siswa']) || ! empty($classroom) || ($externalId !== '' && ! in_array($roleName, ['teacher', 'guru', 'admin', 'super_admin']));
         $isTeacher = in_array($roleName, ['teacher', 'guru', 'pengajar']);

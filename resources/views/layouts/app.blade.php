@@ -997,8 +997,18 @@
 
         <a href="{{ route('profile.edit') }}" class="user-area hover:opacity-90 transition-all cursor-pointer block group" title="Buka Pengaturan Profil">
 
-            <div class="avatar group-hover:scale-105 transition-transform">
-                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+            <div class="avatar group-hover:scale-105 transition-transform overflow-hidden">
+                @if(Auth::user()->avatar)
+                    <img src="{{ Auth::user()->avatar }}" 
+                         alt="{{ Auth::user()->name }}" 
+                         class="w-full h-full object-cover"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="w-full h-full items-center justify-center font-extrabold text-sm hidden">
+                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    </div>
+                @else
+                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                @endif
             </div>
 
             <div style="min-width:0;">
@@ -1273,8 +1283,18 @@
                 </svg>
             </button>
 
-            <a href="{{ route('profile.edit') }}" class="mobile-user hover:opacity-90 transition-all active:scale-95 cursor-pointer block" title="Profil Saya">
-                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+            <a href="{{ route('profile.edit') }}" class="mobile-user hover:opacity-90 transition-all active:scale-95 cursor-pointer block overflow-hidden" title="Profil Saya">
+                @if(Auth::user()->avatar)
+                    <img src="{{ Auth::user()->avatar }}" 
+                         alt="{{ Auth::user()->name }}" 
+                         class="w-full h-full object-cover"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="w-full h-full items-center justify-center font-extrabold text-xs hidden">
+                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    </div>
+                @else
+                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                @endif
             </a>
         </div>
 
@@ -1317,9 +1337,19 @@
                 <a href="{{ route('profile.edit') }}"
                    class="flex items-center gap-2 p-1.5 pr-2.5 rounded-xl hover:bg-stone-100/80 dark:hover:bg-stone-800/80 border border-transparent hover:border-stone-200 dark:hover:border-stone-700 transition-all group cursor-pointer"
                    title="Buka Pengaturan Profil">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-[#C89B3C] text-[#3B2610] shadow-xs group-hover:scale-105 transition-transform">
-                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                    </div>
+                    @if(Auth::user()->avatar)
+                        <img src="{{ Auth::user()->avatar }}" 
+                             alt="{{ Auth::user()->name }}" 
+                             class="w-9 h-9 rounded-full object-cover border border-stone-200 dark:border-stone-700 shadow-sm"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="w-9 h-9 rounded-full bg-amber-600 text-white items-center justify-center font-bold text-sm hidden shadow-sm">
+                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        </div>
+                    @else
+                        <div class="w-9 h-9 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        </div>
+                    @endif
                     <span class="hidden md:inline-block text-xs font-semibold text-stone-800 dark:text-stone-200 group-hover:text-[#6F4E37] dark:group-hover:text-amber-400 transition-colors truncate max-w-[120px]">
                         {{ auth()->user()->name }}
                     </span>

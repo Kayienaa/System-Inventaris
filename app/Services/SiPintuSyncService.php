@@ -97,7 +97,7 @@ class SiPintuSyncService
             }
 
             $payload = $response->json();
-            $students = $payload['data'] ?? (is_array($payload) ? $payload : []);
+            $students = $payload['data']['students'] ?? $payload['students'] ?? $payload['data'] ?? (is_array($payload) ? $payload : []);
 
             $created = 0;
             $updated = 0;
@@ -150,7 +150,7 @@ class SiPintuSyncService
                                 $loggedStudentSample = true;
                             }
 
-                            $nis = trim((string) ($studentData['nis'] ?? ''));
+                            $nis = trim((string) ($studentData['nis'] ?? ($studentData['user']['nis'] ?? '')));
                             $email = trim((string) ($studentData['user']['email'] ?? ($studentData['email'] ?? ($nis ? "{$nis}@smkn1bangsri.sch.id" : ''))));
                             $name = trim((string) ($studentData['nama'] ?? ($studentData['user']['name'] ?? ($studentData['name'] ?? 'Siswa'))));
                             $nisn = ! empty($studentData['nisn']) ? trim((string) $studentData['nisn']) : null;
@@ -161,15 +161,18 @@ class SiPintuSyncService
                                 $studentData['hp']
                                 ?? $studentData['phone']
                                 ?? $studentData['no_hp']
-                                ?? $studentData['nomor_hp']
                                 ?? $studentData['telepon']
-                                ?? $studentData['telp']
-                                ?? $studentData['phone_number']
                                 ?? ($studentData['user']['phone'] ?? null)
-                                ?? ($studentData['user']['no_hp'] ?? null)
                                 ?? ($studentData['user']['hp'] ?? null)
                                 ?? ''
                             )) ?: null;
+
+                            $avatar = $studentData['avatar']
+                                ?? $studentData['photo']
+                                ?? $studentData['foto']
+                                ?? ($studentData['user']['avatar'] ?? null)
+                                ?? ($studentData['user']['foto'] ?? null)
+                                ?? null;
 
                             if ($email === '' && $nis === '') {
                                 continue;
@@ -205,6 +208,11 @@ class SiPintuSyncService
                                 $created++;
                             }
 
+                            if (!empty($avatar)) {
+                                $user->avatar = $avatar;
+                                $user->save();
+                            }
+
                             // 2. Simpan / update SiswaProfile
                             if ($nis !== '') {
                                 $siswaProfile = $existingProfilesByUserId[$user->id] 
@@ -215,7 +223,7 @@ class SiPintuSyncService
                                 $siswaProfile->nisn = $nisn;
                                 $siswaProfile->class_name = $className;
 
-                                if (self::isValidPhoneNumber($phone)) {
+                                if (!empty($phone)) {
                                     $siswaProfile->phone = $phone;
                                 }
 
@@ -292,7 +300,7 @@ class SiPintuSyncService
             }
 
             $payload = json_decode($response->body(), true, 512, JSON_BIGINT_AS_STRING) ?? $response->json();
-            $teachers = $payload['data'] ?? (is_array($payload) ? $payload : []);
+            $teachers = $payload['data']['teachers'] ?? $payload['teachers'] ?? $payload['data'] ?? (is_array($payload) ? $payload : []);
 
             $created = 0;
             $updated = 0;
@@ -328,15 +336,24 @@ class SiPintuSyncService
                                 $loggedTeacherSample = true;
                             }
 
-                            $rawNip = $teacherData['nip'] ?? '';
+                            $rawNip = $teacherData['nip'] ?? ($teacherData['user']['nip'] ?? '');
                             if (is_float($rawNip) || (is_numeric($rawNip) && str_contains((string) $rawNip, 'E'))) {
                                 $nip = number_format((float) $rawNip, 0, '', '');
                             } else {
                                 $nip = trim((string) $rawNip);
                             }
 
-                            $email = trim((string) ($teacherData['user']['email'] ?? ($teacherData['email'] ?? ($nip ? "{$nip}@smkn1bangsri.sch.id" : ''))));
-                            $name = trim((string) ($teacherData['nama'] ?? ($teacherData['name'] ?? ($teacherData['user']['name'] ?? 'Guru'))));
+                            $email = trim((string) (
+                                $teacherData['email']
+                                ?? ($teacherData['user']['email']
+                                ?? ($nip ? "{$nip}@smkn1bangsri.sch.id" : ''))
+                            ));
+                            $name = trim((string) (
+                                $teacherData['nama']
+                                ?? ($teacherData['name']
+                                ?? ($teacherData['user']['name']
+                                ?? ($teacherData['user']['nama'] ?? 'Guru')))
+                            ));
                             $phone = trim((string) (
                                 $teacherData['hp']
                                 ?? $teacherData['phone']
@@ -346,6 +363,13 @@ class SiPintuSyncService
                                 ?? ($teacherData['user']['hp'] ?? null)
                                 ?? ''
                             )) ?: null;
+
+                            $avatar = $teacherData['avatar']
+                                ?? $teacherData['photo']
+                                ?? $teacherData['foto']
+                                ?? ($teacherData['user']['avatar'] ?? null)
+                                ?? ($teacherData['user']['foto'] ?? null)
+                                ?? null;
                             $code = trim((string) ($teacherData['kode'] ?? ($teacherData['code'] ?? '')));
 
                             if ($email === '' && $nip === '') {
@@ -381,6 +405,11 @@ class SiPintuSyncService
                                 $created++;
                             }
 
+                            if (!empty($avatar)) {
+                                $user->avatar = $avatar;
+                                $user->save();
+                            }
+
                             // 2. Simpan / update GuruProfile (Safe-sync: jangan timpa nomor lokal jika SiPintu null/kosong)
                             if ($nip !== '') {
                                 $guruProfile = $existingProfilesByUserId[$user->id] 
@@ -395,7 +424,7 @@ class SiPintuSyncService
                                 if ($code !== '') {
                                     $guruProfile->code = $code;
                                 }
-                                if (self::isValidPhoneNumber($phone)) {
+                                if (!empty($phone)) {
                                     $guruProfile->phone = $phone;
                                 }
 
@@ -405,10 +434,8 @@ class SiPintuSyncService
                                 $existingProfilesByUserId[$user->id] = $guruProfile;
 
                                 // 3. Tetapkan role Spatie 'guru' HANYA setelah profile berhasil disimpan
-                                if (! $user->relationLoaded('roles') || ! $user->roles->contains('name', 'guru')) {
-                                    if (! $user->hasRole('guru')) {
-                                        $user->assignRole('guru');
-                                    }
+                                if (! $user->hasRole('guru')) {
+                                    $user->assignRole('guru');
                                 }
                             }
                         } catch (\Throwable $e) {
