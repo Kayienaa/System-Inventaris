@@ -5,7 +5,7 @@
 @section('content')
 
 <div
-    class="max-w-7xl mx-auto px-4 sm:px-6 py-8"
+    class="max-w-7xl mx-auto px-4 sm:px-6 py-8 page-enter"
     x-data="{
         selectedBorrowing: null,
         previewImage: null,
@@ -255,7 +255,7 @@
                                 'wa_url' => $waUrl,
                             ];
                         @endphp
-                        <tr class="border-b border-stone-100 dark:border-stone-800/80 hover:bg-stone-50/50 dark:hover:bg-cyan-500/5 transition-colors">
+                        <tr class="border-b border-stone-100 dark:border-stone-800/80 interactive-row">
                             {{-- No --}}
                             <td class="px-5 py-4 text-center font-medium text-stone-400 dark:text-stone-500">
                                 {{ $borrowings->firstItem() + $loop->index }}
@@ -475,10 +475,10 @@
         <div
             x-show="selectedBorrowing !== null"
             class="fixed inset-0 bg-black/60 backdrop-blur-sm"
-            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter="transition-opacity duration-250 ease-out"
             x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100"
-            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave="transition-opacity duration-200 ease-in"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
             @click="closeDetail()"
@@ -488,12 +488,12 @@
         <div
             x-show="selectedBorrowing !== null"
             class="relative z-10 max-w-3xl w-full mx-auto rounded-2xl bg-white dark:bg-[#131B2A] shadow-2xl border border-stone-200 dark:border-stone-800 overflow-hidden"
-            x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+            x-transition:enter="transition-all duration-250 cubic-bezier(0.16, 1, 0.3, 1)"
+            x-transition:enter-start="opacity-0 scale-[0.97] translate-y-2"
             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave="transition-all duration-200 ease-in"
             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-            x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+            x-transition:leave-end="opacity-0 scale-[0.97] translate-y-2"
         >
             {{-- Modal Header --}}
             <div class="bg-gradient-to-r from-stone-50 to-stone-100 dark:from-stone-900 dark:to-[#131B2A] px-6 py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
@@ -878,10 +878,10 @@
         <div
             x-show="previewImage !== null"
             class="fixed inset-0 bg-black/80 backdrop-blur-sm"
-            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter="transition-opacity duration-250 ease-out"
             x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100"
-            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave="transition-opacity duration-200 ease-in"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
             @click="previewImage = null"
@@ -891,12 +891,12 @@
         <div
             x-show="previewImage !== null"
             class="relative z-[80] max-w-4xl max-h-[90vh]"
-            x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+            x-transition:enter="transition-all duration-250 cubic-bezier(0.16, 1, 0.3, 1)"
+            x-transition:enter-start="opacity-0 scale-[0.97] translate-y-2"
             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave="transition-all duration-200 ease-in"
             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-            x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+            x-transition:leave-end="opacity-0 scale-[0.97] translate-y-2"
             @click.stop
         >
             <img :src="previewImage" class="max-w-full max-h-[85vh] rounded-xl object-contain shadow-2xl border border-white/20" alt="Preview Foto Bukti">

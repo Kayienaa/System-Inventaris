@@ -3,7 +3,7 @@
 @section('title', 'Edit Aset: ' . $asset->name . ' | SITEFA')
 
 @section('content')
-<div class="max-w-6xl mx-auto px-6 py-8" x-data="{
+<div class="max-w-6xl mx-auto px-6 py-8 page-enter" x-data="{
     photoPreview: null,
     updatePhotoPreview(event) {
         const file = event.target.files[0];
@@ -330,13 +330,13 @@
             <div class="mt-8 pt-5 border-t border-stone-200 dark:border-stone-800 flex items-center justify-end gap-3">
                 <a
                     href="{{ route('admin.assets.index') }}"
-                    class="px-5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300 text-xs font-semibold hover:bg-stone-50 dark:hover:bg-stone-800 transition"
+                    class="px-5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300 text-xs font-semibold hover:bg-stone-50 dark:hover:bg-stone-800 transition interactive-btn"
                 >
                     Batal
                 </a>
                 <button
                     type="submit"
-                    class="px-6 py-2.5 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] dark:bg-none dark:bg-gradient-to-r dark:from-cyan-600 dark:to-teal-500 dark:hover:from-cyan-500 dark:hover:to-teal-400 text-white text-xs font-bold shadow-md shadow-[#6F4E37]/20 dark:shadow-cyan-500/20 transition-all duration-150 active:scale-95"
+                    class="px-6 py-2.5 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] dark:bg-none dark:bg-gradient-to-r dark:from-cyan-600 dark:to-teal-500 dark:hover:from-cyan-500 dark:hover:to-teal-400 text-white text-xs font-bold shadow-md shadow-[#6F4E37]/20 dark:shadow-cyan-500/20 transition-all duration-150 active:scale-95 interactive-btn cursor-pointer"
                 >
                     Simpan Perubahan
                 </button>

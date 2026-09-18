@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="py-6 sm:py-8">
+    <div class="py-6 sm:py-8 page-enter">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
             {{-- Page Heading --}}
@@ -85,7 +85,7 @@
                         href="{{ config('services.sipintu.portal_url', env('SIPINTU_PORTAL_URL', 'https://sipintu.smkn1bangsri.sch.id')) }}"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="bg-blue-600 hover:bg-blue-700 text-white dark:bg-cyan-600 dark:hover:bg-cyan-500 dark:shadow-neon-cyan font-medium rounded-xl px-5 py-2.5 transition-all text-sm shrink-0 active:scale-95 inline-flex items-center gap-2"
+                        class="bg-blue-600 hover:bg-blue-700 text-white dark:bg-cyan-600 dark:hover:bg-cyan-500 dark:shadow-neon-cyan font-medium rounded-xl px-5 py-2.5 transition-all text-sm shrink-0 active:scale-95 inline-flex items-center gap-2 interactive-btn"
                     >
                         <span>Kunjungi Portal SiPintu</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

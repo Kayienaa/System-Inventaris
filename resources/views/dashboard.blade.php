@@ -4,6 +4,7 @@
 
 @section('content')
 
+<div class="page-enter">
     {{-- Page heading --}}
     <div class="page-heading">
         <h1 class="brand-font font-heading font-bold">
@@ -41,7 +42,7 @@
     <div class="stats-grid">
         {{-- Total Aset --}}
         <a href="{{ auth()->user()->hasAnyRole(['admin', 'super_admin']) ? route('admin.assets.index') : route('assets.index') }}"
-           class="stat-card static-card cursor-pointer transition-transform duration-150 active:scale-95 block hover:shadow-md"
+           class="stat-card interactive-card block"
            title="Lihat Daftar Aset">
             <div class="stat-top">
                 <div>
@@ -65,7 +66,7 @@
 
         {{-- Barang Tersedia --}}
         <a href="{{ auth()->user()->hasAnyRole(['admin', 'super_admin']) ? route('admin.assets.index') : route('assets.index') }}"
-           class="stat-card static-card cursor-pointer transition-transform duration-150 active:scale-95 block hover:shadow-md"
+           class="stat-card interactive-card block"
            title="Lihat Barang Tersedia">
             <div class="stat-top">
                 <div>
@@ -309,9 +310,12 @@
         <div x-show="openHistory" 
              x-cloak
              x-collapse
-             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter="transition-all duration-250 cubic-bezier(0.16, 1, 0.3, 1)"
              x-transition:enter-start="opacity-0 -translate-y-2"
              x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition-all duration-200 ease-in"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-2"
              class="bg-white dark:bg-[#131B2A] border border-stone-200/80 dark:border-stone-800 rounded-2xl shadow-sm p-5 sm:p-6 mt-6 mb-8 scroll-mt-6 static-card">
             
             <!-- Header Seksi -->
@@ -713,6 +717,7 @@
             @endif
         </div>
     </div>
+</div>
 
     {{-- Script Chart.js untuk Diagram Batang Tren Peminjaman --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

@@ -3,37 +3,43 @@
 @tailwind utilities;
 
 @layer utilities {
-  /* Hanya untuk kartu/kontainer yang BISA diklik (berupa link <a> atau tombol) */
+  /* Kurva transisi natural fluid */
+  .transition-natural {
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Animasi masuk halaman & kartu (Fade Up Lembut) */
+  .page-enter {
+    animation: naturalFadeUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Tombol aksi empuk (natural micro-press) */
+  .interactive-btn {
+    @apply transition-all duration-200 ease-out active:scale-[0.98] hover:brightness-105 select-none;
+  }
+
+  /* Elemen kartu interaktif/bisa diklik */
   .interactive-card {
     @apply transition-all duration-200 ease-out hover:shadow-md active:scale-[0.99] cursor-pointer;
   }
-  
-  /* Kartu informasi statis murni (tetap diam/stay tanpa gerak) */
+
+  /* Elemen statis/display informasi (tetap stabil tanpa geser) */
   .static-card {
-    @apply shadow-sm transition-none transform-none select-text;
+    @apply shadow-sm transition-none transform-none;
   }
 
-  /* Semua tombol & link aksi (empuk, ringan di sentuhan jari HP) */
-  .interactive-btn {
-    @apply transition-all duration-150 ease-out active:scale-95 hover:brightness-105 select-none;
-  }
-
-  .smooth-transition {
-    @apply transition duration-200 ease-in-out;
-  }
-
-  /* Transisi perpindahan halaman halus & super ringan (GPU only) */
-  .page-enter {
-    animation: pageFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  /* Baris tabel interaktif */
+  .interactive-row {
+    @apply transition-colors duration-150 ease-out hover:bg-stone-50/80 dark:hover:bg-stone-800/40;
   }
 }
 
-@keyframes pageFadeIn {
-  from {
+@keyframes naturalFadeUp {
+  0% {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(6px);
   }
-  to {
+  100% {
     opacity: 1;
     transform: translateY(0);
   }

@@ -3,7 +3,7 @@
 @section('title', 'Katalog Barang | SITEFA')
 
 @section('content')
-    <div class="max-w-7xl mx-auto px-6 py-8">
+    <div class="max-w-7xl mx-auto px-6 py-8 page-enter">
 
         {{-- Header & Search --}}
         <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">

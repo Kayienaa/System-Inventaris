@@ -4,7 +4,7 @@
 
 @section('content')
 
-<div class="max-w-5xl mx-auto px-6 py-8" x-data="mineBorrowingsHandler()">
+<div class="max-w-5xl mx-auto px-6 py-8 page-enter" x-data="mineBorrowingsHandler()">
 
     <div class="mb-8">
         <h1 class="text-3xl font-bold font-heading text-stone-800 dark:text-stone-100">Peminjaman Saya</h1>
@@ -182,10 +182,10 @@
         <div
             x-show="checkoutModalOpen"
             class="fixed inset-0 bg-black/60 backdrop-blur-sm"
-            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter="transition-opacity duration-250 ease-out"
             x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100"
-            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave="transition-opacity duration-200 ease-in"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
             @click="closeCheckoutModal()"
@@ -195,12 +195,12 @@
         <div
             x-show="checkoutModalOpen"
             class="relative z-10 max-w-lg w-full mx-auto rounded-2xl bg-white/95 dark:bg-[#131B2A] backdrop-blur-md shadow-2xl border border-stone-200/70 dark:border-stone-800 overflow-hidden"
-            x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+            x-transition:enter="transition-all duration-250 cubic-bezier(0.16, 1, 0.3, 1)"
+            x-transition:enter-start="opacity-0 scale-[0.97] translate-y-2"
             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave="transition-all duration-200 ease-in"
             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-            x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+            x-transition:leave-end="opacity-0 scale-[0.97] translate-y-2"
         >
             
             {{-- Header --}}
@@ -358,10 +358,10 @@
         <div
             x-show="modalOpen"
             class="fixed inset-0 bg-black/60 backdrop-blur-sm"
-            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter="transition-opacity duration-250 ease-out"
             x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100"
-            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave="transition-opacity duration-200 ease-in"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
             @click="closeReturnModal()"
@@ -371,12 +371,12 @@
         <div
             x-show="modalOpen"
             class="relative z-10 max-w-lg w-full mx-auto rounded-2xl bg-white/95 dark:bg-[#131B2A] backdrop-blur-md shadow-2xl border border-stone-200/70 dark:border-stone-800 overflow-hidden"
-            x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+            x-transition:enter="transition-all duration-250 cubic-bezier(0.16, 1, 0.3, 1)"
+            x-transition:enter-start="opacity-0 scale-[0.97] translate-y-2"
             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave="transition-all duration-200 ease-in"
             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-            x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+            x-transition:leave-end="opacity-0 scale-[0.97] translate-y-2"
         >
             
             {{-- Modal Header --}}

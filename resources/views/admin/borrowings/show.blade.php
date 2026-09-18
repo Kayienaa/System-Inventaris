@@ -465,21 +465,29 @@
         x-show="previewImage !== null"
         class="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
         x-cloak
-        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter="transition-opacity duration-250 ease-out"
         x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave="transition-opacity duration-200 ease-in"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
         @keydown.escape.window="previewImage = null"
         @click="previewImage = null"
     >
-        <div class="relative z-[80] max-w-4xl max-h-[90vh]" @click.stop>
+        <div class="relative z-[80] max-w-4xl max-h-[90vh]" 
+             x-show="previewImage !== null"
+             x-transition:enter="transition-all duration-250 cubic-bezier(0.16, 1, 0.3, 1)"
+             x-transition:enter-start="opacity-0 scale-[0.97] translate-y-2"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition-all duration-200 ease-in"
+             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+             x-transition:leave-end="opacity-0 scale-[0.97] translate-y-2"
+             @click.stop>
             <img :src="previewImage" class="max-w-full max-h-[85vh] rounded-xl object-contain shadow-2xl border border-white/20" alt="Preview Foto Bukti">
             <button
                 type="button"
                 @click="previewImage = null"
-                class="absolute -top-10 right-0 text-white hover:text-white font-bold text-sm bg-black/50 hover:bg-black/75 px-3 py-1 rounded-lg backdrop-blur-md transition shadow-md cursor-pointer border border-white/20"
+                class="absolute -top-10 right-0 text-white hover:text-white font-bold text-sm bg-black/50 hover:bg-black/75 px-3 py-1 rounded-lg backdrop-blur-md transition shadow-md cursor-pointer border border-white/20 interactive-btn"
             >
                 ✕ Tutup Gambar
             </button>

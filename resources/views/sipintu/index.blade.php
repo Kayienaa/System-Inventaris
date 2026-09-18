@@ -201,7 +201,7 @@
     }
 </style>
 
-<div class="sip-container">
+<div class="sip-container page-enter">
 
     {{-- Page Heading --}}
     <div class="sip-header">
@@ -211,7 +211,7 @@
         </div>
 
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <button onclick="pingGateway()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-stone-700 bg-stone-800/80 hover:bg-stone-700 text-stone-200 hover:text-white text-sm font-medium shadow-sm transition-all">
+            <button onclick="pingGateway()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-stone-700 bg-stone-800/80 hover:bg-stone-700 text-stone-200 hover:text-white text-sm font-medium shadow-sm transition-all interactive-btn cursor-pointer">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:1rem;height:1rem;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/>
                 </svg>
@@ -239,7 +239,7 @@
                 <form action="{{ route('admin.sync-sipintu') }}" method="POST" @submit="if(confirm('Mulai sinkronisasi SELURUH data pengguna (Siswa & Guru) dari SiPintu Gateway? Proses ini mungkin memerlukan waktu beberapa saat.')){ isSyncing = true; syncType = 'all'; } else { $event.preventDefault(); }">
                     @csrf
                     <input type="hidden" name="type" value="all">
-                    <button type="submit" :disabled="isSyncing" class="btn-gw-link btn-gw-gold" style="width: auto; padding: 0.75rem 1.25rem; font-weight: 700; box-shadow: 0 4px 12px rgba(200, 155, 60, 0.25);">
+                    <button type="submit" :disabled="isSyncing" class="btn-gw-link btn-gw-gold interactive-btn" style="width: auto; padding: 0.75rem 1.25rem; font-weight: 700; box-shadow: 0 4px 12px rgba(200, 155, 60, 0.25);">
                         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:1.1rem;height:1.1rem;">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
                         </svg>
@@ -251,7 +251,7 @@
                 <form action="{{ route('admin.sync-sipintu') }}" method="POST" @submit="if(confirm('Mulai sinkronisasi data SISWA dari SiPintu Gateway?')){ isSyncing = true; syncType = 'students'; } else { $event.preventDefault(); }">
                     @csrf
                     <input type="hidden" name="type" value="students">
-                    <button type="submit" :disabled="isSyncing" class="text-stone-300 hover:text-amber-400 font-medium text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-stone-800/60">
+                    <button type="submit" :disabled="isSyncing" class="text-stone-300 hover:text-amber-400 font-medium text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-stone-800/60 interactive-btn">
                         <span>Hanya Siswa</span>
                     </button>
                 </form>
@@ -260,7 +260,7 @@
                 <form action="{{ route('admin.sync-sipintu') }}" method="POST" @submit="if(confirm('Mulai sinkronisasi data GURU dari SiPintu Gateway?')){ isSyncing = true; syncType = 'teachers'; } else { $event.preventDefault(); }">
                     @csrf
                     <input type="hidden" name="type" value="teachers">
-                    <button type="submit" :disabled="isSyncing" class="text-stone-300 hover:text-amber-400 font-medium text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-stone-800/60">
+                    <button type="submit" :disabled="isSyncing" class="text-stone-300 hover:text-amber-400 font-medium text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-stone-800/60 interactive-btn">
                         <span>Hanya Guru</span>
                     </button>
                 </form>

@@ -3,7 +3,7 @@
 @section('title', 'Manajemen Master Aset | SITEFA')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-6 py-8" x-data="{ deleteModalOpen: false, deleteUrl: '', deleteAssetName: '', deleteAssetCode: '' }">
+<div class="max-w-7xl mx-auto px-6 py-8 page-enter" x-data="{ deleteModalOpen: false, deleteUrl: '', deleteAssetName: '', deleteAssetCode: '' }">
 
     {{-- Page Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -229,7 +229,7 @@
                             $statusVal = $asset->availability_status->value ?? (string) $asset->availability_status;
                             $condVal = $asset->condition->value ?? (string) $asset->condition;
                         @endphp
-                        <tr class="border-b border-stone-100 dark:border-stone-800/80 hover:bg-stone-50/50 dark:hover:bg-cyan-500/5 transition-colors">
+                        <tr class="border-b border-stone-100 dark:border-stone-800/80 interactive-row">
                             {{-- Info Unit Aset (Thumbnail & Name) --}}
                             <td class="py-3 px-4">
                                 <div class="flex items-center gap-3">
@@ -420,10 +420,10 @@
     <div
         x-show="deleteModalOpen"
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter="transition-opacity duration-250 ease-out"
         x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave="transition-opacity duration-200 ease-in"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
         x-cloak
@@ -431,12 +431,12 @@
         <div
             @click.away="deleteModalOpen = false"
             class="bg-white dark:bg-[#131B2A] rounded-2xl shadow-xl border border-stone-200 dark:border-stone-800 max-w-md w-full p-6 text-left"
-            x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-150"
-            x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-95"
+            x-transition:enter="transition-all duration-250 cubic-bezier(0.16, 1, 0.3, 1)"
+            x-transition:enter-start="opacity-0 scale-[0.97] translate-y-2"
+            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+            x-transition:leave="transition-all duration-200 ease-in"
+            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+            x-transition:leave-end="opacity-0 scale-[0.97] translate-y-2"
         >
             <div class="w-12 h-12 rounded-xl bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center mb-4">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

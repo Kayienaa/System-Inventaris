@@ -421,10 +421,10 @@
             <div
                 x-show="photoModal"
                 class="fixed inset-0 bg-black/80 backdrop-blur-sm"
-                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter="transition-opacity duration-250 ease-out"
                 x-transition:enter-start="opacity-0"
                 x-transition:enter-end="opacity-100"
-                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave="transition-opacity duration-200 ease-in"
                 x-transition:leave-start="opacity-100"
                 x-transition:leave-end="opacity-0"
                 @click="photoModal = false"
@@ -434,12 +434,12 @@
             <div
                 x-show="photoModal"
                 class="relative z-[80] max-w-3xl w-full bg-white dark:bg-stone-900 rounded-2xl overflow-hidden shadow-2xl border border-stone-800"
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                x-transition:enter="transition-all duration-250 cubic-bezier(0.16, 1, 0.3, 1)"
+                x-transition:enter-start="opacity-0 scale-[0.97] translate-y-2"
                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave="transition-all duration-200 ease-in"
                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                x-transition:leave-end="opacity-0 scale-[0.97] translate-y-2"
                 @click.stop
             >
                 <div class="p-3 bg-stone-900 text-white flex items-center justify-between">
