@@ -1,4 +1,4 @@
-<section>
+<section class="w-full">
     @php
         $isSiPintuManaged = $user->hasAnyRole(['guru', 'siswa']);
     @endphp
@@ -38,7 +38,7 @@
 
     @if ($isSiPintuManaged)
         {{-- Form Profil untuk Guru & Siswa (Hanya Nomor WhatsApp yang Editable) --}}
-        <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-5">
+        <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-5 w-full">
             @csrf
             @method('patch')
 
@@ -74,71 +74,54 @@
                 <input id="email" type="email" class="w-full px-4 py-3 bg-stone-100 dark:bg-[#0B0F17] border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 rounded-xl font-medium focus:outline-none select-all transition-colors cursor-not-allowed" value="{{ $user->email }}" readonly disabled />
             </div>
 
-            {{-- Detail Siswa --}}
-            @if ($user->siswaProfile)
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-stone-200/70 dark:border-stone-800">
+            {{-- Detail Siswa / Guru --}}
+            <div class="pt-4 border-t border-stone-200/70 dark:border-stone-800">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Kolom Kiri: NIS / NIP -->
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                                {{ __('NIS') }}
+                                {{ auth()->user()->hasRole('guru') ? 'NIP' : 'NIS' }}
                             </label>
-                            <span class="text-[10px] text-stone-400 flex items-center gap-1">
+                            <span class="inline-flex items-center gap-1 text-[11px] font-medium text-stone-400 dark:text-stone-500">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                                 Terkunci
                             </span>
                         </div>
-                        <input type="text" class="w-full px-4 py-3 bg-stone-100 dark:bg-[#0B0F17] border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 rounded-xl font-medium font-mono text-sm focus:outline-none select-all transition-colors cursor-not-allowed" value="{{ $user->siswaProfile->nis }}" readonly disabled />
+                        <input type="text" 
+                               value="{{ auth()->user()->siswaProfile?->nis ?? auth()->user()->guruProfile?->nip ?? '-' }}" 
+                               class="w-full px-4 py-3 bg-stone-100 dark:bg-[#0B0F17] border border-stone-200 dark:border-stone-800 text-stone-800 dark:text-stone-200 rounded-xl font-medium focus:outline-none cursor-not-allowed" 
+                               readonly disabled>
                     </div>
 
-                    @if ($user->siswaProfile->nisn)
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                                    {{ __('NISN') }}
-                                </label>
-                                <span class="text-[10px] text-stone-400 flex items-center gap-1">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                                    Terkunci
-                                </span>
-                            </div>
-                            <input type="text" class="w-full px-4 py-3 bg-stone-100 dark:bg-[#0B0F17] border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 rounded-xl font-medium font-mono text-sm focus:outline-none select-all transition-colors cursor-not-allowed" value="{{ $user->siswaProfile->nisn }}" readonly disabled />
-                        </div>
-                    @endif
-
-                    @if ($user->siswaProfile->class_name)
-                        <div class="sm:col-span-2">
-                            <div class="flex items-center justify-between mb-2">
-                                <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                                    {{ __('Kelas / Rombel') }}
-                                </label>
-                                <span class="text-[10px] text-stone-400 flex items-center gap-1">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                                    Terkunci
-                                </span>
-                            </div>
-                            <input type="text" class="w-full px-4 py-3 bg-stone-100 dark:bg-[#0B0F17] border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 rounded-xl font-medium text-sm focus:outline-none select-all transition-colors cursor-not-allowed" value="{{ $user->siswaProfile->class_name }}" readonly disabled />
-                        </div>
-                    @endif
-                </div>
-            @endif
-
-            {{-- Detail Guru --}}
-            @if ($user->guruProfile)
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-stone-200/70 dark:border-stone-800">
-                    <div class="sm:col-span-2">
+                    <!-- Kolom Kanan: KELAS (Tanpa Rombel) -->
+                    <div>
                         <div class="flex items-center justify-between mb-2">
                             <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                                {{ __('NIP') }}
+                                {{ auth()->user()->hasRole('guru') ? 'JABATAN / UNIT' : 'KELAS' }}
                             </label>
-                            <span class="text-[10px] text-stone-400 flex items-center gap-1">
+                            <span class="inline-flex items-center gap-1 text-[11px] font-medium text-stone-400 dark:text-stone-500">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                                 Terkunci
                             </span>
                         </div>
-                        <input type="text" class="w-full px-4 py-3 bg-stone-100 dark:bg-[#0B0F17] border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 rounded-xl font-medium font-mono text-sm focus:outline-none select-all transition-colors cursor-not-allowed" value="{{ $user->guruProfile->nip }}" readonly disabled />
+                        @php
+                            $kelasValue = '-';
+                            if (auth()->user()->hasRole('guru')) {
+                                $kelasValue = auth()->user()->guruProfile?->jabatan ?? 'Dewan Guru';
+                            } else {
+                                $kelasValue = auth()->user()->siswaProfile?->class_name 
+                                    ?: (auth()->user()->siswaProfile?->kelas ?: '-');
+                            }
+                        @endphp
+
+                        <input type="text" 
+                               value="{{ $kelasValue }}" 
+                               class="w-full px-4 py-3 bg-stone-100 dark:bg-[#0B0F17] border border-stone-200 dark:border-stone-800 text-stone-800 dark:text-stone-200 rounded-xl font-medium focus:outline-none cursor-not-allowed" 
+                               readonly disabled>
                     </div>
                 </div>
-            @endif
+            </div>
 
             {{-- Field Nomor Telepon WhatsApp (TERBUKA / EDITABLE) --}}
             <div class="pt-4 border-t border-stone-200/70 dark:border-stone-800">
@@ -211,7 +194,7 @@
             @csrf
         </form>
 
-        <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+        <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6 w-full">
             @csrf
             @method('patch')
 

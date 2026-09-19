@@ -154,9 +154,15 @@ class SiPintuSyncService
                             $email = trim((string) ($studentData['user']['email'] ?? ($studentData['email'] ?? ($nis ? "{$nis}@smkn1bangsri.sch.id" : ''))));
                             $name = trim((string) ($studentData['nama'] ?? ($studentData['user']['name'] ?? ($studentData['name'] ?? 'Siswa'))));
                             $nisn = ! empty($studentData['nisn']) ? trim((string) $studentData['nisn']) : null;
-                            $className = ! empty($studentData['class_name'])
-                                ? trim((string) $studentData['class_name'])
-                                : (! empty($studentData['kelas']) ? trim((string) $studentData['kelas']) : null);
+                            $className = trim((string) (
+                                (is_array($studentData['classroom'] ?? null) ? ($studentData['classroom']['name'] ?? '') : ($studentData['classroom'] ?? ''))
+                                ?: ($studentData['kelas'] 
+                                ?? $studentData['class_name'] 
+                                ?? $studentData['rombel'] 
+                                ?? ($studentData['user']['kelas'] ?? '')
+                                ?? ($studentData['user']['class_name'] ?? '')
+                                ?? ($studentData['user']['classroom']['name'] ?? ''))
+                            )) ?: null;
                             $phone = trim((string) (
                                 $studentData['hp']
                                 ?? $studentData['phone']

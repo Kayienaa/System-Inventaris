@@ -6,36 +6,40 @@
     </x-slot>
 
     <div class="py-6 sm:py-8 page-enter">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
             {{-- Page Heading --}}
-            <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                    <h1 class="text-3xl font-bold font-heading text-stone-800 dark:text-stone-100 tracking-tight">
+            <div class="mb-6">
+                <div class="flex items-center gap-3">
+                    <h1 class="text-2xl md:text-3xl font-bold font-heading text-stone-900 dark:text-white">
                         Profil Pengguna
                     </h1>
-                    <p class="text-stone-500 dark:text-stone-400 mt-1 text-sm">
-                        Informasi identitas akun dan pengelolaan keamanan Single Sign-On (SSO) SITEFA
-                    </p>
-                </div>
-                <div>
-                    @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700">
-                            <span class="w-1.5 h-1.5 rounded-full bg-amber-600 dark:bg-amber-400"></span>
-                            {{ auth()->user()->hasRole('super_admin') ? 'Super Administrator' : 'Administrator' }}
+
+                    @if(auth()->user()->hasRole('super_admin'))
+                        <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                            Super Administrator
+                        </span>
+                    @elseif(auth()->user()->hasRole('admin'))
+                        <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200 dark:bg-orange-950/40 dark:text-orange-400 dark:border-orange-800">
+                            <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                            Admin TEFA
                         </span>
                     @elseif(auth()->user()->hasRole('guru'))
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-700">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400"></span>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                             Guru
                         </span>
                     @else
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-900 border border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-700">
-                            <span class="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400"></span>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-400 dark:border-indigo-800">
+                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
                             Siswa
                         </span>
                     @endif
                 </div>
+                <p class="text-stone-500 dark:text-stone-400 mt-1 text-sm">
+                    Informasi identitas akun dan pengelolaan keamanan Single Sign-On (SSO) SITEFA
+                </p>
             </div>
 
             @if (session('error'))
@@ -97,7 +101,7 @@
 
             {{-- Informasi Profil --}}
             <div class="bg-white dark:bg-[#131B2A] border border-stone-200/70 dark:border-stone-800/80 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] p-6 md:p-8 transition-colors duration-300">
-                <div class="max-w-2xl">
+                <div class="w-full">
                     @include('profile.partials.update-profile-information-form')
                 </div>
             </div>
@@ -105,7 +109,7 @@
             {{-- Pengaturan Nomor Pengirim WhatsApp Admin TEFA (Khusus Admin & Super Admin) --}}
             @if ($user->hasAnyRole(['admin', 'super_admin']))
                 <div class="bg-white dark:bg-[#131B2A] border border-stone-200/70 dark:border-stone-800/80 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] p-6 md:p-8 transition-colors duration-300">
-                    <div class="max-w-2xl">
+                    <div class="w-full">
                         @include('profile.partials.update-admin-whatsapp-form')
                     </div>
                 </div>
@@ -113,7 +117,7 @@
 
             {{-- Update Password --}}
             <div class="bg-white dark:bg-[#131B2A] border border-stone-200/70 dark:border-stone-800/80 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] p-6 md:p-8 transition-colors duration-300">
-                <div class="max-w-2xl">
+                <div class="w-full">
                     @include('profile.partials.update-password-form')
                 </div>
             </div>
@@ -121,7 +125,7 @@
             {{-- Delete Account (hanya untuk Admin atau User Non-SiPintu) --}}
             @if (!$isSiPintuManaged)
                 <div class="bg-white dark:bg-[#131B2A] border border-stone-200/70 dark:border-stone-800/80 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] p-6 md:p-8 transition-colors duration-300">
-                    <div class="max-w-2xl">
+                    <div class="w-full">
                         @include('profile.partials.delete-user-form')
                     </div>
                 </div>
