@@ -8,6 +8,7 @@
     class="max-w-7xl mx-auto px-4 sm:px-6 py-8 page-enter"
     x-data="{
         selectedBorrowing: null,
+        openReviewModal: false,
         previewImage: null,
         rejectModalOpen: false,
         verifyModalOpen: false,
@@ -16,17 +17,24 @@
         verificationNote: '',
         openDetail(borrowing) {
             this.selectedBorrowing = borrowing;
+            this.openReviewModal = true;
             this.rejectModalOpen = false;
             this.verifyModalOpen = false;
         },
         closeDetail() {
-            this.selectedBorrowing = null;
+            this.openReviewModal = false;
             this.previewImage = null;
             this.rejectModalOpen = false;
             this.verifyModalOpen = false;
+            setTimeout(() => {
+                if (!this.openReviewModal) {
+                    this.selectedBorrowing = null;
+                }
+            }, 200);
         }
     }"
-    @keydown.escape.window="if (previewImage) { previewImage = null; } else { closeDetail(); }"
+    x-init="$watch('openReviewModal', value => { if (!value) closeDetail(); })"
+    @keydown.escape.window="if (previewImage) { previewImage = null; } else { openReviewModal = false; }"
 >
 
     {{-- Page Header --}}
@@ -466,89 +474,89 @@
     </div>
 
     {{-- Modal Detail Transaksi & Kelola Aksi --}}
-    <div
-        x-show="selectedBorrowing !== null"
-        class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4"
-        x-cloak
-    >
-        {{-- Backdrop Overlay --}}
+    <template x-teleport="body">
         <div
-            x-show="selectedBorrowing !== null"
-            class="fixed inset-0 bg-black/60 backdrop-blur-sm"
-            x-transition:enter="transition-opacity duration-250 ease-out"
+            x-show="openReviewModal"
+            x-cloak
+            class="fixed inset-0 z-[60] overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
+            @keydown.escape.window="openReviewModal = false"
+            @click.self="openReviewModal = false"
+            x-transition:enter="transition-opacity duration-200 ease-out"
             x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100"
-            x-transition:leave="transition-opacity duration-200 ease-in"
+            x-transition:leave="transition-opacity duration-150 ease-in"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
-            @click="closeDetail()"
-        ></div>
-
-        {{-- Modal Dialog Card --}}
-        <div
-            x-show="selectedBorrowing !== null"
-            class="relative z-10 max-w-3xl w-full mx-auto rounded-2xl bg-white dark:bg-[#131B2A] shadow-2xl border border-stone-200 dark:border-stone-800 overflow-hidden"
-            x-transition:enter="transition-all duration-250 cubic-bezier(0.16, 1, 0.3, 1)"
-            x-transition:enter-start="opacity-0 scale-[0.97] translate-y-2"
-            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-            x-transition:leave="transition-all duration-200 ease-in"
-            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-            x-transition:leave-end="opacity-0 scale-[0.97] translate-y-2"
         >
-            {{-- Modal Header --}}
-            <div class="bg-gradient-to-r from-stone-50 to-stone-100 dark:from-stone-900 dark:to-[#131B2A] px-6 py-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h3 class="text-base font-bold font-heading text-stone-800 dark:text-stone-100" x-text="'Transaksi ' + selectedBorrowing?.transaction_code"></h3>
-                        <template x-if="selectedBorrowing?.raw_status === 'pending'">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-100 text-yellow-800 border border-yellow-300">
-                                ● Menunggu Persetujuan Admin
-                            </span>
-                        </template>
-                        <template x-if="selectedBorrowing?.raw_status === 'approved'">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-300">
-                                ✓ Disetujui
-                            </span>
-                        </template>
-                        <template x-if="selectedBorrowing?.raw_status === 'borrowed' && !selectedBorrowing?.is_overdue">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                                ● Dipinjam
-                            </span>
-                        </template>
-                        <template x-if="selectedBorrowing?.raw_status === 'return_pending_verification'">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-300">
-                                ● Menunggu Verifikasi Pengembalian
-                            </span>
-                        </template>
-                        <template x-if="selectedBorrowing?.raw_status === 'returned'">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                                ✓ Selesai
-                            </span>
-                        </template>
-                        <template x-if="selectedBorrowing?.is_overdue">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
-                                Overdue (Terlambat)
-                            </span>
-                        </template>
+            <!-- Kontainer Kartu Modal -->
+            <div
+                x-show="openReviewModal"
+                class="relative z-10 w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-[#131B2A] shadow-2xl border border-stone-200 dark:border-stone-800 p-6 scroll-smooth [scrollbar-gutter:stable] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-stone-300 dark:[&::-webkit-scrollbar-thumb]:bg-stone-700 [&::-webkit-scrollbar-thumb]:rounded-full"
+                x-transition:enter="transition-all duration-200 cubic-bezier(0.16, 1, 0.3, 1)"
+                x-transition:enter-start="opacity-0 scale-[0.97] translate-y-2"
+                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                x-transition:leave="transition-all duration-150 ease-in"
+                x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                x-transition:leave-end="opacity-0 scale-[0.97] translate-y-2"
+                @click.stop
+            >
+                {{-- Modal Header --}}
+                <div class="flex items-start justify-between gap-4 pb-4 border-b border-stone-200 dark:border-stone-800">
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h3 class="text-base sm:text-lg font-bold font-heading text-stone-800 dark:text-stone-100" x-text="'Transaksi ' + (selectedBorrowing?.transaction_code || '')"></h3>
+                            <template x-if="selectedBorrowing?.raw_status === 'pending'">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-yellow-100 text-yellow-800 dark:bg-yellow-950/60 dark:text-yellow-400 border border-yellow-300 dark:border-yellow-500/30">
+                                    ● Menunggu Persetujuan Admin
+                                </span>
+                            </template>
+                            <template x-if="selectedBorrowing?.raw_status === 'approved'">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-neon-cyan border border-blue-300 dark:border-cyan-500/30">
+                                    ✓ Disetujui
+                                </span>
+                            </template>
+                            <template x-if="selectedBorrowing?.raw_status === 'borrowed' && !selectedBorrowing?.is_overdue">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-neon-glowamber border border-amber-300 dark:border-amber-500/30">
+                                    ● Dipinjam
+                                </span>
+                            </template>
+                            <template x-if="selectedBorrowing?.raw_status === 'return_pending_verification'">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-300 dark:border-purple-500/30">
+                                    ● Menunggu Verifikasi Pengembalian
+                                </span>
+                            </template>
+                            <template x-if="selectedBorrowing?.raw_status === 'returned'">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-neon-emerald border border-emerald-300 dark:border-emerald-500/30">
+                                    ✓ Selesai
+                                </span>
+                            </template>
+                            <template x-if="selectedBorrowing?.is_overdue">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-500/30">
+                                    Overdue (Terlambat)
+                                </span>
+                            </template>
+                        </div>
+                        <p class="text-xs text-stone-500 dark:text-stone-400 mt-1">
+                            Rincian data transaksi, riwayat serah terima, dan aksi persetujuan
+                        </p>
                     </div>
-                    <p class="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-                        Rincian data transaksi, riwayat serah terima, dan aksi persetujuan
-                    </p>
+
+                    {{-- Tombol Silang (Close ✕) --}}
+                    <button
+                        type="button"
+                        @click="openReviewModal = false"
+                        class="text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 p-2 -mr-1 -mt-1 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 transition cursor-pointer flex items-center justify-center shrink-0 border border-transparent hover:border-stone-200 dark:hover:border-stone-700 interactive-btn"
+                        title="Tutup (Esc)"
+                        aria-label="Tutup Dialog Review"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
                 </div>
 
-                <button
-                    type="button"
-                    @click="closeDetail()"
-                    class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition cursor-pointer interactive-btn"
-                >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-
-            {{-- Modal Body --}}
-            <div class="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+                {{-- Modal Body --}}
+                <div class="py-5 space-y-5">
 
                 {{-- Action Card: Persetujuan Request (Saat Status Pending) --}}
                 <template x-if="selectedBorrowing?.raw_status === 'pending'">
@@ -839,8 +847,8 @@
             </div>
 
             {{-- Modal Footer --}}
-            <div class="bg-stone-50 dark:bg-[#0E1420] px-6 py-3.5 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between">
-                <span class="text-[11px] text-stone-400 dark:text-stone-500 font-mono" x-text="'ID: #' + selectedBorrowing?.id"></span>
+            <div class="pt-4 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between">
+                <span class="text-[11px] text-stone-400 dark:text-stone-500 font-mono" x-text="selectedBorrowing?.id ? 'ID: #' + selectedBorrowing.id : ''"></span>
                 <div class="flex items-center gap-2">
                     <template x-if="selectedBorrowing?.wa_url">
                         <a
@@ -851,64 +859,67 @@
                         >
                             <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
                                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                            </svg>
-                            Kirim WhatsApp
-                        </a>
-                    </template>
-                    <button
-                        type="button"
-                        @click="closeDetail()"
-                        class="px-5 py-2 rounded-xl bg-[#6F4E37] text-white text-xs font-bold hover:bg-[#5a3f2c] transition shadow-sm cursor-pointer interactive-btn"
-                    >
-                        Tutup
-                    </button>
+                                </svg>
+                                Kirim WhatsApp
+                            </a>
+                        </template>
+                        <button
+                            type="button"
+                            @click="openReviewModal = false"
+                            class="px-5 py-2 rounded-xl bg-[#6F4E37] text-white text-xs font-bold hover:bg-[#5a3f2c] transition shadow-sm cursor-pointer interactive-btn"
+                        >
+                            Tutup
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </template>
 
     {{-- Lightbox Zoom Foto Bukti --}}
-    <div
-        x-show="previewImage !== null"
-        class="fixed inset-0 z-[70] flex items-center justify-center p-4"
-        x-cloak
-        @keydown.escape.window.stop="previewImage = null"
-    >
-        {{-- Backdrop Overlay --}}
+    <template x-teleport="body">
         <div
             x-show="previewImage !== null"
-            class="fixed inset-0 bg-black/80 backdrop-blur-sm"
-            x-transition:enter="transition-opacity duration-250 ease-out"
-            x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100"
-            x-transition:leave="transition-opacity duration-200 ease-in"
-            x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0"
-            @click="previewImage = null"
-        ></div>
-
-        {{-- Lightbox Content --}}
-        <div
-            x-show="previewImage !== null"
-            class="relative z-[80] max-w-4xl max-h-[90vh]"
-            x-transition:enter="transition-all duration-250 cubic-bezier(0.16, 1, 0.3, 1)"
-            x-transition:enter-start="opacity-0 scale-[0.97] translate-y-2"
-            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-            x-transition:leave="transition-all duration-200 ease-in"
-            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-            x-transition:leave-end="opacity-0 scale-[0.97] translate-y-2"
-            @click.stop
+            class="fixed inset-0 z-[70] flex items-center justify-center p-4"
+            x-cloak
+            @keydown.escape.window.stop="previewImage = null"
         >
-            <img :src="previewImage" class="max-w-full max-h-[85vh] rounded-xl object-contain shadow-2xl border border-white/20" alt="Preview Foto Bukti">
-            <button
-                type="button"
+            {{-- Backdrop Overlay --}}
+            <div
+                x-show="previewImage !== null"
+                class="fixed inset-0 bg-black/80 backdrop-blur-sm"
+                x-transition:enter="transition-opacity duration-250 ease-out"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition-opacity duration-200 ease-in"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
                 @click="previewImage = null"
-                class="absolute -top-10 right-0 text-white hover:text-white font-bold text-sm bg-black/50 hover:bg-black/75 px-3 py-1 rounded-lg backdrop-blur-md transition shadow-md cursor-pointer border border-white/20 interactive-btn"
+            ></div>
+
+            {{-- Lightbox Content --}}
+            <div
+                x-show="previewImage !== null"
+                class="relative z-[80] max-w-4xl max-h-[90vh]"
+                x-transition:enter="transition-all duration-250 cubic-bezier(0.16, 1, 0.3, 1)"
+                x-transition:enter-start="opacity-0 scale-[0.97] translate-y-2"
+                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                x-transition:leave="transition-all duration-200 ease-in"
+                x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                x-transition:leave-end="opacity-0 scale-[0.97] translate-y-2"
+                @click.stop
             >
-                ✕ Tutup Gambar
-            </button>
+                <img :src="previewImage" class="max-w-full max-h-[85vh] rounded-xl object-contain shadow-2xl border border-white/20" alt="Preview Foto Bukti">
+                <button
+                    type="button"
+                    @click="previewImage = null"
+                    class="absolute -top-10 right-0 text-white hover:text-white font-bold text-sm bg-black/50 hover:bg-black/75 px-3 py-1 rounded-lg backdrop-blur-md transition shadow-md cursor-pointer border border-white/20 interactive-btn"
+                >
+                    ✕ Tutup Gambar
+                </button>
+            </div>
         </div>
-    </div>
+    </template>
 
 </div>
 
