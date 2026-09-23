@@ -91,7 +91,7 @@
                                 @if ($borrowing->borrowed_at)
                                     <span class="text-stone-700 dark:text-stone-300 font-medium">Dipinjam: {{ $borrowing->borrowed_at->format('d M Y, H:i') }}</span>
                                 @endif
-                                @if ($borrowing->due_at)
+                                @if ($borrowing->due_at && $status !== 'rejected')
                                     <span class="font-semibold {{ $borrowing->isOverdue() ? 'text-rose-600 dark:text-rose-400' : 'text-stone-700 dark:text-stone-300' }}">
                                         Batas: {{ $borrowing->due_at->format('d M Y, H:i') }}
                                         @if ($borrowing->isOverdue())
@@ -102,7 +102,22 @@
                                 @if ($borrowing->returned_at)
                                     <span class="text-emerald-700 dark:text-neon-emerald font-medium">Dikembalikan: {{ $borrowing->returned_at->format('d M Y, H:i') }}</span>
                                 @endif
+                                @if ($status === 'rejected' && $borrowing->rejected_at)
+                                    <span class="text-rose-600 dark:text-rose-400 font-medium">Ditolak: {{ $borrowing->rejected_at->format('d M Y, H:i') }}</span>
+                                @endif
                             </div>
+
+                            @if ($status === 'rejected')
+                                <div class="bg-rose-50 border border-rose-200 text-rose-800 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-300 rounded-lg p-3 text-sm mt-3 flex items-start gap-2">
+                                    <svg class="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                    </svg>
+                                    <div>
+                                        <span class="font-semibold">Alasan Penolakan:</span>
+                                        <span>{{ $borrowing->rejection_reason ?: 'Tidak ada catatan alasan yang diberikan' }}</span>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
 
@@ -114,7 +129,7 @@
                                 'borrowed' => ['Sedang Dipinjam', 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-neon-glowamber border-amber-200 dark:border-amber-500/30'],
                                 'return_pending_verification' => ['Menunggu Verifikasi Admin', 'bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border-purple-200 dark:border-purple-500/30'],
                                 'returned' => ['Selesai', 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-neon-emerald border-emerald-200 dark:border-emerald-500/30'],
-                                'rejected' => ['Ditolak', 'bg-stone-100 text-stone-600 dark:bg-stone-900/60 dark:text-stone-400 border-stone-200 dark:border-stone-800'],
+                                'rejected' => ['Ditolak', 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 border-rose-200 dark:border-rose-800/40'],
                                 'cancelled' => ['Dibatalkan', 'bg-stone-100 text-stone-600 dark:bg-stone-900/60 dark:text-stone-400 border-stone-200 dark:border-stone-800'],
                                 default => [ucfirst($status), 'bg-stone-100 text-stone-600 dark:bg-stone-900/60 dark:text-stone-400 border-stone-200 dark:border-stone-800'],
                             };

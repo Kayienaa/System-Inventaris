@@ -34,6 +34,7 @@ class RejectBorrowingAction
                 'rejected_by_user_id' => $admin->id,
                 'rejected_at' => now(),
                 'rejection_reason' => $reason,
+                'due_at' => now(),
             ]);
 
             $asset?->update([

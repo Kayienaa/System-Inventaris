@@ -189,4 +189,77 @@ class AdminBorrowingMonitoringTest extends TestCase
 
         $this->actingAs($siswa)->get(route('admin.borrowings.show', $borrowing))->assertStatus(403);
     }
+
+    public function test_admin_can_reject_pending_borrowing_with_reason(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $siswa = User::factory()->create(['name' => 'Fajar Siswa']);
+        $siswa->assignRole('siswa');
+
+        $asset = Asset::first();
+        $asset->update(['availability_status' => \App\Enums\AssetAvailabilityStatus::Dipesan]);
+
+        $borrowing = Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::Pending,
+            'requested_at' => now(),
+            'due_at' => now()->addDays(3),
+            'borrower_note' => 'Permohonan pinjam untuk praktikum',
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->from(route('admin.borrowings.index'))
+            ->post(route('admin.borrowings.reject', $borrowing), [
+                'rejection_reason' => 'Barang sedang dalam jadwal perawatan lab.',
+            ]);
+
+        $response->assertRedirect(route('admin.borrowings.index'));
+        $response->assertSessionHas('success');
+
+        $borrowing->refresh();
+        $this->assertEquals(BorrowingStatus::Rejected, $borrowing->status);
+        $this->assertEquals('Barang sedang dalam jadwal perawatan lab.', $borrowing->rejection_reason);
+        $this->assertEquals($admin->id, $borrowing->rejected_by_user_id);
+        $this->assertNotNull($borrowing->rejected_at);
+
+        $asset->refresh();
+        $this->assertEquals(\App\Enums\AssetAvailabilityStatus::Tersedia, $asset->availability_status);
+
+        // Verify JSON detail representation reflects rejection
+        $jsonResponse = $this->actingAs($admin)->getJson(route('admin.borrowings.show', $borrowing));
+        $jsonResponse->assertStatus(200);
+        $jsonResponse->assertJsonPath('rejection_reason', 'Barang sedang dalam jadwal perawatan lab.');
+        $jsonResponse->assertJsonPath('dates.due_at', 'Ditolak');
+    }
+
+    public function test_admin_cannot_reject_without_rejection_reason(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $siswa = User::factory()->create();
+        $siswa->assignRole('siswa');
+
+        $borrowing = Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => Asset::first()->id,
+            'status' => BorrowingStatus::Pending,
+            'requested_at' => now(),
+            'due_at' => now()->addDays(3),
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->from(route('admin.borrowings.index'))
+            ->post(route('admin.borrowings.reject', $borrowing), [
+                'rejection_reason' => '',
+            ]);
+
+        $response->assertSessionHasErrors('rejection_reason');
+
+        $borrowing->refresh();
+        $this->assertEquals(BorrowingStatus::Pending, $borrowing->status);
+    }
 }

@@ -47,6 +47,10 @@
                     <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
                         ✓ Selesai (Kembali)
                     </span>
+                @elseif($detail['raw_status'] === 'rejected')
+                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300">
+                        ✕ Ditolak
+                    </span>
                 @else
                     <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700 border border-gray-300">
                         {{ ucfirst($detail['status']) }}
@@ -100,6 +104,29 @@
 
         <div class="p-6 sm:p-8 space-y-6">
 
+            {{-- Action Box 0: Alasan Penolakan (Saat Status Rejected) --}}
+            @if($detail['raw_status'] === 'rejected')
+                <div class="bg-rose-50/90 border border-rose-200 rounded-2xl p-5">
+                    <div class="flex items-center gap-2 text-xs font-bold text-rose-900 uppercase tracking-wider mb-2">
+                        <svg class="w-4 h-4 text-rose-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Alasan Penolakan dari Admin
+                    </div>
+                    <p class="text-xs text-rose-800 leading-relaxed font-medium">
+                        {{ $detail['rejection_reason'] ?: 'Tidak ada catatan alasan yang diberikan.' }}
+                    </p>
+                    @if(!empty($detail['rejected_at']))
+                        <div class="mt-2 text-[11px] text-rose-700/80">
+                            Ditolak pada: {{ $detail['rejected_at'] }}
+                            @if(!empty($detail['rejected_by']))
+                                <span>oleh <strong class="font-semibold">{{ $detail['rejected_by'] }}</strong></span>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            @endif
+
             {{-- Action Box 1: Persetujuan Request --}}
             @if($detail['raw_status'] === 'pending')
                 <div class="bg-yellow-50/90 border border-yellow-200 rounded-2xl p-5">
@@ -143,14 +170,16 @@
                         <form action="{{ route('admin.borrowings.reject', $borrowing) }}" method="POST" class="space-y-3">
                             @csrf
                             <div>
-                                <label class="block text-xs font-semibold text-rose-900 mb-1">Alasan Penolakan:</label>
-                                <input
-                                    type="text"
+                                <label class="block text-xs font-semibold text-rose-900 mb-1">
+                                    Alasan Penolakan: <span class="text-rose-500">*</span>
+                                </label>
+                                <textarea
                                     name="rejection_reason"
                                     required
-                                    placeholder="Contoh: Unit sedang disiapkan untuk kegiatan TEFA..."
-                                    class="w-full text-xs rounded-xl border border-gray-300 px-3 py-2 text-gray-900"
-                                >
+                                    rows="3"
+                                    placeholder="Tuliskan catatan alasan penolakan peminjaman barang ini..."
+                                    class="w-full text-xs rounded-xl border border-gray-300 px-3 py-2 text-gray-900 focus:ring-1 focus:ring-rose-500 focus:border-rose-500 placeholder:text-gray-400"
+                                ></textarea>
                             </div>
                             <div class="flex justify-end gap-2">
                                 <button type="button" @click="rejectModalOpen = false" class="px-3 py-1.5 rounded-lg border border-gray-300 text-xs">Batal</button>
@@ -307,12 +336,12 @@
                         <span class="font-bold text-gray-800 text-xs">{{ $detail['dates']['borrowed_at'] }}</span>
                     </div>
 
-                    <div class="p-3 rounded-xl border {{ $detail['is_overdue'] ? 'bg-rose-50 border-rose-200' : 'bg-amber-50/60 border-amber-200' }}">
-                        <span class="text-[10px] block mb-1 {{ $detail['is_overdue'] ? 'text-rose-600 font-bold' : 'text-amber-800 font-semibold' }}">
+                    <div class="p-3 rounded-xl border {{ $detail['raw_status'] === 'rejected' || $detail['is_overdue'] ? 'bg-rose-50 border-rose-200' : 'bg-amber-50/60 border-amber-200' }}">
+                        <span class="text-[10px] block mb-1 {{ $detail['raw_status'] === 'rejected' || $detail['is_overdue'] ? 'text-rose-600 font-bold' : 'text-amber-800 font-semibold' }}">
                             Target Kembali
                         </span>
-                        <span class="font-bold text-xs {{ $detail['is_overdue'] ? 'text-rose-700' : 'text-amber-900' }}">
-                            {{ $detail['dates']['due_at'] }}
+                        <span class="font-bold text-xs {{ $detail['raw_status'] === 'rejected' || $detail['is_overdue'] ? 'text-rose-700' : 'text-amber-900' }}">
+                            {{ $detail['raw_status'] === 'rejected' ? 'Ditolak' : $detail['dates']['due_at'] }}
                         </span>
                     </div>
 

@@ -138,7 +138,13 @@ class BorrowingController extends Controller
     {
         $this->authorize('reject', $borrowing);
 
-        $reason = $request->input('rejection_reason', 'Pengajuan ditolak oleh Admin.');
+        $validated = $request->validate([
+            'rejection_reason' => ['required', 'string', 'max:1000'],
+        ], [
+            'rejection_reason.required' => 'Alasan penolakan wajib diisi.',
+        ]);
+
+        $reason = $validated['rejection_reason'];
         $old = $borrowing->getAttributes();
         $result = $action->execute($request->user(), $borrowing, $reason);
         $audit->record($request->user(), 'borrowing.rejected', $result, $old, $result->getAttributes());

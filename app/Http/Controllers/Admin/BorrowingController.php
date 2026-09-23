@@ -22,6 +22,7 @@ class BorrowingController extends Controller
             'borrower.roles',
             'asset.category',
             'approvedBy',
+            'rejectedBy',
             'returnVerifiedBy',
         ]);
 
@@ -92,6 +93,7 @@ class BorrowingController extends Controller
             'borrower.roles',
             'asset.category',
             'approvedBy',
+            'rejectedBy',
             'returnVerifiedBy',
         ]);
 
@@ -149,7 +151,9 @@ class BorrowingController extends Controller
             'dates' => [
                 'requested_at' => $borrowing->requested_at ? $borrowing->requested_at->format('d M Y, H:i') . ' WIB' : '-',
                 'borrowed_at' => $borrowing->borrowed_at ? $borrowing->borrowed_at->format('d M Y, H:i') . ' WIB' : ($borrowing->requested_at ? $borrowing->requested_at->format('d M Y, H:i') . ' WIB' : '-'),
-                'due_at' => $borrowing->due_at ? $borrowing->due_at->format('d M Y, H:i') . ' WIB' : '-',
+                'due_at' => $statusValue === BorrowingStatus::Rejected->value || $statusValue === 'rejected'
+                    ? 'Ditolak'
+                    : ($borrowing->due_at ? $borrowing->due_at->format('d M Y, H:i') . ' WIB' : '-'),
                 'returned_at' => $borrowing->returned_at ? $borrowing->returned_at->format('d M Y, H:i') . ' WIB' : null,
             ],
             'status' => $displayStatus,
@@ -157,6 +161,9 @@ class BorrowingController extends Controller
             'is_overdue' => $isOverdue,
             'borrower_note' => $borrowing->borrower_note ?: 'Tidak ada catatan',
             'return_note' => $borrowing->return_note ?: null,
+            'rejection_reason' => $borrowing->rejection_reason,
+            'rejected_at' => $borrowing->rejected_at ? $borrowing->rejected_at->format('d M Y, H:i') . ' WIB' : null,
+            'rejected_by' => $borrowing->rejectedBy?->name,
             'borrowing_evidence_url' => $borrowing->borrowing_evidence_path ? asset('storage/' . $borrowing->borrowing_evidence_path) : null,
             'return_evidence_url' => $borrowing->return_evidence_path ? asset('storage/' . $borrowing->return_evidence_path) : null,
             'approved_by' => $borrowing->approvedBy?->name,

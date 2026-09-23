@@ -248,7 +248,7 @@
                                 'dates' => [
                                     'requested_at' => $b->requested_at ? $b->requested_at->format('d M Y, H:i') . ' WIB' : '-',
                                     'borrowed_at' => $b->borrowed_at ? $b->borrowed_at->format('d M Y, H:i') . ' WIB' : ($b->requested_at ? $b->requested_at->format('d M Y, H:i') . ' WIB' : '-'),
-                                    'due_at' => $b->due_at ? $b->due_at->format('d M Y, H:i') . ' WIB' : '-',
+                                    'due_at' => $statusVal === 'rejected' ? 'Ditolak' : ($b->due_at ? $b->due_at->format('d M Y, H:i') . ' WIB' : '-'),
                                     'returned_at' => $b->returned_at ? $b->returned_at->format('d M Y, H:i') . ' WIB' : null,
                                 ],
                                 'status' => $isOverdue ? 'overdue' : $statusVal,
@@ -256,6 +256,9 @@
                                 'is_overdue' => $isOverdue,
                                 'borrower_note' => $b->borrower_note ?: 'Tidak ada catatan',
                                 'return_note' => $b->return_note ?: null,
+                                'rejection_reason' => $b->rejection_reason,
+                                'rejected_at' => $b->rejected_at ? $b->rejected_at->format('d M Y, H:i') . ' WIB' : null,
+                                'rejected_by' => $b->rejectedBy?->name,
                                 'borrowing_evidence_url' => $b->borrowing_evidence_path ? asset('storage/' . $b->borrowing_evidence_path) : null,
                                 'return_evidence_url' => $b->return_evidence_path ? asset('storage/' . $b->return_evidence_path) : null,
                                 'approved_by' => $b->approvedBy?->name,
@@ -362,7 +365,11 @@
 
                             {{-- Target Kembali --}}
                             <td class="px-5 py-4">
-                                @if($b->due_at)
+                                @if($statusVal === 'rejected')
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
+                                        Ditolak
+                                    </span>
+                                @elseif($b->due_at)
                                     <p class="font-semibold text-xs {{ $isOverdue ? 'text-rose-600 dark:text-rose-400' : 'text-stone-800 dark:text-stone-200' }}">
                                         {{ $b->due_at->format('d M Y') }}
                                     </p>
@@ -399,6 +406,10 @@
                                 @elseif($statusVal === 'returned')
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-neon-emerald border border-emerald-300 dark:border-emerald-500/30">
                                         ✓ Selesai
+                                    </span>
+                                @elseif($statusVal === 'rejected')
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-500/30">
+                                        ✕ Ditolak
                                     </span>
                                 @else
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-300 dark:border-stone-700">
@@ -530,6 +541,11 @@
                                     ✓ Selesai
                                 </span>
                             </template>
+                            <template x-if="selectedBorrowing?.raw_status === 'rejected'">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-500/30">
+                                    ✕ Ditolak
+                                </span>
+                            </template>
                             <template x-if="selectedBorrowing?.is_overdue">
                                 <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-500/30">
                                     Overdue (Terlambat)
@@ -557,6 +573,28 @@
 
                 {{-- Modal Body --}}
                 <div class="py-5 space-y-5">
+
+                {{-- Action Card: Alasan Penolakan dari Admin (Saat Status Rejected) --}}
+                <template x-if="selectedBorrowing?.raw_status === 'rejected'">
+                    <div class="bg-rose-50/90 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-500/40 rounded-2xl p-4 sm:p-5">
+                        <div class="flex items-center gap-2 text-xs font-bold text-rose-900 dark:text-rose-300 uppercase tracking-wider mb-2">
+                            <svg class="w-4 h-4 text-rose-700 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Alasan Penolakan dari Admin
+                        </div>
+                        <p class="text-xs text-rose-800 dark:text-rose-200 leading-relaxed font-medium" x-text="selectedBorrowing?.rejection_reason || 'Tidak ada catatan alasan yang diberikan.'">
+                        </p>
+                        <template x-if="selectedBorrowing?.rejected_at">
+                            <div class="mt-2 text-[11px] text-rose-700/80 dark:text-rose-400/80">
+                                Ditolak pada: <span x-text="selectedBorrowing?.rejected_at"></span>
+                                <template x-if="selectedBorrowing?.rejected_by">
+                                    <span> oleh <span class="font-semibold" x-text="selectedBorrowing?.rejected_by"></span></span>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </template>
 
                 {{-- Action Card: Persetujuan Request (Saat Status Pending) --}}
                 <template x-if="selectedBorrowing?.raw_status === 'pending'">
@@ -604,14 +642,16 @@
                             <form :action="'/admin/borrowings/' + selectedBorrowing?.id + '/reject'" method="POST" class="space-y-3">
                                 @csrf
                                 <div>
-                                    <label class="block text-xs font-semibold text-rose-900 dark:text-rose-300 mb-1">Alasan Penolakan:</label>
-                                    <input
-                                        type="text"
+                                    <label class="block text-xs font-semibold text-rose-900 dark:text-rose-300 mb-1">
+                                        Alasan Penolakan: <span class="text-rose-500">*</span>
+                                    </label>
+                                    <textarea
                                         name="rejection_reason"
                                         required
-                                        placeholder="Contoh: Unit sedang dijadwalkan untuk ujian praktikum..."
-                                        class="w-full text-xs rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] px-3 py-2 text-stone-900 dark:text-stone-100"
-                                    >
+                                        rows="3"
+                                        placeholder="Tuliskan catatan alasan penolakan peminjaman barang ini..."
+                                        class="w-full text-xs rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] px-3 py-2 text-stone-900 dark:text-stone-100 focus:ring-1 focus:ring-rose-500 focus:border-rose-500 placeholder:text-stone-400"
+                                    ></textarea>
                                 </div>
                                 <div class="flex justify-end gap-2">
                                     <button type="button" @click="rejectModalOpen = false" class="px-3 py-1.5 rounded-lg border border-stone-300 text-xs interactive-btn">Batal</button>
@@ -752,11 +792,11 @@
                             <span class="font-bold text-stone-800 dark:text-stone-200 text-xs" x-text="selectedBorrowing?.dates.borrowed_at || '-'"></span>
                         </div>
 
-                        <div class="p-2.5 rounded-lg border" :class="selectedBorrowing?.is_overdue ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-500/30' : 'bg-amber-50/60 dark:bg-amber-950/40 border-amber-200 dark:border-amber-500/30'">
-                            <span class="text-[10px] block mb-0.5" :class="selectedBorrowing?.is_overdue ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-amber-800 dark:text-neon-glowamber'">
+                        <div class="p-2.5 rounded-lg border" :class="selectedBorrowing?.raw_status === 'rejected' ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-500/30' : (selectedBorrowing?.is_overdue ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-500/30' : 'bg-amber-50/60 dark:bg-amber-950/40 border-amber-200 dark:border-amber-500/30')">
+                            <span class="text-[10px] block mb-0.5" :class="selectedBorrowing?.raw_status === 'rejected' || selectedBorrowing?.is_overdue ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-amber-800 dark:text-neon-glowamber'">
                                 Target Kembali
                             </span>
-                            <span class="font-bold text-xs" :class="selectedBorrowing?.is_overdue ? 'text-rose-700 dark:text-rose-300' : 'text-amber-900 dark:text-neon-glowamber'" x-text="selectedBorrowing?.dates.due_at"></span>
+                            <span class="font-bold text-xs" :class="selectedBorrowing?.raw_status === 'rejected' || selectedBorrowing?.is_overdue ? 'text-rose-700 dark:text-rose-300' : 'text-amber-900 dark:text-neon-glowamber'" x-text="selectedBorrowing?.raw_status === 'rejected' ? 'Ditolak' : (selectedBorrowing?.dates?.due_at || '-')"></span>
                         </div>
 
                         <div class="p-2.5 rounded-lg border" :class="selectedBorrowing?.dates.returned_at ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-500/30' : 'bg-stone-50 dark:bg-[#0E1420] border-stone-100 dark:border-stone-800'">

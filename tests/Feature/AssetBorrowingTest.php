@@ -388,4 +388,27 @@ class AssetBorrowingTest extends TestCase
         $borrowing->refresh();
         $this->assertEquals(BorrowingStatus::Borrowed, $borrowing->status);
     }
+
+    public function test_user_sees_rejection_reason_on_mine_page(): void
+    {
+        $siswa = $this->createSiswa();
+        $asset = Asset::first();
+
+        Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::Rejected,
+            'requested_at' => now()->subDay(),
+            'rejected_at' => now(),
+            'due_at' => now(),
+            'rejection_reason' => 'Stok unit sedang dalam kalibrasi teknisi.',
+        ]);
+
+        $response = $this->actingAs($siswa)->get(route('borrowings.mine'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Ditolak');
+        $response->assertSee('Alasan Penolakan:');
+        $response->assertSee('Stok unit sedang dalam kalibrasi teknisi.');
+    }
 }
