@@ -221,7 +221,25 @@
     </div>
 
     {{-- Synchronization Action Panel --}}
-    <div class="diag-panel" style="margin-bottom: 2rem; border-left: 4px solid var(--gold);" x-data="{ isSyncing: false, syncType: 'all' }">
+    <div class="diag-panel" style="margin-bottom: 2rem; border-left: 4px solid var(--gold);" 
+         x-data="{ 
+             isSyncing: false, 
+             syncType: 'all', 
+             openConfirmModal: false,
+             syncTargetTitle: 'Semua Data Pengguna (Siswa & Guru)',
+             openSyncConfirm(type, title) {
+                 this.syncType = type;
+                 this.syncTargetTitle = title;
+                 this.openConfirmModal = true;
+             },
+             confirmSync() {
+                 this.isSyncing = true;
+                 this.openConfirmModal = false;
+                 this.$nextTick(() => {
+                     this.$refs.syncForm.submit();
+                 });
+             }
+         }">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem;">
             <div>
                 <h2 style="display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.4rem;">
@@ -235,35 +253,45 @@
                 </p>
             </div>
             <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;">
-                {{-- Form Sinkronisasi Semua Data --}}
-                <form action="{{ route('admin.sync-sipintu') }}" method="POST" @submit="if(confirm('Mulai sinkronisasi SELURUH data pengguna (Siswa & Guru) dari SiPintu Gateway? Proses ini mungkin memerlukan waktu beberapa saat.')){ isSyncing = true; syncType = 'all'; } else { $event.preventDefault(); }">
+                {{-- Form Sinkronisasi Tunggal Terkendali Alpine --}}
+                <form x-ref="syncForm" action="{{ route('admin.sync-sipintu') }}" method="POST" class="hidden">
                     @csrf
-                    <input type="hidden" name="type" value="all">
-                    <button type="submit" :disabled="isSyncing" class="btn-gw-link btn-gw-gold interactive-btn" style="width: auto; padding: 0.75rem 1.25rem; font-weight: 700; box-shadow: 0 4px 12px rgba(200, 155, 60, 0.25);">
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:1.1rem;height:1.1rem;">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
-                        </svg>
-                        <span>Sinkronkan Semua Data</span>
-                    </button>
+                    <input type="hidden" name="type" :value="syncType">
                 </form>
 
-                {{-- Form Sinkronisasi Siswa Saja --}}
-                <form action="{{ route('admin.sync-sipintu') }}" method="POST" @submit="if(confirm('Mulai sinkronisasi data SISWA dari SiPintu Gateway?')){ isSyncing = true; syncType = 'students'; } else { $event.preventDefault(); }">
-                    @csrf
-                    <input type="hidden" name="type" value="students">
-                    <button type="submit" :disabled="isSyncing" class="text-stone-300 hover:text-amber-400 font-medium text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-stone-800/60 interactive-btn">
-                        <span>Hanya Siswa</span>
-                    </button>
-                </form>
+                {{-- Tombol Sinkronisasi Semua Data --}}
+                <button 
+                    type="button" 
+                    @click="openSyncConfirm('all', 'Semua Data Pengguna (Siswa & Guru)')" 
+                    :disabled="isSyncing" 
+                    class="btn-gw-link btn-gw-gold interactive-btn cursor-pointer" 
+                    style="width: auto; padding: 0.75rem 1.25rem; font-weight: 700; box-shadow: 0 4px 12px rgba(200, 155, 60, 0.25);"
+                >
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:1.1rem;height:1.1rem;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+                    </svg>
+                    <span>Sinkronkan Semua Data</span>
+                </button>
 
-                {{-- Form Sinkronisasi Guru Saja --}}
-                <form action="{{ route('admin.sync-sipintu') }}" method="POST" @submit="if(confirm('Mulai sinkronisasi data GURU dari SiPintu Gateway?')){ isSyncing = true; syncType = 'teachers'; } else { $event.preventDefault(); }">
-                    @csrf
-                    <input type="hidden" name="type" value="teachers">
-                    <button type="submit" :disabled="isSyncing" class="text-stone-300 hover:text-amber-400 font-medium text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-stone-800/60 interactive-btn">
-                        <span>Hanya Guru</span>
-                    </button>
-                </form>
+                {{-- Tombol Sinkronisasi Siswa Saja --}}
+                <button 
+                    type="button" 
+                    @click="openSyncConfirm('students', 'Hanya Data Siswa')" 
+                    :disabled="isSyncing" 
+                    class="text-stone-600 dark:text-stone-300 hover:text-amber-700 dark:hover:text-amber-400 font-medium text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800/60 interactive-btn cursor-pointer"
+                >
+                    <span>Hanya Siswa</span>
+                </button>
+
+                {{-- Tombol Sinkronisasi Guru Saja --}}
+                <button 
+                    type="button" 
+                    @click="openSyncConfirm('teachers', 'Hanya Data Dewan Guru')" 
+                    :disabled="isSyncing" 
+                    class="text-stone-600 dark:text-stone-300 hover:text-amber-700 dark:hover:text-amber-400 font-medium text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800/60 interactive-btn cursor-pointer"
+                >
+                    <span>Hanya Guru</span>
+                </button>
             </div>
         </div>
 
@@ -282,6 +310,71 @@
                 </p>
             </div>
         </div>
+
+        {{-- Modal Konfirmasi Sinkronisasi Khas SITEFA --}}
+        <template x-teleport="body">
+            <div
+                x-show="openConfirmModal"
+                x-cloak
+                class="fixed inset-0 z-[60] bg-stone-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+                @keydown.escape.window="if (!isSyncing) openConfirmModal = false"
+                @click.self="if (!isSyncing) openConfirmModal = false"
+                x-transition:enter="transition-opacity duration-200 ease-out"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition-opacity duration-150 ease-in"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+            >
+                <div
+                    class="w-full max-w-md bg-white dark:bg-[#131B2A] rounded-2xl shadow-2xl p-6 border border-stone-200 dark:border-stone-800"
+                    @click.outside="if (!isSyncing) openConfirmModal = false"
+                    @click.stop
+                    x-transition:enter="transition-all duration-200 cubic-bezier(0.16, 1, 0.3, 1)"
+                    x-transition:enter-start="opacity-0 scale-[0.97] translate-y-2"
+                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave="transition-all duration-150 ease-in"
+                    x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 scale-[0.97] translate-y-2"
+                >
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-500/30 flex items-center justify-center text-[#6F4E37] dark:text-amber-400 shrink-0 shadow-sm">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-heading font-bold text-lg text-stone-900 dark:text-stone-100">Konfirmasi Sinkronisasi Data</h3>
+                            <span class="inline-flex items-center mt-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30" x-text="syncTargetTitle"></span>
+                        </div>
+                    </div>
+
+                    <p class="text-sm text-stone-600 dark:text-stone-300 leading-relaxed mb-6">
+                        Proses ini akan menyinkronkan data pengguna dari SiPintu Gateway ke database lokal SITEFA.
+                    </p>
+
+                    <div class="flex items-center justify-end gap-3 pt-3 border-t border-stone-100 dark:border-stone-800/80">
+                        <button
+                            type="button"
+                            @click="openConfirmModal = false"
+                            class="px-4 py-2.5 rounded-xl text-sm font-medium text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700 transition"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="button"
+                            @click="confirmSync()"
+                            class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#6F4E37] hover:bg-[#5a3f2c] dark:bg-amber-600 dark:hover:bg-amber-500 shadow-md transition active:scale-95 flex items-center gap-2"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/>
+                            </svg>
+                            <span>Konfirmasi</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
     </div>
 
     {{-- 3 Main Action Cards --}}

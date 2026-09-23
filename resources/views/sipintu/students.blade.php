@@ -317,7 +317,7 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 
-<div class="sip-container">
+<div class="sip-container" x-data="{ openSyncModal: false }">
 
     {{-- Header --}}
     <div class="sip-header">
@@ -327,16 +327,90 @@
         </div>
 
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <form action="{{ route('admin.sync-sipintu') }}" method="POST" onsubmit="return confirm('Mulai sinkronisasi data SISWA ke database lokal SITEFA? Proses ini memerlukan beberapa saat.')">
-                @csrf
-                <input type="hidden" name="type" value="students">
-                <button type="submit" class="btn-sip-outline" style="background: var(--gold); color: #3B2610; border-color: var(--gold); font-weight: 700;">
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:1rem;height:1rem;">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
-                    </svg>
-                    Sinkronkan ke DB Lokal
-                </button>
-            </form>
+            {{-- Tombol Buka Modal Sinkronisasi --}}
+            <button 
+                type="button" 
+                @click="openSyncModal = true" 
+                class="btn-sip-outline cursor-pointer" 
+                style="background: var(--gold); color: #3B2610; border-color: var(--gold); font-weight: 700;"
+            >
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:1rem;height:1rem;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+                </svg>
+                Sinkronkan ke DB Lokal
+            </button>
+
+            {{-- Modal Konfirmasi Sinkronisasi Data Siswa Khas SITEFA --}}
+            <template x-teleport="body">
+                <div
+                    x-show="openSyncModal"
+                    x-cloak
+                    class="fixed inset-0 z-[60] bg-stone-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+                    @keydown.escape.window="openSyncModal = false"
+                    @click.self="openSyncModal = false"
+                    x-transition:enter="transition-opacity duration-200 ease-out"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition-opacity duration-150 ease-in"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                >
+                    <div
+                        class="w-full max-w-md bg-white dark:bg-[#131B2A] rounded-2xl shadow-2xl p-6 border border-stone-200 dark:border-stone-800"
+                        @click.outside="openSyncModal = false"
+                        @click.stop
+                        x-transition:enter="transition-all duration-200 cubic-bezier(0.16, 1, 0.3, 1)"
+                        x-transition:enter-start="opacity-0 scale-[0.97] translate-y-2"
+                        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                        x-transition:leave="transition-all duration-150 ease-in"
+                        x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 scale-[0.97] translate-y-2"
+                    >
+                        <div class="flex items-start gap-4 mb-4">
+                            <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-500/30 flex items-center justify-center text-[#6F4E37] dark:text-amber-400 shrink-0 shadow-sm">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-heading font-bold text-lg text-stone-900 dark:text-stone-100">
+                                    Konfirmasi Sinkronisasi Data Siswa
+                                </h3>
+                                <span class="inline-flex items-center mt-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30">
+                                    Data Pengguna &amp; Siswa SIJUNA
+                                </span>
+                            </div>
+                        </div>
+
+                        <p class="text-sm text-stone-600 dark:text-stone-300 leading-relaxed mb-6">
+                            Mulai sinkronisasi seluruh data pengguna &amp; siswa SMKN 1 Bangsri dari SiPintu Gateway ke database lokal SITEFA? Proses ini memerlukan beberapa saat.
+                        </p>
+
+                        <form action="{{ route('admin.sync-sipintu') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="type" value="students">
+                            <div class="flex items-center justify-end gap-3 pt-3 border-t border-stone-100 dark:border-stone-800/80">
+                                <button
+                                    type="button"
+                                    @click="openSyncModal = false"
+                                    class="px-4 py-2.5 rounded-xl text-sm font-medium text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700 transition cursor-pointer"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="submit"
+                                    class="bg-[#6F4E37] hover:bg-[#5a3f2c] dark:bg-amber-600 dark:hover:bg-amber-500 text-white px-5 py-2.5 rounded-xl font-semibold shadow-md active:scale-95 transition flex items-center gap-2 cursor-pointer"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/>
+                                    </svg>
+                                    <span>Ya, Sinkronkan Data</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </template>
             <a href="{{ route('sipintu.teachers.page') }}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-stone-700 bg-stone-800/60 hover:bg-stone-800 text-stone-200 hover:text-white text-sm font-medium transition-colors shadow-sm">
                 <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width:1rem;height:1rem;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.636 50.636 0 00-2.658-.813A59.906 59.906 0 0112 3.493a59.903 59.903 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0112 13.489a50.702 50.702 0 017.74-3.342"/>

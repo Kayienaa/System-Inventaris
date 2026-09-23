@@ -154,15 +154,19 @@ class SiPintuSyncService
                             $email = trim((string) ($studentData['user']['email'] ?? ($studentData['email'] ?? ($nis ? "{$nis}@smkn1bangsri.sch.id" : ''))));
                             $name = trim((string) ($studentData['nama'] ?? ($studentData['user']['name'] ?? ($studentData['name'] ?? 'Siswa'))));
                             $nisn = ! empty($studentData['nisn']) ? trim((string) $studentData['nisn']) : null;
-                            $className = trim((string) (
-                                (is_array($studentData['classroom'] ?? null) ? ($studentData['classroom']['name'] ?? '') : ($studentData['classroom'] ?? ''))
-                                ?: ($studentData['kelas'] 
-                                ?? $studentData['class_name'] 
+                            $rawClassName = $studentData['class_name'] 
+                                ?? $studentData['kelas'] 
                                 ?? $studentData['rombel'] 
-                                ?? ($studentData['user']['kelas'] ?? '')
-                                ?? ($studentData['user']['class_name'] ?? '')
-                                ?? ($studentData['user']['classroom']['name'] ?? ''))
-                            )) ?: null;
+                                ?? $studentData['nama_kelas'] 
+                                ?? (is_array($studentData['classroom'] ?? null) ? ($studentData['classroom']['name'] ?? null) : ($studentData['classroom'] ?? null))
+                                ?? ($studentData['user']['class_name'] ?? null)
+                                ?? ($studentData['user']['kelas'] ?? null)
+                                ?? ($studentData['user']['rombel'] ?? null)
+                                ?? ($studentData['user']['nama_kelas'] ?? null)
+                                ?? (is_array($studentData['user']['classroom'] ?? null) ? ($studentData['user']['classroom']['name'] ?? null) : null)
+                                ?? null;
+
+                            $className = ! empty($rawClassName) ? trim((string) $rawClassName) : null;
                             $phone = trim((string) (
                                 $studentData['hp']
                                 ?? $studentData['phone']

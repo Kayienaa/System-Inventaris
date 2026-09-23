@@ -81,7 +81,7 @@
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                                {{ auth()->user()->hasRole('guru') ? 'NIP' : 'NIS' }}
+                                {{ $user->hasRole('guru') ? 'NIP' : 'NIS' }}
                             </label>
                             <span class="inline-flex items-center gap-1 text-[11px] font-medium text-stone-400 dark:text-stone-500">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
@@ -89,7 +89,7 @@
                             </span>
                         </div>
                         <input type="text" 
-                               value="{{ auth()->user()->siswaProfile?->nis ?? auth()->user()->guruProfile?->nip ?? '-' }}" 
+                               value="{{ $user->siswaProfile?->nis ?? $user->guruProfile?->nip ?? '-' }}" 
                                class="w-full px-4 py-3 bg-stone-100 dark:bg-[#0B0F17] border border-stone-200 dark:border-stone-800 text-stone-800 dark:text-stone-200 rounded-xl font-medium focus:outline-none cursor-not-allowed" 
                                readonly disabled>
                     </div>
@@ -98,7 +98,7 @@
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                                {{ auth()->user()->hasRole('guru') ? 'JABATAN / UNIT' : 'KELAS' }}
+                                {{ $user->hasRole('guru') ? 'JABATAN / UNIT' : 'KELAS' }}
                             </label>
                             <span class="inline-flex items-center gap-1 text-[11px] font-medium text-stone-400 dark:text-stone-500">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
@@ -107,11 +107,10 @@
                         </div>
                         @php
                             $kelasValue = '-';
-                            if (auth()->user()->hasRole('guru')) {
-                                $kelasValue = auth()->user()->guruProfile?->jabatan ?? 'Dewan Guru';
+                            if ($user->hasRole('guru')) {
+                                $kelasValue = $user->guruProfile?->jabatan ?? 'Dewan Guru';
                             } else {
-                                $kelasValue = auth()->user()->siswaProfile?->class_name 
-                                    ?: (auth()->user()->siswaProfile?->kelas ?: '-');
+                                $kelasValue = $user->siswaProfile?->class_name ?? '-';
                             }
                         @endphp
 

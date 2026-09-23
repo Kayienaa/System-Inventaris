@@ -140,19 +140,19 @@
                         </span>
 
                         @if ($isPending)
-                            <form action="{{ route('borrowings.cancel', $borrowing) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pengajuan peminjaman ini?');">
-                                @csrf
-                                <button
-                                    type="submit"
-                                    class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-rose-300 text-rose-600 hover:bg-rose-50 dark:border-rose-800 dark:text-rose-400 dark:hover:bg-rose-950/40 flex items-center gap-1.5 transition active:scale-95 cursor-pointer interactive-btn"
-                                >
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                    </svg>
-                                    Batalkan Peminjaman
-                                </button>
-                            </form>
-                        @endif                        @if ($isApproved)
+                            <button
+                                type="button"
+                                @click="openCancelDialog({{ $borrowing->id }}, '{{ route('borrowings.cancel', $borrowing) }}')"
+                                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 shadow-sm border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:border-rose-300 active:scale-95 dark:bg-rose-950/40 dark:border-rose-800/60 dark:text-rose-300 dark:hover:bg-rose-900/50 cursor-pointer"
+                            >
+                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                                <span>Batalkan Peminjaman</span>
+                            </button>
+                        @endif
+
+                        @if ($isApproved)
                             <button
                                 type="button"
                                 @click="openCheckoutModal({{ $borrowing->id }}, '{{ addslashes($borrowing->asset->name ?? 'Aset') }}', '{{ $borrowing->asset->asset_code ?? '' }}')"
@@ -621,6 +621,71 @@
         </div>
     </template>
 
+    {{-- Modal Konfirmasi Batalkan Peminjaman Khas SITEFA --}}
+    <template x-teleport="body">
+        <div
+            x-show="openCancelModal"
+            x-cloak
+            class="fixed inset-0 z-[60] bg-stone-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+            @keydown.escape.window="closeCancelDialog()"
+            @click.self="closeCancelDialog()"
+            x-transition:enter="transition-opacity duration-200 ease-out"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition-opacity duration-150 ease-in"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+        >
+            <div
+                class="w-full max-w-md bg-white dark:bg-[#131B2A] rounded-2xl shadow-2xl p-6 border border-stone-200 dark:border-stone-800"
+                @click.outside="closeCancelDialog()"
+                @click.stop
+                x-transition:enter="transition-all duration-200 cubic-bezier(0.16, 1, 0.3, 1)"
+                x-transition:enter-start="opacity-0 scale-[0.97] translate-y-2"
+                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                x-transition:leave="transition-all duration-150 ease-in"
+                x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                x-transition:leave-end="opacity-0 scale-[0.97] translate-y-2"
+            >
+                <div class="flex items-start gap-4 mb-4">
+                    <div class="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/60 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0 shadow-sm">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-heading font-bold text-stone-900 dark:text-stone-100 text-lg">
+                            Batalkan Pengajuan Peminjaman?
+                        </h3>
+                    </div>
+                </div>
+
+                <p class="text-sm text-stone-600 dark:text-stone-300 leading-relaxed mb-6">
+                    Unit barang yang Anda pesan akan segera dilepaskan kembali ke katalog agar dapat dipinjam oleh warga sekolah lainnya.
+                </p>
+
+                <form :action="cancelFormAction || ('/peminjaman/' + cancelBorrowingId + '/cancel')" method="POST">
+                    @csrf
+                    <div class="flex items-center justify-end gap-3 pt-3 border-t border-stone-100 dark:border-stone-800/80">
+                        <button
+                            type="button"
+                            @click="closeCancelDialog()"
+                            class="px-4 py-2.5 rounded-xl text-sm font-medium text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700 transition cursor-pointer"
+                        >
+                            Kembali
+                        </button>
+                        <button
+                            type="submit"
+                            class="bg-rose-600 hover:bg-rose-700 text-white rounded-xl px-4 py-2 text-sm font-semibold active:scale-95 shadow-sm transition cursor-pointer"
+                        >
+                            Ya, Batalkan Pesanan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
+
 </div>
 
 <script>
@@ -645,6 +710,24 @@
             closeCameraModal() {
                 this.closeCheckoutModal();
                 this.closeReturnModal();
+                this.closeCancelDialog();
+            },
+
+            // Cancel Modal State
+            openCancelModal: false,
+            cancelBorrowingId: null,
+            cancelFormAction: '',
+
+            openCancelDialog(borrowingId, formAction = '') {
+                this.cancelBorrowingId = borrowingId;
+                this.cancelFormAction = formAction || ('/peminjaman/' + borrowingId + '/cancel');
+                this.openCancelModal = true;
+            },
+
+            closeCancelDialog() {
+                this.openCancelModal = false;
+                this.cancelBorrowingId = null;
+                this.cancelFormAction = '';
             },
 
             // Return Modal State
