@@ -411,4 +411,96 @@ class AssetBorrowingTest extends TestCase
         $response->assertSee('Alasan Penolakan:');
         $response->assertSee('Stok unit sedang dalam kalibrasi teknisi.');
     }
+
+    public function test_user_can_cancel_own_pending_borrowing(): void
+    {
+        $siswa = $this->createSiswa();
+        $asset = Asset::first();
+        $asset->update(['availability_status' => AssetAvailabilityStatus::Dipesan]);
+
+        $borrowing = Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::Pending,
+            'requested_at' => now(),
+            'due_at' => now()->addDays(3),
+            'borrower_note' => 'Pengajuan uji pembatalan mandiri',
+        ]);
+
+        $response = $this->actingAs($siswa)
+            ->post(route('borrowings.cancel', $borrowing));
+
+        $response->assertRedirect(route('borrowings.mine'));
+        $response->assertSessionHas('success', 'Pengajuan peminjaman berhasil dibatalkan.');
+
+        $borrowing->refresh();
+        $this->assertEquals(BorrowingStatus::Rejected, $borrowing->status);
+        $this->assertEquals('Dibatalkan oleh peminjam', $borrowing->rejection_reason);
+        $this->assertNotNull($borrowing->rejected_at);
+
+        $asset->refresh();
+        $this->assertEquals(AssetAvailabilityStatus::Tersedia, $asset->availability_status);
+    }
+
+    public function test_user_cannot_cancel_other_users_borrowing(): void
+    {
+        $siswa1 = $this->createSiswa();
+        $siswa2 = $this->createSiswa();
+        $asset = Asset::first();
+
+        $borrowing = Borrowing::create([
+            'borrower_user_id' => $siswa1->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::Pending,
+            'requested_at' => now(),
+            'due_at' => now()->addDays(3),
+        ]);
+
+        $response = $this->actingAs($siswa2)
+            ->post(route('borrowings.cancel', $borrowing));
+
+        $response->assertStatus(403);
+
+        $borrowing->refresh();
+        $this->assertEquals(BorrowingStatus::Pending, $borrowing->status);
+    }
+
+    public function test_user_cannot_cancel_already_borrowed_or_approved_transaction(): void
+    {
+        $siswa = $this->createSiswa();
+        $assets = Asset::take(2)->get();
+        $asset1 = $assets[0];
+        $asset2 = $assets[1];
+
+        // 1. Coba batalkan transaksi yang sudah Approved
+        $approvedBorrowing = Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset1->id,
+            'status' => BorrowingStatus::Approved,
+            'requested_at' => now(),
+            'due_at' => now()->addDays(3),
+        ]);
+
+        $responseApproved = $this->actingAs($siswa)
+            ->post(route('borrowings.cancel', $approvedBorrowing));
+
+        $responseApproved->assertStatus(403);
+        $this->assertEquals(BorrowingStatus::Approved, $approvedBorrowing->fresh()->status);
+
+        // 2. Coba batalkan transaksi yang sudah Borrowed
+        $borrowedBorrowing = Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset2->id,
+            'status' => BorrowingStatus::Borrowed,
+            'requested_at' => now(),
+            'borrowed_at' => now(),
+            'due_at' => now()->addDays(3),
+        ]);
+
+        $responseBorrowed = $this->actingAs($siswa)
+            ->post(route('borrowings.cancel', $borrowedBorrowing));
+
+        $responseBorrowed->assertStatus(403);
+        $this->assertEquals(BorrowingStatus::Borrowed, $borrowedBorrowing->fresh()->status);
+    }
 }

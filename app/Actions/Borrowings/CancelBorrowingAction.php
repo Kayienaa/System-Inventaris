@@ -23,20 +23,21 @@ class CancelBorrowingAction
             $asset = Asset::withTrashed()->lockForUpdate()->find($borrowing->asset_id);
             $lockedBorrowing = Borrowing::query()->lockForUpdate()->find($borrowing->id);
 
-            if ($lockedBorrowing === null || ! in_array($lockedBorrowing->status, [BorrowingStatus::Pending, BorrowingStatus::Approved], true)) {
-                throw new BorrowingStateException('Only pending or approved borrowings can be cancelled.');
+            if ($lockedBorrowing === null || $lockedBorrowing->status !== BorrowingStatus::Pending) {
+                throw new BorrowingStateException('Only pending borrowings can be cancelled.');
             }
 
-            $wasApproved = $lockedBorrowing->status === BorrowingStatus::Approved;
-            if ($wasApproved && ($asset === null || $asset->trashed())) {
-                throw new AssetUnavailableException('The reserved asset is unavailable for cancellation.');
-            }
+            $reasonText = $reason ?: 'Dibatalkan oleh peminjam';
 
             $lockedBorrowing->update([
-                'status' => BorrowingStatus::Cancelled,
+                'status' => BorrowingStatus::Rejected,
+                'rejected_by_user_id' => $actor->id,
+                'rejected_at' => now(),
+                'rejection_reason' => $reasonText,
                 'cancelled_by_user_id' => $actor->id,
                 'cancelled_at' => now(),
-                'cancellation_reason' => $reason,
+                'cancellation_reason' => $reasonText,
+                'due_at' => now(),
             ]);
 
             $asset?->update(['availability_status' => AssetAvailabilityStatus::Tersedia]);

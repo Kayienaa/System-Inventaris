@@ -73,6 +73,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/borrowings/{borrowing}/return-request', [BorrowingController::class, 'requestReturn'])
         ->name('borrowings.return-request');
 
+    Route::post('/peminjaman/{borrowing}/cancel', [BorrowingController::class, 'webCancel'])
+        ->name('borrowings.cancel');
+    Route::post('/borrowings/{borrowing}/cancel', [BorrowingController::class, 'webCancel']);
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('/profile/admin-whatsapp', [ProfileController::class, 'updateAdminWhatsApp'])

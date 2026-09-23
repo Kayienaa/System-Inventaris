@@ -35,8 +35,15 @@ class BorrowingPolicy
 
     public function cancel(User $user, Borrowing $borrowing): bool
     {
-        return $user->hasAnyRole(['super_admin', 'admin']) || ($this->owns($user, $borrowing)
-            && in_array($borrowing->status, [BorrowingStatus::Pending, BorrowingStatus::Approved], true));
+        $statusValue = $borrowing->status instanceof BorrowingStatus
+            ? $borrowing->status
+            : BorrowingStatus::tryFrom((string) $borrowing->status);
+
+        if ($statusValue !== BorrowingStatus::Pending) {
+            return false;
+        }
+
+        return $user->hasAnyRole(['super_admin', 'admin']) || $this->owns($user, $borrowing);
     }
 
     public function checkout(User $user, Borrowing $borrowing): bool

@@ -116,6 +116,23 @@ class BorrowingController extends Controller
     }
 
     /**
+     * Pembatalan mandiri peminjaman oleh User (Web view).
+     */
+    public function webCancel(\Illuminate\Http\Request $request, Borrowing $borrowing, CancelBorrowingAction $action, AuditLogService $audit)
+    {
+        $this->authorize('cancel', $borrowing);
+
+        $oldAttributes = $borrowing->getAttributes();
+        $reason = $request->input('cancellation_reason', 'Dibatalkan oleh peminjam');
+        $result = $action->execute($request->user(), $borrowing, $reason);
+
+        $audit->record($request->user(), 'borrowing.cancelled', $result, $oldAttributes, $result->getAttributes());
+
+        return redirect()->route('borrowings.mine')
+            ->with('success', 'Pengajuan peminjaman berhasil dibatalkan.');
+    }
+
+    /**
      * Persetujuan pengajuan awal oleh Admin / Super Admin (Web view).
      */
     public function webApprove(\Illuminate\Http\Request $request, Borrowing $borrowing, ApproveBorrowingAction $action, AuditLogService $audit, NotificationService $notifications)

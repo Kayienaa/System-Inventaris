@@ -137,7 +137,22 @@
 
                         <span class="px-3 py-1 text-xs font-semibold rounded-full border {{ $statusLabel[1] }}">
                             {{ $statusLabel[0] }}
-                        </span>                        @if ($isApproved)
+                        </span>
+
+                        @if ($isPending)
+                            <form action="{{ route('borrowings.cancel', $borrowing) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pengajuan peminjaman ini?');">
+                                @csrf
+                                <button
+                                    type="submit"
+                                    class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-rose-300 text-rose-600 hover:bg-rose-50 dark:border-rose-800 dark:text-rose-400 dark:hover:bg-rose-950/40 flex items-center gap-1.5 transition active:scale-95 cursor-pointer interactive-btn"
+                                >
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                    Batalkan Peminjaman
+                                </button>
+                            </form>
+                        @endif                        @if ($isApproved)
                             <button
                                 type="button"
                                 @click="openCheckoutModal({{ $borrowing->id }}, '{{ addslashes($borrowing->asset->name ?? 'Aset') }}', '{{ $borrowing->asset->asset_code ?? '' }}')"
