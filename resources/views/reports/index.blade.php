@@ -5,38 +5,38 @@
 @section('content')
 
             {{-- Page heading --}}
-            <div class="page-heading" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+            <div class="page-heading flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div>
-                    <h1 class="brand-font font-heading font-bold">
+                    <h1 class="brand-font font-heading font-bold text-2xl sm:text-3xl text-stone-900 dark:text-stone-100">
                         Laporan
                     </h1>
-                    <p>
+                    <p class="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-1">
                         Ringkasan statistik dan rekapitulasi transaksi inventaris TEFA.
                     </p>
                 </div>
 
-                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+                <div class="grid grid-cols-2 gap-2 w-full md:w-auto md:flex md:items-center md:gap-2.5">
                     <a
                         href="{{ route('admin.borrowings.export-excel') }}"
-                        class="btn"
-                        style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 10px; background: #059669; color: #ffffff; font-size: 0.82rem; font-weight: 700; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"
+                        class="btn w-full md:w-auto inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-sm transition active:scale-95 text-center"
+                        style="text-decoration: none;"
                     >
-                        <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
-                        Ekspor Excel / CSV
+                        <span>Ekspor Excel / CSV</span>
                     </a>
 
                     <a
                         href="{{ route('admin.borrowings.export-pdf') }}"
                         target="_blank"
-                        class="btn"
-                        style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 10px; background: #6F4E37; color: #ffffff; font-size: 0.82rem; font-weight: 700; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"
+                        class="btn w-full md:w-auto inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white text-xs font-semibold shadow-sm transition active:scale-95 text-center"
+                        style="text-decoration: none;"
                     >
-                        <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                         </svg>
-                        Cetak / Ekspor PDF
+                        <span>Cetak / Ekspor PDF</span>
                     </a>
                 </div>
             </div>

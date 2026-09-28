@@ -68,52 +68,62 @@
     @endif
 
     {{-- Quick Stat Cards --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="static-card bg-white dark:bg-[#131B2A] p-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-800/40 flex items-center justify-center text-[#6F4E37] dark:text-neon-glowamber shrink-0">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    {{-- Quick Stat Cards --}}
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
+        <div class="static-card bg-white dark:bg-[#131B2A] p-3.5 md:p-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center gap-3 md:gap-4">
+            <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-800/40 flex items-center justify-center text-[#6F4E37] dark:text-neon-glowamber shrink-0">
+                <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                 </svg>
             </div>
-            <div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-400">Total Unit Aset</p>
-                <p class="text-2xl font-bold text-stone-900 dark:text-stone-100">{{ number_format($stats['total'] ?? 0) }}</p>
+            <div class="min-w-0 flex-1">
+                <p class="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-400 leading-tight truncate">
+                    <span class="md:hidden">Total Aset</span>
+                    <span class="hidden md:inline">Total Unit Aset</span>
+                </p>
+                <p class="text-xl md:text-2xl font-bold text-stone-900 dark:text-stone-100 leading-tight mt-0.5 md:mt-1">{{ number_format($stats['total'] ?? 0) }}</p>
             </div>
         </div>
 
-        <div class="static-card bg-white dark:bg-[#131B2A] p-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="static-card bg-white dark:bg-[#131B2A] p-3.5 md:p-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center gap-3 md:gap-4">
+            <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
             </div>
-            <div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-400">Tersedia</p>
-                <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{{ number_format($stats['tersedia'] ?? 0) }}</p>
+            <div class="min-w-0 flex-1">
+                <p class="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-400 leading-tight truncate">
+                    <span class="md:hidden">Barang Tersedia</span>
+                    <span class="hidden md:inline">Tersedia</span>
+                </p>
+                <p class="text-xl md:text-2xl font-bold text-emerald-600 dark:text-emerald-400 leading-tight mt-0.5 md:mt-1">{{ number_format($stats['tersedia'] ?? 0) }}</p>
             </div>
         </div>
 
-        <div class="static-card bg-white dark:bg-[#131B2A] p-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-800/40 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="static-card bg-white dark:bg-[#131B2A] p-3.5 md:p-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center gap-3 md:gap-4">
+            <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-800/40 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+                <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
             </div>
-            <div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-400">Sedang Dipinjam</p>
-                <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ number_format($stats['dipinjam'] ?? 0) }}</p>
+            <div class="min-w-0 flex-1">
+                <p class="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-400 leading-tight truncate">Sedang Dipinjam</p>
+                <p class="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400 leading-tight mt-0.5 md:mt-1">{{ number_format($stats['dipinjam'] ?? 0) }}</p>
             </div>
         </div>
 
-        <div class="static-card bg-white dark:bg-[#131B2A] p-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-800/40 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="static-card bg-white dark:bg-[#131B2A] p-3.5 md:p-4 rounded-2xl border border-stone-200/70 dark:border-stone-800 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center gap-3 md:gap-4">
+            <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-800/40 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
+                <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                 </svg>
             </div>
-            <div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-400">Perbaikan / Rusak</p>
-                <p class="text-2xl font-bold text-rose-600 dark:text-rose-400">{{ number_format($stats['perbaikan'] ?? 0) }}</p>
+            <div class="min-w-0 flex-1">
+                <p class="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-400 leading-tight truncate">
+                    <span class="md:hidden">Terlambat</span>
+                    <span class="hidden md:inline">Perbaikan / Rusak</span>
+                </p>
+                <p class="text-xl md:text-2xl font-bold text-rose-600 dark:text-rose-400 leading-tight mt-0.5 md:mt-1">{{ number_format($stats['perbaikan'] ?? 0) }}</p>
             </div>
         </div>
     </div>

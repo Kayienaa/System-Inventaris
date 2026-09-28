@@ -250,7 +250,7 @@
                     :class="historyOpen 
                         ? 'bg-[#6F4E37] text-white border-[#6F4E37] dark:bg-amber-600 dark:text-white dark:border-amber-500 shadow-sm' 
                         : 'bg-stone-100 hover:bg-[#6F4E37] text-stone-700 hover:text-white border-stone-200/80 hover:border-[#6F4E37] dark:bg-[#162032] dark:text-stone-300 dark:border-stone-700/80 dark:hover:border-amber-500/60 dark:hover:text-amber-300'"
-                    class="group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 active:scale-95 shadow-xs interactive-btn cursor-pointer"
+                    class="hidden md:inline-flex group items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 active:scale-95 shadow-xs interactive-btn cursor-pointer"
                     title="Buka / Tutup Riwayat Mingguan"
                 >
                     <!-- Ikon Jam/Riwayat dengan efek putar halus saat hover -->
@@ -272,6 +272,27 @@
 
         <div style="position: relative; height: 260px; width: 100%;">
             <canvas id="borrowingTrendChart"></canvas>
+        </div>
+
+        {{-- Tombol Lihat History Mingguan KHUSUS Tampilan Mobile (< md) rapi di bawah bar chart --}}
+        <div class="mt-3.5 pt-3 border-t border-stone-100 dark:border-stone-800/80 md:hidden">
+            <button 
+                type="button" 
+                @click="$dispatch('toggle-weekly-history')" 
+                :class="historyOpen 
+                    ? 'bg-[#6F4E37] text-white border-[#6F4E37] dark:bg-amber-600 dark:text-white dark:border-amber-500 shadow-sm' 
+                    : 'bg-stone-100 hover:bg-[#6F4E37] text-stone-700 hover:text-white border-stone-200/80 hover:border-[#6F4E37] dark:bg-[#162032] dark:text-stone-300 dark:border-stone-700/80 dark:hover:border-amber-500/60 dark:hover:text-amber-300'"
+                class="w-full group inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 active:scale-95 shadow-xs interactive-btn cursor-pointer"
+                title="Buka / Tutup Riwayat Mingguan"
+            >
+                <svg class="w-4 h-4 shrink-0 transition-transform duration-200" 
+                     :class="historyOpen ? 'rotate-180 text-white' : 'text-[#6F4E37] group-hover:text-white dark:text-amber-400 group-hover:rotate-12'" 
+                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span x-text="historyOpen ? 'Tutup History Mingguan' : 'Lihat History Lengkap Mingguan'">Lihat History Lengkap Mingguan</span>
+                <span x-show="historyOpen" class="w-1.5 h-1.5 rounded-full bg-amber-300 dark:bg-amber-200 animate-pulse"></span>
+            </button>
         </div>
     </div>
 
@@ -749,8 +770,36 @@
 
             const initialColors = getThemeColors();
 
+            // Plugin untuk menampilkan nilai nominal tepat di atas bar KHUSUS Mobile (< 768px)
+            const mobileDataLabelsPlugin = {
+                id: 'mobileDataLabels',
+                afterDatasetsDraw(chart) {
+                    if (window.innerWidth >= 768) return; // Desktop tetap murni tanpa perubahan
+                    const { ctx, scales: { y } } = chart;
+                    ctx.save();
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    ctx.font = '700 11px "DM Sans", sans-serif';
+                    const dark = isDarkMode();
+                    ctx.fillStyle = dark ? '#FBBF24' : '#6F4E37';
+
+                    chart.data.datasets.forEach((dataset, datasetIndex) => {
+                        const meta = chart.getDatasetMeta(datasetIndex);
+                        meta.data.forEach((bar, index) => {
+                            const val = dataset.data[index];
+                            if (val !== undefined && val !== null) {
+                                const yPos = Math.max(bar.y - 4, y.top + 10);
+                                ctx.fillText(val, bar.x, yPos);
+                            }
+                        });
+                    });
+                    ctx.restore();
+                }
+            };
+
             const chartInstance = new Chart(ctx, {
                 type: 'bar',
+                plugins: [mobileDataLabelsPlugin],
                 data: {
                     labels: labels,
                     datasets: [{
@@ -768,6 +817,11 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: window.innerWidth < 768 ? 16 : 4
+                        }
+                    },
                     plugins: {
                         legend: {
                             display: false
@@ -818,11 +872,29 @@
                                 font: {
                                     family: "'DM Sans', sans-serif",
                                     size: 11
+                                },
+                                callback: function(val, index) {
+                                    const fullLabel = labels[index] !== undefined ? labels[index] : this.getLabelForValue(val);
+                                    if (window.innerWidth < 768) {
+                                        const shortDays = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+                                        if (shortDays[index]) {
+                                            return shortDays[index];
+                                        }
+                                        return typeof fullLabel === 'string' ? fullLabel.substring(0, 3) : fullLabel;
+                                    }
+                                    return fullLabel;
                                 }
                             }
                         }
                     }
                 }
+            });
+
+            window.addEventListener('resize', function() {
+                if (chartInstance.options.layout && chartInstance.options.layout.padding) {
+                    chartInstance.options.layout.padding.top = window.innerWidth < 768 ? 16 : 4;
+                }
+                chartInstance.update();
             });
 
             window.addEventListener('theme-changed', function() {

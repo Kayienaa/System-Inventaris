@@ -38,10 +38,11 @@
 >
 
     {{-- Page Header --}}
+    {{-- Page Header --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-            <div class="flex items-center gap-2.5">
-                <div class="w-10 h-10 rounded-xl bg-[#6F4E37]/10 dark:bg-amber-950/40 flex items-center justify-center text-[#6F4E37] dark:text-neon-glowamber border border-[#6F4E37]/20 dark:border-amber-500/30">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#6F4E37]/10 dark:bg-amber-950/40 flex items-center justify-center text-[#6F4E37] dark:text-neon-glowamber border border-[#6F4E37]/20 dark:border-amber-500/30 shrink-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>
                     </svg>
@@ -57,26 +58,26 @@
             </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2.5">
+        <div class="grid grid-cols-2 gap-2.5 w-full md:w-auto md:flex md:flex-wrap md:items-center">
             <a
                 href="{{ route('admin.borrowings.export-excel') }}"
-                class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-sm transition active:scale-95 interactive-btn"
+                class="w-full md:w-auto inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-sm transition active:scale-95 interactive-btn text-center"
             >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
-                Ekspor Excel
+                <span>Ekspor Excel</span>
             </a>
 
             <a
                 href="{{ route('admin.borrowings.export-pdf') }}"
                 target="_blank"
-                class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] text-white text-xs font-semibold shadow-sm transition active:scale-95 interactive-btn"
+                class="w-full md:w-auto inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] text-white text-xs font-semibold shadow-sm transition active:scale-95 interactive-btn text-center"
             >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                 </svg>
-                Cetak / Ekspor PDF
+                <span>Cetak / Ekspor PDF</span>
             </a>
         </div>
     </div>
