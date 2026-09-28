@@ -51,6 +51,26 @@ class RequestBorrowingAction
                 'availability_status' => AssetAvailabilityStatus::Dipesan,
             ]);
 
+            $borrower->loadMissing(['siswaProfile', 'guruProfile']);
+            $roleOrClass = $borrower->siswaProfile?->class_name 
+                ?: ($borrower->guruProfile ? 'Guru' : (ucfirst($borrower->getRoleNames()->first() ?? 'Peminjam')));
+
+            \App\Models\AdminNotification::create([
+                'user_id' => null,
+                'type' => 'borrow_requested',
+                'title' => 'Peminjaman Baru Masuk',
+                'message' => "{$borrower->name} ({$roleOrClass}) mengajukan peminjaman unit {$lockedAsset->name} ({$lockedAsset->asset_code}).",
+                'data' => [
+                    'borrowing_id' => $borrowing->id,
+                    'borrower_name' => $borrower->name,
+                    'role_or_class' => $roleOrClass,
+                    'asset_name' => $lockedAsset->name,
+                    'asset_code' => $lockedAsset->asset_code,
+                    'time' => now()->toISOString(),
+                ],
+                'is_read' => false,
+            ]);
+
             return $borrowing;
         });
     }

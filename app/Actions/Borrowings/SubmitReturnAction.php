@@ -34,7 +34,27 @@ class SubmitReturnAction
                 'return_note' => $returnNote,
             ]);
 
-            return $locked->fresh();
+            $freshBorrowing = $locked->fresh();
+            $freshBorrowing->loadMissing(['borrower', 'asset']);
+            $borrower = $freshBorrowing->borrower ?? $actor;
+            $asset = $freshBorrowing->asset;
+
+            \App\Models\AdminNotification::create([
+                'user_id' => null,
+                'type' => 'return_submitted',
+                'title' => 'Pengembalian Unit Masuk',
+                'message' => "{$borrower->name} telah menyerahkan kembali unit {$asset?->name} ({$asset?->asset_code}).",
+                'data' => [
+                    'borrowing_id' => $freshBorrowing->id,
+                    'borrower_name' => $borrower->name,
+                    'asset_name' => $asset?->name ?? '-',
+                    'asset_code' => $asset?->asset_code ?? '-',
+                    'time' => now()->toISOString(),
+                ],
+                'is_read' => false,
+            ]);
+
+            return $freshBorrowing;
         });
     }
 }

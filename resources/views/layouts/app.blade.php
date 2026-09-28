@@ -1315,6 +1315,13 @@
             </div>
 
             <div class="flex items-center gap-3 sm:gap-4">
+                {{-- Notifikasi Real-Time In-App Khusus Admin & Super Admin --}}
+                @hasanyrole('admin|super_admin')
+                    @include('layouts.partials.admin-notifications', [
+                        'buttonClass' => 'p-2 rounded-xl text-stone-500 hover:text-stone-900 bg-stone-100/80 hover:bg-stone-200/80 dark:bg-stone-900/90 dark:text-stone-300 dark:hover:text-amber-400 dark:border dark:border-stone-800 interactive-btn cursor-pointer relative'
+                    ])
+                @endhasanyrole
+
                 {{-- Tombol Toggle Switch Dark/Light Mode --}}
                 <button id="theme-toggle" type="button" 
                         class="p-2 rounded-xl text-stone-500 hover:text-stone-900 bg-stone-100/80 hover:bg-stone-200/80 dark:bg-stone-900/90 dark:text-neon-glowcyan dark:hover:text-neon-cyan dark:border dark:border-cyan-500/30 dark:shadow-neon-sm interactive-btn cursor-pointer"

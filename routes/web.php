@@ -105,6 +105,11 @@ Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->group(fu
     Route::post('/borrowings/{borrowing}/approve', [BorrowingController::class, 'webApprove'])->name('admin.borrowings.approve');
     Route::post('/borrowings/{borrowing}/reject', [BorrowingController::class, 'webReject'])->name('admin.borrowings.reject');
     Route::post('/borrowings/{borrowing}/verify-return', [BorrowingController::class, 'webVerifyReturn'])->name('admin.borrowings.verify-return');
+
+    // Notifikasi Real-Time In-App Admin & Super Admin
+    Route::get('/notifications', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'index'])->name('admin.notifications.index');
+    Route::post('/notifications/mark-all-read', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'markAllAsRead'])->name('admin.notifications.mark-all-read');
+    Route::delete('/notifications', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'destroyAll'])->name('admin.notifications.destroy-all');
 });
 
 /*
