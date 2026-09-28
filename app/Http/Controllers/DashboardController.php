@@ -53,6 +53,10 @@ class DashboardController extends Controller
         // Tren Peminjaman Minggu Berjalan (Senin s.d. Minggu) — 1 query, group by tanggal
         $dailyCounts = Borrowing::query()
             ->selectRaw('DATE(COALESCE(requested_at, created_at)) as day, COUNT(*) as total')
+            ->whereNotIn('status', [
+                BorrowingStatus::Rejected->value,
+                BorrowingStatus::Cancelled->value,
+            ])
             ->where(function ($q) use ($startOfWeek, $endOfWeek) {
                 $q->whereBetween('requested_at', [$startOfWeek, $endOfWeek])
                     ->orWhere(function ($fallback) use ($startOfWeek, $endOfWeek) {
@@ -74,7 +78,11 @@ class DashboardController extends Controller
 
         // Filter Peminjaman Rentang Minggu Aktif
         $weeklyFilter = function ($q) use ($startOfWeek, $endOfWeek) {
-            $q->where(function ($sub) use ($startOfWeek, $endOfWeek) {
+            $q->whereNotIn('status', [
+                BorrowingStatus::Rejected->value,
+                BorrowingStatus::Cancelled->value,
+            ])
+            ->where(function ($sub) use ($startOfWeek, $endOfWeek) {
                 $sub->whereBetween('requested_at', [$startOfWeek, $endOfWeek])
                     ->orWhere(function ($fallback) use ($startOfWeek, $endOfWeek) {
                         $fallback->whereNull('requested_at')
@@ -189,7 +197,11 @@ class DashboardController extends Controller
             $periodLabel = $wStart->locale('id')->translatedFormat('d M') . ' - ' . $wEnd->locale('id')->translatedFormat('d M Y');
 
             $filter = function ($q) use ($wStart, $wEnd) {
-                $q->where(function ($sub) use ($wStart, $wEnd) {
+                $q->whereNotIn('status', [
+                    BorrowingStatus::Rejected->value,
+                    BorrowingStatus::Cancelled->value,
+                ])
+                ->where(function ($sub) use ($wStart, $wEnd) {
                     $sub->whereBetween('requested_at', [$wStart, $wEnd])
                         ->orWhere(function ($fallback) use ($wStart, $wEnd) {
                             $fallback->whereNull('requested_at')

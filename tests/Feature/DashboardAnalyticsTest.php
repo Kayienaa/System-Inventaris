@@ -106,4 +106,56 @@ class DashboardAnalyticsTest extends TestCase
         $response->assertDontSee('Butuh Perangkat untuk Praktik TEFA?');
         $response->assertDontSee('Mulai Pinjam Barang');
     }
+
+    public function test_weekly_borrowing_chart_excludes_rejected_and_cancelled_transactions(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $siswa = User::factory()->create(['name' => 'Siswa Test Trend']);
+        $siswa->assignRole('siswa');
+
+        $assets = Asset::take(3)->get();
+        $asset1 = $assets[0];
+        $asset2 = $assets[1];
+        $asset3 = $assets[2];
+
+        // 1. Transaksi aktif riil (Borrowed) - Wajib terhitung
+        Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset1->id,
+            'status' => BorrowingStatus::Borrowed,
+            'requested_at' => now(),
+            'borrowed_at' => now(),
+            'due_at' => now()->addDays(3),
+        ]);
+
+        // 2. Transaksi ditolak (Rejected) - TIDAK boleh terhitung
+        Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset2->id,
+            'status' => BorrowingStatus::Rejected,
+            'requested_at' => now(),
+            'due_at' => now()->addDays(3),
+            'rejection_reason' => 'Unit sedang maintenance',
+        ]);
+
+        // 3. Transaksi dibatalkan (Cancelled) - TIDAK boleh terhitung
+        Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset3->id,
+            'status' => BorrowingStatus::Cancelled,
+            'requested_at' => now(),
+            'due_at' => now()->addDays(3),
+            'cancelled_at' => now(),
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('dashboard'));
+
+        $response->assertStatus(200);
+        $chartData = $response->viewData('chart_data');
+
+        // Total akumulasi chart data harus bernilai 1 (hanya transaksi Borrowed), bukan 3
+        $this->assertEquals(1, array_sum($chartData));
+    }
 }

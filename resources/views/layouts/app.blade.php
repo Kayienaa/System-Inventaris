@@ -1271,6 +1271,13 @@
         </div>
 
         <div class="flex items-center gap-3">
+            {{-- Notifikasi Real-Time In-App Khusus Admin & Super Admin --}}
+            @hasanyrole('admin|super_admin')
+                @include('layouts.partials.admin-notifications', [
+                    'buttonClass' => 'p-2 rounded-xl text-white/80 hover:text-white bg-white/10 hover:bg-white/20 dark:text-stone-300 dark:hover:text-amber-400 dark:border dark:border-stone-800 interactive-btn cursor-pointer relative'
+                ])
+            @endhasanyrole
+
             {{-- Tombol Toggle Dark/Light Mode Mobile --}}
             <button id="theme-toggle-mobile" type="button" 
                     class="p-2 rounded-xl text-white/80 hover:text-white bg-white/10 hover:bg-white/20 dark:text-neon-glowcyan dark:hover:text-neon-cyan dark:border dark:border-cyan-500/30 interactive-btn cursor-pointer"

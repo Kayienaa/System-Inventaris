@@ -33,7 +33,7 @@
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
         x-transition:leave-end="opacity-0 scale-95 translate-y-1"
-        class="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-[380px] rounded-2xl bg-white dark:bg-[#131B2A] border border-stone-200/90 dark:border-stone-800 shadow-2xl z-50 overflow-hidden text-stone-800 dark:text-stone-100"
+        class="absolute right-0 sm:right-auto max-w-[calc(100vw-2rem)] w-80 mt-2 rounded-2xl bg-white dark:bg-[#131B2A] border border-stone-200/90 dark:border-stone-800 shadow-2xl z-50 overflow-hidden text-stone-800 dark:text-stone-100"
     >
         {{-- Popover Header --}}
         <div class="px-4 py-3 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between bg-stone-50/70 dark:bg-[#0E1420]/70">
