@@ -33,18 +33,18 @@
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
         x-transition:leave-end="opacity-0 scale-95 translate-y-1"
-        class="absolute right-0 sm:right-auto max-w-[calc(100vw-2rem)] w-80 mt-2 rounded-2xl bg-white dark:bg-[#131B2A] border border-stone-200/90 dark:border-stone-800 shadow-2xl z-50 overflow-hidden text-stone-800 dark:text-stone-100"
+        class="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm rounded-2xl bg-white dark:bg-[#131B2A] border border-stone-200 dark:border-stone-800 shadow-2xl z-50 overflow-hidden text-stone-800 dark:text-stone-100"
     >
         {{-- Popover Header --}}
-        <div class="px-4 py-3 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between bg-stone-50/70 dark:bg-[#0E1420]/70">
-            <div class="flex items-center gap-2">
-                <span class="font-heading font-bold text-sm text-stone-900 dark:text-stone-100">
+        <div class="p-4 sm:p-4.5 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between gap-2 bg-stone-50/70 dark:bg-[#0E1420]/70">
+            <div class="flex items-center gap-2 min-w-0">
+                <span class="font-heading font-bold text-sm text-stone-900 dark:text-stone-100 truncate">
                     Pemberitahuan Peminjaman
                 </span>
                 <span 
                     x-show="unreadCount > 0" 
                     x-text="unreadCount + ' baru'"
-                    class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-800/50"
+                    class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-800/50 shrink-0"
                 ></span>
             </div>
 
@@ -52,10 +52,10 @@
                 type="button" 
                 @click.stop="destroyAll()" 
                 x-show="notifications.length > 0"
-                class="text-xs font-semibold text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer flex items-center gap-1"
+                class="text-xs font-semibold text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer flex items-center gap-1 shrink-0"
                 title="Hapus semua riwayat pemberitahuan"
             >
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
                 <span>Hapus Semua</span>
@@ -67,7 +67,7 @@
             <template x-for="item in notifications" :key="item.id">
                 <a 
                     :href="item.target_url" 
-                    class="block p-3.5 transition-colors cursor-pointer group"
+                    class="block p-4 sm:p-4.5 transition-colors cursor-pointer group"
                     :class="!item.is_read ? 'bg-amber-50/50 dark:bg-amber-950/20 hover:bg-amber-100/60 dark:hover:bg-amber-950/30' : 'hover:bg-stone-50 dark:hover:bg-[#1A2436]'"
                 >
                     <div class="flex items-start gap-3">
