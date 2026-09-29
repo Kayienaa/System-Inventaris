@@ -20,9 +20,13 @@ class Borrowing extends Model
         'borrower_user_id',
         'asset_id',
         'status',
+        'urgency_level',
+        'purpose_category',
+        'is_teacher_priority',
         'requested_at',
         'borrowed_at',
         'due_at',
+        'expires_at',
         'borrowing_evidence_path',
         'borrower_note',
         'approved_by_user_id',
@@ -52,9 +56,11 @@ class Borrowing extends Model
     {
         return [
             'status' => BorrowingStatus::class,
+            'is_teacher_priority' => 'boolean',
             'requested_at' => 'datetime',
             'borrowed_at' => 'datetime',
             'due_at' => 'datetime',
+            'expires_at' => 'datetime',
             'approved_at' => 'datetime',
             'rejected_at' => 'datetime',
             'cancelled_at' => 'datetime',
@@ -114,5 +120,12 @@ class Borrowing extends Model
         ], true)
             && $this->returned_at === null
             && $this->due_at?->isPast() === true;
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->status === BorrowingStatus::Pending
+            && $this->expires_at !== null
+            && $this->expires_at->isPast();
     }
 }

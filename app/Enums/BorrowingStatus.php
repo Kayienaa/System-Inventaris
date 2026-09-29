@@ -4,6 +4,7 @@ namespace App\Enums;
 
 enum BorrowingStatus: string
 {
+    case Delay = 'delay';
     case Pending = 'pending';
     case Approved = 'approved';
     case Rejected = 'rejected';

@@ -56,7 +56,14 @@ class DashboardAnalyticsTest extends TestCase
         $response->assertSee('Top 5 Peminjam Teraktif');
         $response->assertSee($asset->name);
         $response->assertSee('Siswa Aktif');
-        $response->assertSee('Integrasi SiPintu Gateway &amp; SIJUNA', false);
+        // Admin operasional (Mas Donny) tidak melihat panel teknis SiPintu Gateway
+        $response->assertDontSee('Integrasi SiPintu Gateway &amp; SIJUNA', false);
+
+        // Super Admin dapat melihat panel teknis SiPintu Gateway
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole('super_admin');
+        $superAdminResponse = $this->actingAs($superAdmin)->get(route('dashboard'));
+        $superAdminResponse->assertSee('Integrasi SiPintu Gateway &amp; SIJUNA', false);
 
         // Verify view data
         $response->assertViewHas('chart_labels');

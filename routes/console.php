@@ -11,3 +11,7 @@ Artisan::command('inspire', function () {
 // Cek setiap hari jam 08:00 — kirim reminder H-1 jatuh tempo
 Schedule::command('borrowings:send-due-reminders')
     ->dailyAt('08:00');
+
+// Cek dan batalkan pengajuan pending kedaluwarsa (10 menit) setiap menit
+Schedule::command('borrowings:cancel-expired')
+    ->everyMinute();

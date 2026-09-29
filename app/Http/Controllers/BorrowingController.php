@@ -50,8 +50,10 @@ class BorrowingController extends Controller
     /**
      * Halaman daftar peminjaman milik user yang sedang login (web view).
      */
-    public function webMine()
+    public function webMine(\App\Actions\Borrowings\CancelExpiredBorrowingsAction $cancelExpiredAction)
     {
+        $cancelExpiredAction->execute();
+
         $borrowings = Borrowing::query()
             ->with(['asset.category', 'approvedBy'])
             ->where('borrower_user_id', request()->user()->id)
@@ -102,9 +104,6 @@ class BorrowingController extends Controller
         }
 
         $evidencePath = $this->storeEvidenceImage($request, 'return_evidence', 'return-evidence');
-        if (! $evidencePath) {
-            return back()->with('error', 'Foto bukti fisik pengembalian bersama Admin wajib diambil.');
-        }
 
         $oldAttributes = $borrowing->getAttributes();
         $result = $action->execute($request->user(), $borrowing, $evidencePath, $request->input('return_note'));
@@ -112,7 +111,7 @@ class BorrowingController extends Controller
         $audit->record($request->user(), 'borrowing.return_submitted', $result, $oldAttributes, $result->getAttributes());
 
         return redirect()->route('borrowings.mine')
-            ->with('success', 'Pengajuan pengembalian berhasil dikirim! Menunggu verifikasi fisik oleh Admin.');
+            ->with('success', 'Pengajuan pengembalian berhasil diajukan! Silakan temui Mas Donny di Ruang TEFA untuk pengecekan fisik unit.');
     }
 
     /**
@@ -177,16 +176,31 @@ class BorrowingController extends Controller
     {
         $this->authorize('verifyReturn', $borrowing);
 
-        $condition = $request->filled('return_condition')
-            ? AssetCondition::tryFrom($request->input('return_condition')) ?? AssetCondition::Baik
-            : AssetCondition::Baik;
+        $rawCondition = strtolower(str_replace(' ', '_', (string) $request->input('return_condition')));
+        $condition = AssetCondition::tryFrom($rawCondition)
+            ?? AssetCondition::tryFrom($request->input('return_condition'))
+            ?? AssetCondition::Baik;
+
+        $damageEvidence = $this->storeEvidenceImage($request, 'damage_evidence', 'return-evidence');
+        if ($damageEvidence === null && $request->hasFile('damage_evidence_file')) {
+            $damageEvidence = $this->storeEvidenceImage($request, 'damage_evidence_file', 'return-evidence');
+        }
+
+        $note = $request->input('return_verification_note');
+        if ($request->filled('penalty_claim_note')) {
+            $note = ($note ? $note . "\n[Klaim Penalti]: " : '[Klaim Penalti]: ') . $request->input('penalty_claim_note');
+        }
 
         $old = $borrowing->getAttributes();
-        $result = $action->execute($request->user(), $borrowing, $condition, $request->input('return_verification_note'));
+        $result = $action->execute($request->user(), $borrowing, $condition, $note, $damageEvidence);
         $audit->record($request->user(), 'borrowing.return_verified', $result, $old, $result->getAttributes());
         $notifications->queueReturnVerification($result);
 
-        return back()->with('success', 'Pengembalian barang berhasil diverifikasi! Unit telah kembali tersedia di katalog.');
+        $message = $condition === AssetCondition::Baik
+            ? 'Pengembalian barang berhasil diverifikasi! Unit telah kembali tersedia di katalog.'
+            : 'Pengembalian barang diverifikasi dengan kondisi ' . ucfirst($condition->value) . '. Catatan klaim & bukti foto kerusakan telah disimpan.';
+
+        return back()->with('success', $message);
     }
 
     public function index(): AnonymousResourceCollection
@@ -224,7 +238,9 @@ class BorrowingController extends Controller
             $targetAsset,
             $request->input('borrower_note'),
             $evidencePath,
-            $dueAt
+            $dueAt,
+            $request->input('purpose_category', 'praktik') ?? 'praktik',
+            $request->input('urgency_level', 'biasa') ?? 'biasa'
         );
 
         $audit->record($request->user(), 'borrowing.requested', $borrowing, null, $borrowing->getAttributes());

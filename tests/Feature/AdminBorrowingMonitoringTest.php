@@ -262,4 +262,126 @@ class AdminBorrowingMonitoringTest extends TestCase
         $borrowing->refresh();
         $this->assertEquals(BorrowingStatus::Pending, $borrowing->status);
     }
+
+    public function test_admin_monitoring_orders_by_priority_and_urgency(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $guru = User::factory()->create(['name' => 'Pak Guru Priority']);
+        $guru->assignRole('guru');
+        \App\Models\GuruProfile::create(['user_id' => $guru->id, 'nip' => 'NIP-1234']);
+
+        $siswaUrgent = User::factory()->create(['name' => 'Siswa Urgent']);
+        $siswaUrgent->assignRole('siswa');
+        SiswaProfile::create(['user_id' => $siswaUrgent->id, 'nis' => 'NIS-URGENT']);
+
+        $siswaRegular = User::factory()->create(['name' => 'Siswa Reguler FIFO']);
+        $siswaRegular->assignRole('siswa');
+        SiswaProfile::create(['user_id' => $siswaRegular->id, 'nis' => 'NIS-REGULER']);
+
+        $assets = Asset::take(3)->get();
+
+        // 1. Siswa regular diajukan paling awal (2 jam lalu)
+        $reguler = Borrowing::create([
+            'borrower_user_id' => $siswaRegular->id,
+            'asset_id' => $assets[0]->id,
+            'status' => BorrowingStatus::Pending,
+            'is_teacher_priority' => false,
+            'urgency_level' => 'biasa',
+            'created_at' => now()->subHours(2),
+            'requested_at' => now()->subHours(2),
+            'due_at' => now()->addDays(2),
+        ]);
+
+        // 2. Siswa mendesak diajukan 1 jam lalu
+        $urgent = Borrowing::create([
+            'borrower_user_id' => $siswaUrgent->id,
+            'asset_id' => $assets[1]->id,
+            'status' => BorrowingStatus::Pending,
+            'is_teacher_priority' => false,
+            'urgency_level' => 'mendesak',
+            'created_at' => now()->subHour(),
+            'requested_at' => now()->subHour(),
+            'due_at' => now()->addDays(2),
+        ]);
+
+        // 3. Guru KBM diajukan baru saja (paling baru secara waktu), tapi punya teacher priority
+        $guruPriority = Borrowing::create([
+            'borrower_user_id' => $guru->id,
+            'asset_id' => $assets[2]->id,
+            'status' => BorrowingStatus::Pending,
+            'is_teacher_priority' => true,
+            'urgency_level' => 'mendesak',
+            'created_at' => now(),
+            'requested_at' => now(),
+            'due_at' => now()->addDays(2),
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.borrowings.index'));
+        $response->assertStatus(200);
+
+        // Guru priority harus muncul sebelum siswa urgent, dan siswa urgent sebelum siswa regular
+        $content = $response->getContent();
+        $posGuru = strpos($content, 'Pak Guru Priority');
+        $posUrgent = strpos($content, 'Siswa Urgent');
+        $posRegular = strpos($content, 'Siswa Reguler FIFO');
+
+        $this->assertNotFalse($posGuru);
+        $this->assertNotFalse($posUrgent);
+        $this->assertNotFalse($posRegular);
+        $this->assertTrue($posGuru < $posUrgent, 'Guru Priority should rank higher than Siswa Urgent');
+        $this->assertTrue($posUrgent < $posRegular, 'Siswa Urgent should rank higher than Siswa Reguler');
+    }
+
+    public function test_admin_can_filter_borrowings_by_priority_tabs(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $guru = User::factory()->create(['name' => 'Guru KBM Filter']);
+        $guru->assignRole('guru');
+        \App\Models\GuruProfile::create(['user_id' => $guru->id, 'nip' => 'NIP-FILTER']);
+
+        $siswa = User::factory()->create(['name' => 'Siswa Biasa Filter']);
+        $siswa->assignRole('siswa');
+        SiswaProfile::create(['user_id' => $siswa->id, 'nis' => 'NIS-FILTER']);
+
+        $assets = Asset::take(2)->get();
+
+        Borrowing::create([
+            'borrower_user_id' => $guru->id,
+            'asset_id' => $assets[0]->id,
+            'status' => BorrowingStatus::Pending,
+            'is_teacher_priority' => true,
+            'urgency_level' => 'mendesak',
+            'created_at' => now(),
+            'requested_at' => now(),
+            'due_at' => now()->addDays(2),
+        ]);
+
+        Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $assets[1]->id,
+            'status' => BorrowingStatus::Pending,
+            'is_teacher_priority' => false,
+            'urgency_level' => 'biasa',
+            'created_at' => now(),
+            'requested_at' => now(),
+            'due_at' => now()->addDays(2),
+        ]);
+
+        // Filter priority = guru
+        $resGuru = $this->actingAs($admin)->get(route('admin.borrowings.index', ['priority' => 'guru']));
+        $resGuru->assertStatus(200);
+        $resGuru->assertSee('Guru KBM Filter');
+        $resGuru->assertDontSee('Siswa Biasa Filter');
+
+        // Filter priority = reguler
+        $resReg = $this->actingAs($admin)->get(route('admin.borrowings.index', ['priority' => 'reguler']));
+        $resReg->assertStatus(200);
+        $resReg->assertSee('Siswa Biasa Filter');
+        $resReg->assertDontSee('Guru KBM Filter');
+    }
 }
+

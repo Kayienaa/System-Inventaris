@@ -14,8 +14,11 @@ class BorrowingController extends Controller
     /**
      * Tampilkan Pusat Pengecekan & Monitoring Peminjaman User untuk Super Admin.
      */
-    public function index(Request $request): View
+    public function index(Request $request, \App\Actions\Borrowings\CancelExpiredBorrowingsAction $cancelExpiredAction): View
     {
+        // Lazy Check: otomatis hanguskan pengajuan kedaluwarsa sebelum menampilkan data
+        $cancelExpiredAction->execute();
+
         $query = Borrowing::with([
             'borrower.siswaProfile',
             'borrower.guruProfile',
@@ -26,7 +29,7 @@ class BorrowingController extends Controller
             'returnVerifiedBy',
         ]);
 
-        // Filter status: all, pending, approved, borrowed, return_pending_verification, returned, overdue
+        // Filter status: all, pending, delay, approved, borrowed, return_pending_verification, returned, rejected, overdue
         if ($request->filled('status')) {
             $status = $request->input('status');
             if ($status === 'overdue') {
@@ -35,6 +38,8 @@ class BorrowingController extends Controller
                     ->where('due_at', '<', now());
             } elseif ($status === 'pending') {
                 $query->where('status', BorrowingStatus::Pending);
+            } elseif ($status === 'delay') {
+                $query->where('status', BorrowingStatus::Delay);
             } elseif ($status === 'approved') {
                 $query->where('status', BorrowingStatus::Approved);
             } elseif ($status === 'borrowed') {
@@ -43,6 +48,20 @@ class BorrowingController extends Controller
                 $query->where('status', BorrowingStatus::ReturnPendingVerification);
             } elseif ($status === 'returned') {
                 $query->where('status', BorrowingStatus::Returned);
+            } elseif ($status === 'rejected') {
+                $query->where('status', BorrowingStatus::Rejected);
+            }
+        }
+
+        // Filter cepat prioritas: all, guru, urgent_siswa, reguler
+        if ($request->filled('priority')) {
+            $priority = $request->input('priority');
+            if ($priority === 'guru') {
+                $query->where('is_teacher_priority', true);
+            } elseif ($priority === 'urgent_siswa') {
+                $query->where('urgency_level', 'mendesak')->where('is_teacher_priority', false);
+            } elseif ($priority === 'reguler') {
+                $query->where('is_teacher_priority', false)->where('urgency_level', 'biasa');
             }
         }
 
@@ -64,7 +83,13 @@ class BorrowingController extends Controller
             });
         }
 
-        $borrowings = $query->latest('id')->paginate(10)->withQueryString();
+        // Urutkan antrean peminjaman: Prioritas Guru Mengajar -> Kebutuhan Mendesak -> Siswa/Reguler (FIFO berdasarkan created_at)
+        $borrowings = $query
+            ->orderByDesc('is_teacher_priority')
+            ->orderByRaw("CASE WHEN urgency_level = 'mendesak' THEN 1 ELSE 2 END")
+            ->orderBy('created_at', 'asc')
+            ->paginate(10)
+            ->withQueryString();
 
         // Counter statistik untuk kartu ringkasan di dashboard monitoring
         $stats = [
@@ -77,6 +102,8 @@ class BorrowingController extends Controller
                 ->whereNull('returned_at')
                 ->where('due_at', '<', now())
                 ->count(),
+            'guru_priority' => Borrowing::where('is_teacher_priority', true)->count(),
+            'urgent_count' => Borrowing::where('urgency_level', 'mendesak')->count(),
         ];
 
         return view('admin.borrowings.index', compact('borrowings', 'stats'));
@@ -159,6 +186,12 @@ class BorrowingController extends Controller
             'status' => $displayStatus,
             'raw_status' => $statusValue,
             'is_overdue' => $isOverdue,
+            'urgency_level' => $borrowing->urgency_level ?? 'biasa',
+            'purpose_category' => $borrowing->purpose_category ?? 'praktik',
+            'is_teacher_priority' => (bool) $borrowing->is_teacher_priority,
+            'expires_at' => $borrowing->expires_at ? $borrowing->expires_at->toIso8601String() : null,
+            'expires_at_formatted' => $borrowing->expires_at ? $borrowing->expires_at->format('d M Y, H:i') . ' WIB' : null,
+            'is_expired' => $borrowing->isExpired(),
             'borrower_note' => $borrowing->borrower_note ?: 'Tidak ada catatan',
             'return_note' => $borrowing->return_note ?: null,
             'rejection_reason' => $borrowing->rejection_reason,

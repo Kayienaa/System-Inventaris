@@ -40,13 +40,19 @@
             @foreach ($borrowings as $borrowing)
                 @php
                     $status = $borrowing->status->value ?? (string) $borrowing->status;
+                    $isDelay = $status === 'delay';
                     $isPending = $status === 'pending';
                     $isApproved = $status === 'approved';
                     $isBorrowed = $status === 'borrowed';
                     $isReturnPending = $status === 'return_pending_verification';
                     $isReturned = $status === 'returned';
+                    $isRejected = $status === 'rejected';
                 @endphp
-                <div class="bg-white/95 dark:bg-[#131B2A]/90 backdrop-blur-md rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] border border-stone-200/70 dark:border-stone-800/80 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition hover:shadow-md hover:border-[#6F4E37] dark:hover:border-cyan-500/50 dark:hover:shadow-neon-sm duration-300 interactive-card">
+                <div
+                    class="bg-white/95 dark:bg-[#131B2A]/90 backdrop-blur-md rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] border border-stone-200/70 dark:border-stone-800/80 p-5 flex flex-col gap-4 transition hover:shadow-md hover:border-[#6F4E37] dark:hover:border-cyan-500/50 dark:hover:shadow-neon-sm duration-300 interactive-card"
+                    @if ($isPending) x-data="countdownTimer('{{ $borrowing->expires_at?->toIso8601String() }}')" @endif
+                >
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 
                     <div class="flex items-start gap-4">
                         {{-- Thumbnail --}}
@@ -75,11 +81,37 @@
                         </div>
 
                         <div>
-                            @if ($borrowing->asset?->category)
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-neon-glowamber bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-500/30">
-                                    {{ $borrowing->asset->category->name }}
-                                </span>
-                            @endif
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                @if ($borrowing->asset?->category)
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-neon-glowamber bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-500/30">
+                                        {{ $borrowing->asset->category->name }}
+                                    </span>
+                                @endif
+
+                                @if ($borrowing->is_teacher_priority)
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                        <svg class="w-3 h-3 text-indigo-600 dark:text-indigo-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                        </svg>
+                                        PRIORITAS GURU
+                                    </span>
+                                @endif
+
+                                @if ($borrowing->urgency_level === 'mendesak')
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                                        <svg class="w-3 h-3 text-rose-600 dark:text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                        </svg>
+                                        MENDESAK
+                                    </span>
+                                @endif
+
+                                @if ($borrowing->purpose_category)
+                                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
+                                        {{ ucfirst($borrowing->purpose_category) }}
+                                    </span>
+                                @endif
+                            </div>
 
                             <p class="font-bold text-stone-800 dark:text-stone-100 text-base mt-1">{{ $borrowing->asset->name ?? '-' }}</p>
                             <p class="text-xs font-mono text-stone-500 dark:text-stone-400">{{ $borrowing->asset->asset_code ?? '-' }}</p>
@@ -124,22 +156,36 @@
                     <div class="flex flex-wrap items-center gap-2.5 self-end md:self-center">
                         @php
                             $statusLabel = match ($status) {
-                                'pending' => ['Menunggu Persetujuan Admin', 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950/50 dark:text-yellow-400 border-yellow-200 dark:border-yellow-500/30'],
+                                'delay' => ['Menunggu Antrean (Prioritas)', 'bg-stone-100 text-stone-700 dark:bg-stone-800 dark:text-stone-300 border-stone-300 dark:border-stone-700'],
+                                'pending' => ['Menunggu Serah Terima (10 Menit)', 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950/50 dark:text-yellow-400 border-yellow-200 dark:border-yellow-500/30'],
                                 'approved' => ['Disetujui — Siap Ambil', 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-neon-cyan border-blue-200 dark:border-cyan-500/30'],
                                 'borrowed' => ['Sedang Dipinjam', 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-neon-glowamber border-amber-200 dark:border-amber-500/30'],
                                 'return_pending_verification' => ['Menunggu Verifikasi Admin', 'bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border-purple-200 dark:border-purple-500/30'],
                                 'returned' => ['Selesai', 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-neon-emerald border-emerald-200 dark:border-emerald-500/30'],
-                                'rejected' => ['Ditolak', 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 border-rose-200 dark:border-rose-800/40'],
+                                'rejected' => ['Ditolak / Hangus', 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 border-rose-200 dark:border-rose-800/40'],
                                 'cancelled' => ['Dibatalkan', 'bg-stone-100 text-stone-600 dark:bg-stone-900/60 dark:text-stone-400 border-stone-200 dark:border-stone-800'],
                                 default => [ucfirst($status), 'bg-stone-100 text-stone-600 dark:bg-stone-900/60 dark:text-stone-400 border-stone-200 dark:border-stone-800'],
                             };
                         @endphp
 
-                        <span class="px-3 py-1 text-xs font-semibold rounded-full border {{ $statusLabel[1] }}">
-                            {{ $statusLabel[0] }}
-                        </span>
-
                         @if ($isPending)
+                            <template x-if="isExpired">
+                                <span class="px-3 py-1 text-xs font-bold rounded-full border bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border-rose-300 dark:border-rose-800">
+                                    Pemesanan Hangus (Waktu Habis)
+                                </span>
+                            </template>
+                            <template x-if="!isExpired">
+                                <span class="px-3 py-1 text-xs font-semibold rounded-full border {{ $statusLabel[1] }}">
+                                    {{ $statusLabel[0] }}
+                                </span>
+                            </template>
+                        @else
+                            <span class="px-3 py-1 text-xs font-semibold rounded-full border {{ $statusLabel[1] }}">
+                                {{ $statusLabel[0] }}
+                            </span>
+                        @endif
+
+                        @if ($isPending || $isDelay)
                             <button
                                 type="button"
                                 @click="openCancelDialog({{ $borrowing->id }}, '{{ route('borrowings.cancel', $borrowing) }}')"
@@ -175,10 +221,62 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
                                 </svg>
-                                Kembalikan Barang
+                                Ajukan Pengembalian
                             </button>
                         @endif
                     </div>
+
+                    </div>
+
+                    {{-- Callout Banners untuk Status Pending & Delay --}}
+                    @if ($isPending)
+                        <div x-show="!isExpired" class="rounded-xl bg-amber-50/90 dark:bg-[#2A1D13] border border-amber-300/80 dark:border-amber-600/50 p-4 shadow-sm text-stone-800 dark:text-amber-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 rounded-xl bg-amber-200/70 dark:bg-amber-800/50 text-amber-900 dark:text-amber-200 shrink-0 mt-0.5">
+                                    <svg class="w-5 h-5 animate-pulse text-amber-700 dark:text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-amber-950 dark:text-amber-200">
+                                        Perhatian: Segera Temui Mas Donny di Ruang TEFA
+                                    </h4>
+                                    <p class="text-xs text-amber-900/90 dark:text-amber-200/80 mt-1 leading-relaxed max-w-2xl">
+                                        Pengajuan telah tercatat. Silakan segera hadir di Ruang Teaching Factory (TEFA) SMKN 1 Bangsri dan temui Mas Donny untuk proses serah terima barang dalam waktu maksimal 10 menit.
+                                    </p>
+                                    <p class="text-xs font-semibold text-amber-950 dark:text-amber-100 mt-1.5 pt-1.5 border-t border-amber-300/60 dark:border-amber-700/50">
+                                        Peringatan: Apabila dalam 10 menit serah terima belum dilakukan, sistem akan membatalkan pemesanan secara otomatis dan unit dikembalikan ke inventaris.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="shrink-0 flex items-center sm:flex-col justify-between sm:justify-center bg-white/90 dark:bg-stone-900/90 px-4 py-2.5 rounded-xl border border-amber-300/70 dark:border-amber-700/60 text-center shadow-inner">
+                                <span class="text-[10px] font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400">Sisa Waktu</span>
+                                <span class="text-xl font-mono font-black text-amber-800 dark:text-amber-400" x-text="remainingText">10:00</span>
+                            </div>
+                        </div>
+
+                        <div x-show="isExpired" x-cloak class="rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800/60 p-4 shadow-sm text-rose-800 dark:text-rose-200 flex items-center gap-3">
+                            <svg class="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <div>
+                                <h4 class="text-sm font-bold">Pemesanan Hangus (Waktu Habis)</h4>
+                                <p class="text-xs text-rose-700 dark:text-rose-300 mt-0.5">Batas waktu serah terima 10 menit telah terlampaui. Peminjaman otomatis dibatalkan.</p>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if ($isDelay)
+                        <div class="rounded-xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200/70 dark:border-blue-800/50 p-3.5 text-xs text-blue-800 dark:text-blue-300 flex items-start gap-2.5">
+                            <svg class="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <div>
+                                <span class="font-bold">Menunggu Antrean:</span> Pengajuan Anda berada dalam daftar antrean karena unit aset sedang aktif atau menunggu prioritas KBM pengajar selesai.
+                            </div>
+                        </div>
+                    @endif
+
 
                 </div>
             @endforeach
@@ -400,16 +498,14 @@
 
             </div>
         </div>
-    </template>
-
-    {{-- Modal Pengembalian Barang Real-Time Webcam (Saat Status Borrowed) --}}
+    </    {{-- Modal Pengembalian Barang (Alur Fisik Tanpa Wajib Foto Kamera User) --}}
     <template x-teleport="body">
         <div
-            x-show="modalOpen || showReturnModal"
+            x-show="modalOpen"
             x-cloak
             class="fixed inset-0 z-[60] overflow-y-auto bg-stone-950/70 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
-            @keydown.escape.window="closeCameraModal()"
-            @click.self="closeCameraModal()"
+            @keydown.escape.window="closeReturnModal()"
+            @click.self="closeReturnModal()"
             x-transition:enter="transition-opacity duration-200 ease-out"
             x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100"
@@ -417,10 +513,9 @@
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
         >
-            <!-- Kontainer Kartu Dialog Modal Kamera -->
             <div
-                class="relative w-full max-w-lg bg-white dark:bg-[#131B2A] rounded-2xl shadow-2xl p-6 border border-stone-200 dark:border-stone-800 flex flex-col max-h-[90vh] overflow-y-auto scroll-smooth [scrollbar-gutter:stable] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-stone-300 dark:[&::-webkit-scrollbar-thumb]:bg-stone-700 [&::-webkit-scrollbar-thumb]:rounded-full"
-                @click.outside="closeCameraModal()"
+                class="relative w-full max-w-lg bg-white dark:bg-[#131B2A] rounded-2xl shadow-2xl p-6 border border-stone-200 dark:border-stone-800 flex flex-col"
+                @click.outside="closeReturnModal()"
                 @click.stop
                 x-transition:enter="transition-all duration-200 cubic-bezier(0.16, 1, 0.3, 1)"
                 x-transition:enter-start="opacity-0 scale-[0.97] translate-y-2"
@@ -432,15 +527,14 @@
                 {{-- Modal Header --}}
                 <div class="flex items-start justify-between gap-4 pb-4 border-b border-stone-200/70 dark:border-stone-800">
                     <div>
-                        <h3 class="text-lg font-bold font-heading text-stone-800 dark:text-stone-100">Form Pengembalian Barang</h3>
+                        <h3 class="text-lg font-bold font-heading text-stone-800 dark:text-stone-100">Konfirmasi Pengembalian Barang</h3>
                         <p class="text-xs text-stone-500 dark:text-stone-400 mt-0.5" x-text="activeAssetName + ' (' + activeAssetCode + ')'"></p>
                     </div>
                     <button
                         type="button"
-                        @click="closeCameraModal()"
+                        @click="closeReturnModal()"
                         class="text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 p-2 -mr-1 -mt-1 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 transition cursor-pointer flex items-center justify-center shrink-0 border border-transparent hover:border-stone-200 dark:hover:border-stone-700 interactive-btn"
                         title="Tutup (Esc)"
-                        aria-label="Tutup Form Pengembalian"
                     >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -449,168 +543,41 @@
                 </div>
 
                 {{-- Modal Body Form --}}
-                <form :action="'/borrowings/' + activeBorrowingId + '/return-request'" method="POST" enctype="multipart/form-data" class="pt-4 space-y-4" @submit="onReturnSubmit($event)">
+                <form :action="'/borrowings/' + activeBorrowingId + '/return-request'" method="POST" class="pt-4 space-y-4">
                     @csrf
 
-                    <div class="rounded-xl bg-amber-50/70 border border-amber-200/60 text-amber-900 dark:bg-amber-950/30 dark:border-amber-500/30 dark:text-amber-200 p-3.5 text-xs leading-relaxed">
-                        Ambil foto barang yang dikembalikan secara real-time. Status peminjaman akan masuk ke antrean verifikasi Admin TEFA.
-                    </div>
-
-                    {{-- Modul Kamera Real-time Webcam --}}
-                    <div>
-                        <div class="flex items-center justify-between mb-1.5">
-                            <label class="block text-xs font-semibold text-stone-800 dark:text-stone-100">
-                                Foto Bukti Pengembalian Real-Time <span class="text-rose-500">*</span>
-                            </label>
-                            <span class="text-[11px] font-medium text-amber-800 dark:text-neon-glowamber bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-500/30 px-2 py-0.5 rounded flex items-center gap-1">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-neon-emerald"></span>
-                                Wajib Kamera Real-Time
-                            </span>
+                    <div class="rounded-xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-600/50 p-4 text-xs text-stone-800 dark:text-amber-100 leading-relaxed flex items-start gap-3">
+                        <div class="p-2 rounded-xl bg-amber-200/70 dark:bg-amber-800/60 text-amber-900 dark:text-amber-200 shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
                         </div>
-
-                        <div class="rounded-xl border-2 border-dashed border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-900/50 p-3">
-                            <div class="relative w-full max-h-[45vh] sm:max-h-[50vh] overflow-hidden rounded-xl bg-stone-900 flex items-center justify-center shadow-inner">
-                                
-                                {{-- Live Video Stream --}}
-                                <video
-                                    x-ref="modalVideo"
-                                    autoplay
-                                    playsinline
-                                    class="w-full max-h-[45vh] sm:max-h-[50vh] object-cover rounded-xl bg-stone-900"
-                                    :class="{ 'hidden': returnCapturedPhoto || !isModalCameraOpen }"
-                                ></video>
-
-                                {{-- Captured Photo Preview --}}
-                                <img
-                                    x-show="returnCapturedPhoto"
-                                    :src="returnCapturedPhoto"
-                                    class="w-full max-h-[45vh] sm:max-h-[50vh] object-cover rounded-xl"
-                                    alt="Foto Pengembalian"
-                                >
-
-                                {{-- Hidden Canvas --}}
-                                <canvas x-ref="modalCanvas" class="hidden"></canvas>
-
-                                {{-- Placeholder jika kamera belum aktif --}}
-                                <div x-show="!isModalCameraOpen && !returnCapturedPhoto" class="flex flex-col items-center justify-center p-6 text-center text-gray-400 py-8">
-                                    <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-2 text-gray-300 shadow-inner">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                        </svg>
-                                    </div>
-                                    <span class="text-xs text-white font-medium">Kamera Belum Aktif</span>
-                                    <p class="text-[11px] text-gray-400 mt-1 max-w-xs">Tekan tombol "Buka Kamera" di bawah untuk mulai mengambil foto pengembalian.</p>
-                                </div>
-
-                                {{-- Live Badge Overlay --}}
-                                <div x-show="isModalCameraOpen && !returnCapturedPhoto" class="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-black/60 backdrop-blur-md text-white text-[11px] px-2.5 py-0.5 rounded-full pointer-events-none z-10">
-                                    <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-                                    <span class="font-medium">Live</span>
-                                </div>
-
-                                {{-- Captured Success Badge --}}
-                                <div x-show="returnCapturedPhoto" class="absolute top-2.5 left-2.5 flex items-center gap-1 bg-emerald-600/90 text-white text-[11px] px-2.5 py-0.5 rounded-full shadow backdrop-blur-sm pointer-events-none z-10">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                    </svg>
-                                    <span>Foto Siap Disimpan</span>
-                                </div>
-
-                            </div>
-
-                            {{-- Bar Kontrol Khusus di Bawah Kotak Kamera --}}
-                            <div>
-                                <div x-show="!isModalCameraOpen && !returnCapturedPhoto" class="shrink-0 pt-4 flex flex-col sm:flex-row items-center justify-between gap-2.5">
-                                    <button
-                                        type="button"
-                                        @click="openModalCamera()"
-                                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber text-xs font-semibold transition-all duration-200 shadow-md active:scale-95 cursor-pointer interactive-btn"
-                                    >
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                                        </svg>
-                                        <span>Buka Kamera</span>
-                                    </button>
-                                    <p class="text-[11px] text-stone-500 dark:text-stone-400 text-center sm:text-right">
-                                        Izinkan akses kamera pada browser untuk verifikasi barang.
-                                    </p>
-                                </div>
-
-                                <div x-show="isModalCameraOpen && !returnCapturedPhoto" class="shrink-0 pt-4 flex items-center justify-center gap-4">
-                                    {{-- Tombol Shutter Kamera Lingkaran Cokelat di Tengah --}}
-                                    <button 
-                                        type="button" 
-                                        @click="takeSnapshot()" 
-                                        class="w-14 h-14 rounded-full border-4 border-[#6F4E37] bg-white shadow-md active:scale-95 flex items-center justify-center transition-transform hover:bg-stone-50 dark:bg-white cursor-pointer interactive-btn"
-                                        title="Ambil Foto Bukti">
-                                        <div class="w-9 h-9 rounded-full bg-[#6F4E37] dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] flex items-center justify-center text-white">
-                                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                            </svg>
-                                        </div>
-                                    </button>
-
-                                    {{-- Tombol Ganti Kamera di Sampingnya --}}
-                                    <button
-                                        type="button"
-                                        @click="switchCamera()"
-                                        class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 text-xs font-medium transition shadow-sm active:scale-95 cursor-pointer interactive-btn"
-                                        title="Ganti Kamera Depan/Belakang"
-                                    >
-                                        <svg class="w-4 h-4 text-stone-600 dark:text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                                        </svg>
-                                        <span class="text-xs">Ganti Kamera</span>
-                                    </button>
-                                </div>
-
-                                <div x-show="returnCapturedPhoto" class="shrink-0 pt-4 flex flex-col sm:flex-row items-center justify-between gap-2.5">
-                                    <div class="text-xs text-emerald-700 dark:text-neon-emerald font-medium flex items-center gap-1.5">
-                                        <svg class="w-4 h-4 text-emerald-600 dark:text-neon-emerald shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
-                                        <span>Foto bukti fisik barang berhasil diambil.</span>
-                                    </div>
-
-                                    <button
-                                        type="button"
-                                        @click="retakePhoto()"
-                                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer interactive-btn"
-                                    >
-                                        <svg class="w-3.5 h-3.5 text-amber-600 dark:text-neon-glowamber" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                                        </svg>
-                                        <span>Ambil Ulang Foto</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <input type="hidden" name="return_evidence" :value="returnCapturedPhoto">
+                        <div>
+                            <span class="font-bold text-amber-950 dark:text-amber-200 block text-sm mb-1">Serahkan Unit ke Mas Donny</span>
+                            Silakan segera bawa fisik barang dan kelengkapannya (charger, kabel, tas, mouse) ke <strong>Ruang Teaching Factory (TEFA) SMKN 1 Bangsri</strong> dan temui <strong>Mas Donny</strong>. Admin akan melakukan pengecekan menyeluruh terhadap kondisi fisik barang sebelum status dinyatakan selesai.
                         </div>
                     </div>
 
-                    {{-- Catatan Pengembalian --}}
+                    {{-- Catatan Pengembalian (Opsional) --}}
                     <div>
-                        <label for="return_note" class="block text-xs font-semibold text-stone-800 dark:text-stone-100">
-                            Catatan Kondisi Barang <span class="font-normal text-stone-400 dark:text-stone-500">(opsional)</span>
+                        <label for="return_note" class="block text-xs font-semibold text-stone-800 dark:text-stone-200 mb-1.5">
+                            Catatan Pengembalian <span class="font-normal text-stone-400 dark:text-stone-500">(opsional)</span>
                         </label>
                         <textarea
                             id="return_note"
                             name="return_note"
-                            rows="2"
-                            placeholder="Contoh: Dikembalikan dalam keadaan baik dan lengkap..."
-                            class="mt-1 block w-full rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] px-3 py-2 text-xs text-stone-900 dark:text-stone-100 shadow-sm focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-neon-cyan focus:border-transparent outline-none"
+                            rows="3"
+                            placeholder="Contoh: Unit dan charger sudah diserahkan di meja TEFA dalam kondisi prima."
+                            class="w-full text-xs rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] text-stone-900 dark:text-stone-100 p-3 shadow-sm focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-neon-cyan focus:border-transparent outline-none"
                         ></textarea>
                     </div>
 
                     {{-- Modal Buttons --}}
                     <div class="flex items-center justify-end gap-3 pt-3 border-t border-stone-100 dark:border-stone-800">
-                        <button type="button" @click="closeCameraModal()" class="px-4 py-2.5 rounded-xl text-sm font-medium transition-colors text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800/80 dark:text-stone-300 dark:hover:text-white dark:hover:bg-stone-700 cursor-pointer interactive-btn">
+                        <button type="button" @click="closeReturnModal()" class="px-4 py-2.5 rounded-xl text-sm font-medium transition-colors text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800/80 dark:text-stone-300 dark:hover:text-white dark:hover:bg-stone-700 cursor-pointer interactive-btn">
                             Batal
                         </button>
-                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-gradient-to-r dark:from-emerald-600 dark:to-teal-600 dark:hover:from-emerald-500 dark:hover:to-teal-500 dark:shadow-[0_0_15px_-2px_rgba(16,185,129,0.45)] text-sm font-medium transition-all duration-200 shadow-sm cursor-pointer interactive-btn">
+                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber text-sm font-medium transition-all duration-200 shadow-sm cursor-pointer interactive-btn">
                             Ajukan Pengembalian
                         </button>
                     </div>
@@ -855,103 +822,16 @@
                 this.activeBorrowingId = borrowingId;
                 this.activeAssetName = name;
                 this.activeAssetCode = code;
-                this.returnCapturedPhoto = null;
                 this.modalOpen = true;
-                this.openModalCamera();
             },
 
             closeReturnModal() {
-                this.closeModalCamera();
                 this.modalOpen = false;
+                this.activeBorrowingId = null;
+                this.activeAssetName = '';
+                this.activeAssetCode = '';
             },
 
-            async openModalCamera() {
-                try {
-                    if (this.modalMediaStream) {
-                        this.closeModalCamera();
-                    }
-                    this.modalMediaStream = await navigator.mediaDevices.getUserMedia({
-                        video: {
-                            facingMode: this.modalFacingMode,
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 }
-                        },
-                        audio: false
-                    });
-                    this.$refs.modalVideo.srcObject = this.modalMediaStream;
-                    this.isModalCameraOpen = true;
-                    this.returnCapturedPhoto = null;
-                } catch (err) {
-                    console.error("Modal camera access error:", err);
-                }
-            },
-
-            takeSnapshot() {
-                const video = this.$refs.modalVideo;
-                const canvas = this.$refs.modalCanvas;
-                if (!video || !canvas) return;
-
-                const maxDim = 1280;
-                let w = video.videoWidth || 640;
-                let h = video.videoHeight || 480;
-
-                if (w > maxDim || h > maxDim) {
-                    if (w >= h) {
-                        h = Math.round((h * maxDim) / w);
-                        w = maxDim;
-                    } else {
-                        w = Math.round((w * maxDim) / h);
-                        h = maxDim;
-                    }
-                }
-
-                canvas.width = w;
-                canvas.height = h;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0, w, h);
-
-                this.applyWatermark(canvas, "{{ auth()->user()->name }}", "Pengembalian");
-
-                this.returnCapturedPhoto = canvas.toDataURL('image/jpeg', 0.68);
-                this.closeModalCamera();
-            },
-
-            retakePhoto() {
-                this.returnCapturedPhoto = null;
-                this.openModalCamera();
-            },
-
-            switchCamera() {
-                this.modalFacingMode = this.modalFacingMode === 'user' ? 'environment' : 'user';
-                this.openModalCamera();
-            },
-
-            closeModalCamera() {
-                if (this.modalMediaStream) {
-                    this.modalMediaStream.getTracks().forEach(t => {
-                        try {
-                            t.stop();
-                        } catch (e) {}
-                    });
-                    this.modalMediaStream = null;
-                }
-                if (this.$refs.modalVideo) {
-                    try {
-                        this.$refs.modalVideo.pause();
-                        this.$refs.modalVideo.srcObject = null;
-                    } catch (e) {}
-                }
-                this.isModalCameraOpen = false;
-            },
-
-            onReturnSubmit(e) {
-                if (!this.returnCapturedPhoto) {
-                    e.preventDefault();
-                    alert('Silakan ambil foto bukti fisik pengembalian barang via kamera real-time terlebih dahulu.');
-                    return;
-                }
-                this.closeModalCamera();
-            },
 
             applyWatermark(canvas, userName, typeLabel) {
                 const ctx = canvas.getContext('2d');
@@ -995,6 +875,42 @@
                 ctx.fillText(textStr, x + paddingX, y + (boxHeight / 2));
             }
         }
+    }
+
+    function countdownTimer(expiresAtIso) {
+        return {
+            expiresAt: expiresAtIso ? new Date(expiresAtIso).getTime() : null,
+            remainingText: '--:--',
+            isExpired: false,
+            timerInterval: null,
+            init() {
+                if (!this.expiresAt) {
+                    this.remainingText = '10:00';
+                    return;
+                }
+                this.updateRemaining();
+                this.timerInterval = setInterval(() => {
+                    this.updateRemaining();
+                }, 1000);
+            },
+            updateRemaining() {
+                const now = new Date().getTime();
+                const diff = this.expiresAt - now;
+                if (diff <= 0) {
+                    this.remainingText = '00:00';
+                    this.isExpired = true;
+                    if (this.timerInterval) {
+                        clearInterval(this.timerInterval);
+                        this.timerInterval = null;
+                    }
+                } else {
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                    this.remainingText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                    this.isExpired = false;
+                }
+            }
+        };
     }
 </script>
 

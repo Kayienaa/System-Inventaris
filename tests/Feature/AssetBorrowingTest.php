@@ -503,4 +503,162 @@ class AssetBorrowingTest extends TestCase
         $responseBorrowed->assertStatus(403);
         $this->assertEquals(BorrowingStatus::Borrowed, $borrowedBorrowing->fresh()->status);
     }
+
+    public function test_guru_requesting_teaching_purpose_gets_teacher_priority_and_10_minute_timer(): void
+    {
+        $guru = $this->createGuru();
+        $asset = Asset::where('availability_status', AssetAvailabilityStatus::Tersedia)->first();
+
+        $response = $this->actingAs($guru)->post(route('assets.borrow.store', $asset), [
+            'borrower_note' => 'KBM Pemrograman Berorientasi Objek di Lab 2',
+            'purpose_category' => 'mengajar',
+            'urgency_level' => 'mendesak',
+            'due_at' => now()->addDays(2)->format('Y-m-d H:i:s'),
+        ]);
+
+        $response->assertRedirect(route('borrowings.mine'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('borrowings', [
+            'borrower_user_id' => $guru->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::Pending->value,
+            'is_teacher_priority' => true,
+            'urgency_level' => 'mendesak',
+            'purpose_category' => 'mengajar',
+        ]);
+
+        $borrowing = Borrowing::where('borrower_user_id', $guru->id)->latest()->first();
+        $this->assertNotNull($borrowing->expires_at);
+        $this->assertTrue($borrowing->expires_at->isFuture());
+    }
+
+    public function test_pending_borrowings_auto_cancelled_after_10_minutes_via_command(): void
+    {
+        $siswa = $this->createSiswa();
+        $asset = Asset::first();
+        $asset->update(['availability_status' => AssetAvailabilityStatus::Dipesan]);
+
+        $borrowing = Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::Pending,
+            'requested_at' => now()->subMinutes(12),
+            'expires_at' => now()->subMinutes(2),
+            'due_at' => now()->addDays(2),
+            'borrower_note' => 'Pengajuan lewat waktu',
+        ]);
+
+        $this->artisan('borrowings:cancel-expired')
+            ->expectsOutputToContain('Berhasil membatalkan 1 pengajuan peminjaman kedaluwarsa')
+            ->assertSuccessful();
+
+        $borrowing->refresh();
+        $asset->refresh();
+
+        $this->assertEquals(BorrowingStatus::Rejected, $borrowing->status);
+        $this->assertEquals('Pemesanan hangus otomatis: Peminjam tidak menemui Mas Donny di ruang TEFA dalam batas waktu 10 menit.', $borrowing->rejection_reason);
+        $this->assertEquals(AssetAvailabilityStatus::Tersedia, $asset->availability_status);
+    }
+
+    public function test_pending_borrowings_auto_cancelled_via_lazy_check_on_user_mine_page(): void
+    {
+        $siswa = $this->createSiswa();
+        $asset = Asset::first();
+        $asset->update(['availability_status' => AssetAvailabilityStatus::Dipesan]);
+
+        $borrowing = Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::Pending,
+            'requested_at' => now()->subMinutes(15),
+            'expires_at' => now()->subMinutes(5),
+            'due_at' => now()->addDays(2),
+            'borrower_note' => 'Pengajuan terlambat serah terima',
+        ]);
+
+        $response = $this->actingAs($siswa)->get(route('borrowings.mine'));
+        $response->assertStatus(200);
+
+        $borrowing->refresh();
+        $asset->refresh();
+
+        $this->assertEquals(BorrowingStatus::Rejected, $borrowing->status);
+        $this->assertEquals(AssetAvailabilityStatus::Tersedia, $asset->availability_status);
+    }
+
+    public function test_simplified_return_submission_without_mandatory_photo(): void
+    {
+        $siswa = $this->createSiswa();
+        $asset = Asset::first();
+
+        $borrowing = Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::Borrowed,
+            'requested_at' => now()->subDays(2),
+            'borrowed_at' => now()->subDays(2),
+            'due_at' => now()->addDays(1),
+        ]);
+        $asset->update(['availability_status' => AssetAvailabilityStatus::Dipinjam]);
+
+        $response = $this->actingAs($siswa)->post(route('borrowings.return-request', $borrowing), [
+            'return_note' => 'Unit laptop dan adaptor charger sudah diserahkan di TEFA.',
+        ]);
+
+        $response->assertRedirect(route('borrowings.mine'));
+        $response->assertSessionHas('success');
+
+        $borrowing->refresh();
+        $this->assertEquals(BorrowingStatus::ReturnPendingVerification, $borrowing->status);
+        $this->assertEquals('Unit laptop dan adaptor charger sudah diserahkan di TEFA.', $borrowing->return_note);
+    }
+
+    public function test_admin_verifies_return_with_damage_photo_and_penalty_claim(): void
+    {
+        Storage::fake('public');
+
+        $admin = $this->createAdmin();
+        $siswa = $this->createSiswa();
+        $asset = Asset::first();
+
+        $borrowing = Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::ReturnPendingVerification,
+            'requested_at' => now()->subDays(2),
+            'borrowed_at' => now()->subDays(2),
+            'due_at' => now()->addDays(1),
+            'return_note' => 'Menyerahkan unit ke Mas Donny',
+        ]);
+        $asset->update([
+            'condition' => AssetCondition::Baik,
+            'availability_status' => AssetAvailabilityStatus::Dipinjam,
+        ]);
+
+        $fakeDamageFile = \Illuminate\Http\UploadedFile::fake()->image('kerusakan_engsel.jpg', 600, 400);
+
+        $response = $this->actingAs($admin)
+            ->from(route('admin.borrowings.index'))
+            ->post(route('admin.borrowings.verify-return', $borrowing), [
+                'return_condition' => 'Rusak Berat',
+                'return_verification_note' => 'Pengecekan fisik oleh Mas Donny',
+                'penalty_claim_note' => 'Engsel laptop patah dan casing retak karena terjatuh.',
+                'damage_evidence_file' => $fakeDamageFile,
+            ]);
+
+        $response->assertRedirect(route('admin.borrowings.index'));
+        $response->assertSessionHas('success');
+
+        $borrowing->refresh();
+        $asset->refresh();
+
+        $this->assertEquals(BorrowingStatus::Returned, $borrowing->status);
+        $this->assertEquals(AssetCondition::RusakBerat, $borrowing->return_condition);
+        $this->assertNotNull($borrowing->return_evidence_path);
+        $this->assertStringContainsString('Engsel laptop patah', $borrowing->return_verification_note);
+        $this->assertEquals(AssetCondition::RusakBerat, $asset->condition);
+        $this->assertEquals(AssetAvailabilityStatus::Perbaikan, $asset->availability_status);
+    }
 }
+

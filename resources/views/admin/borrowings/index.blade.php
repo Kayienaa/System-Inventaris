@@ -199,6 +199,40 @@
         </form>
     </div>
 
+    {{-- Quick Filter Prioritas --}}
+    <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none">
+        <a
+            href="{{ request()->fullUrlWithQuery(['priority' => null]) }}"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap {{ !request('priority') ? 'bg-[#6F4E37] text-white shadow-sm dark:bg-amber-600' : 'bg-white dark:bg-[#131B2A] text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800' }}"
+        >
+            Semua
+        </a>
+        <a
+            href="{{ request()->fullUrlWithQuery(['priority' => 'guru']) }}"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 {{ request('priority') === 'guru' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white dark:bg-[#131B2A] text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40' }}"
+        >
+            <svg class="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+            </svg>
+            <span>Prioritas Guru</span>
+        </a>
+        <a
+            href="{{ request()->fullUrlWithQuery(['priority' => 'urgent_siswa']) }}"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 {{ request('priority') === 'urgent_siswa' ? 'bg-rose-600 text-white shadow-sm' : 'bg-white dark:bg-[#131B2A] text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40' }}"
+        >
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <span>Siswa Mendesak</span>
+        </a>
+        <a
+            href="{{ request()->fullUrlWithQuery(['priority' => 'reguler']) }}"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap {{ request('priority') === 'reguler' ? 'bg-stone-700 text-white shadow-sm dark:bg-stone-600' : 'bg-white dark:bg-[#131B2A] text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800' }}"
+        >
+            Reguler
+        </a>
+    </div>
+
     {{-- Tabel Monitoring Transaksi --}}
     <div class="bg-white dark:bg-[#131B2A] rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden static-card">
         <div class="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-stone-700">
@@ -255,6 +289,9 @@
                                 'status' => $isOverdue ? 'overdue' : $statusVal,
                                 'raw_status' => $statusVal,
                                 'is_overdue' => $isOverdue,
+                                'is_teacher_priority' => $b->is_teacher_priority,
+                                'urgency_level' => $b->urgency_level,
+                                'purpose_category' => $b->purpose_category,
                                 'borrower_note' => $b->borrower_note ?: 'Tidak ada catatan',
                                 'return_note' => $b->return_note ?: null,
                                 'rejection_reason' => $b->rejection_reason,
@@ -275,21 +312,61 @@
 
                             {{-- Peminjam --}}
                             <td class="px-5 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-[#6F4E37]/10 dark:bg-amber-950/50 text-[#6F4E37] dark:text-neon-glowamber font-bold text-xs flex items-center justify-center shrink-0 border border-[#6F4E37]/20 dark:border-amber-500/30">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-[#6F4E37]/10 dark:bg-amber-950/50 text-[#6F4E37] dark:text-neon-glowamber font-bold text-xs flex items-center justify-center shrink-0 border border-[#6F4E37]/20 dark:border-amber-500/30 mt-0.5">
                                         {{ strtoupper(substr($b->borrower?->name ?? 'U', 0, 1)) }}
                                     </div>
                                     <div>
                                         <p class="font-bold text-stone-800 dark:text-stone-100 text-xs">
                                             {{ $b->borrower?->name ?? 'User Tidak Diketahui' }}
                                         </p>
-                                        <div class="flex items-center gap-1.5 mt-0.5">
-                                            <span class="font-mono text-[11px] text-stone-500 dark:text-stone-400">
-                                                {{ $identityText }}
-                                            </span>
-                                            <span class="text-[10px] px-1.5 py-0.2 rounded font-semibold {{ $borrowerRole === 'guru' ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30' : 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-neon-glowamber border border-amber-200 dark:border-amber-500/30' }}">
-                                                {{ ucfirst($borrowerRole) }}
-                                            </span>
+
+                                        {{-- Visual Pembeda Status Guru vs Siswa --}}
+                                        <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                                            @if ($borrowerRole === 'guru')
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-200 border border-indigo-300 dark:border-indigo-600/50">
+                                                    <svg class="w-3 h-3 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                                    Guru / Pengajar
+                                                </span>
+                                                <span class="font-mono text-[11px] text-stone-500 dark:text-stone-400">
+                                                    {{ $b->borrower?->guruProfile?->nip ? 'NIP: ' . $b->borrower->guruProfile->nip : 'NIP: -' }}
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-neon-emerald border border-emerald-300 dark:border-emerald-600/40">
+                                                    Siswa
+                                                </span>
+                                                <span class="font-mono text-[11px] text-stone-500 dark:text-stone-400">
+                                                    {{ $b->borrower?->siswaProfile?->nis ? 'NIS: ' . $b->borrower->siswaProfile->nis : '-' }}
+                                                    @if ($b->borrower?->siswaProfile?->class_name)
+                                                        • {{ $b->borrower->siswaProfile->class_name }}
+                                                    @endif
+                                                </span>
+                                            @endif
+                                        </div>
+
+                                        {{-- Lencana Prioritas Tegas --}}
+                                        <div class="flex flex-wrap items-center gap-1 mt-1.5">
+                                            @if ($b->is_teacher_priority)
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-indigo-50 text-indigo-800 dark:bg-indigo-950/80 dark:text-indigo-200 border border-indigo-300 dark:border-indigo-700 shadow-xs">
+                                                    <svg class="w-3 h-3 text-indigo-600 dark:text-indigo-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                    </svg>
+                                                    PRIORITAS GURU
+                                                </span>
+                                            @endif
+                                            @if ($b->urgency_level === 'mendesak')
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-rose-50 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200 border border-rose-300 dark:border-rose-700 shadow-xs">
+                                                    <svg class="w-3 h-3 text-rose-600 dark:text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                                    </svg>
+                                                    MENDESAK
+                                                </span>
+                                            @endif
+                                            @if ($b->purpose_category)
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
+                                                    {{ ucfirst($b->purpose_category) }}
+                                                </span>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -670,42 +747,87 @@
                             <svg class="w-4 h-4 text-purple-700 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            Verifikasi Pengembalian Fisik Unit
+                            Verifikasi Serah Terima Fisik & Cek Kondisi Unit
                         </div>
                         <p class="text-xs text-purple-800 dark:text-purple-200 leading-relaxed mb-4">
-                            Peminjam telah menyerahkan barang fisik & mengambil foto bukti pengembalian. Periksa kondisi unit fisik lalu konfirmasi verifikasi untuk mengembalikan status unit ke katalog.
+                            Admin (Mas Donny) menerima fisik barang dan melakukan pengecekan menyeluruh (kondisi layar, engsel, port, kelengkapan charger, tas, dll).
                         </p>
 
-                        <form :action="'/admin/borrowings/' + selectedBorrowing?.id + '/verify-return'" method="POST" class="space-y-3">
+                        <form :action="'/admin/borrowings/' + selectedBorrowing?.id + '/verify-return'" method="POST" enctype="multipart/form-data" class="space-y-4">
                             @csrf
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">Kondisi Fisik Saat Kembali:</label>
-                                    <select name="return_condition" class="w-full text-xs rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] px-3 py-2">
-                                        <option value="Baik">Baik (Normal)</option>
-                                        <option value="Rusak Ringan">Rusak Ringan</option>
-                                        <option value="Rusak Berat">Rusak Berat (Masuk Perbaikan)</option>
+                                    <label class="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">Kondisi Fisik Saat Kembali: <span class="text-rose-500">*</span></label>
+                                    <select
+                                        name="return_condition"
+                                        x-model="returnCondition"
+                                        class="w-full text-xs rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] px-3 py-2 font-medium text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-purple-500"
+                                    >
+                                        <option value="baik">Baik (Normal / Tanpa Kerusakan)</option>
+                                        <option value="rusak_ringan">Rusak Ringan (Ada Cacat Baru / Baret / Lecet)</option>
+                                        <option value="rusak_berat">Rusak Berat (Pecah / Rusak Total / Masuk Perbaikan)</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">Catatan Admin / Verifikator:</label>
+                                    <label class="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">Catatan Pengecekan Admin:</label>
                                     <input
                                         type="text"
                                         name="return_verification_note"
-                                        placeholder="Contoh: Unit lengkap beserta charger dalam kondisi normal..."
-                                        class="w-full text-xs rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] px-3 py-2"
+                                        placeholder="Contoh: Fisik dicek Mas Donny, charger & tas lengkap."
+                                        class="w-full text-xs rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] px-3 py-2 text-stone-900 dark:text-stone-100"
                                     >
                                 </div>
                             </div>
-                            <div class="flex justify-end pt-2">
+
+                            {{-- Kondisi Ada Kerusakan: Form Bukti Foto & Klaim Penalti --}}
+                            <div x-show="returnCondition === 'rusak_ringan' || returnCondition === 'rusak_berat' || returnCondition === 'Rusak Ringan' || returnCondition === 'Rusak Berat'" x-cloak class="p-4 rounded-xl bg-rose-50/90 dark:bg-rose-950/50 border border-rose-300 dark:border-rose-800 space-y-3">
+                                <div class="flex items-center gap-2 text-xs font-bold text-rose-800 dark:text-rose-300">
+                                    <svg class="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                    </svg>
+                                    <span>Pemberkasan Cacat / Kerusakan & Klaim Penalti</span>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-rose-900 dark:text-rose-200 mb-1">
+                                        Upload Bukti Foto Kerusakan: <span class="text-rose-500">*</span>
+                                    </label>
+                                    <input
+                                        type="file"
+                                        name="damage_evidence_file"
+                                        accept="image/*"
+                                        capture="environment"
+                                        class="w-full text-xs text-stone-600 dark:text-stone-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-100 file:text-rose-700 dark:file:bg-rose-900/60 dark:file:text-rose-200 hover:file:bg-rose-200 cursor-pointer"
+                                    >
+                                    <p class="text-[11px] text-stone-500 dark:text-stone-400 mt-1">
+                                        Ambil / upload foto bagian unit yang mengalami kerusakan untuk arsip bukti fisik.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-rose-900 dark:text-rose-200 mb-1">
+                                        Catatan Klaim Penalti / Ganti Rugi:
+                                    </label>
+                                    <textarea
+                                        name="penalty_claim_note"
+                                        rows="2"
+                                        placeholder="Tuliskan rincian ganti rugi atau tindakan penalti atas nama peminjam terkait..."
+                                        class="w-full text-xs rounded-xl border border-rose-300 dark:border-rose-800 bg-white dark:bg-[#0B0F17] p-2.5 text-stone-900 dark:text-stone-100 focus:ring-1 focus:ring-rose-500 focus:outline-none"
+                                    ></textarea>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                                <span class="text-[11px] text-stone-500 dark:text-stone-400 italic" x-text="(returnCondition === 'baik' || returnCondition === 'Baik') ? 'Status aset otomatis kembali Tersedia.' : ((returnCondition === 'rusak_berat' || returnCondition === 'Rusak Berat') ? 'Status aset akan dialihkan ke Perbaikan.' : 'Status aset dicatat dengan kondisi Rusak Ringan.')"></span>
                                 <button
                                     type="submit"
-                                    class="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition active:scale-95 flex items-center gap-1.5 cursor-pointer interactive-btn"
+                                    class="px-5 py-2.5 rounded-xl text-white font-bold text-xs shadow-sm transition active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer interactive-btn"
+                                    :class="(returnCondition === 'baik' || returnCondition === 'Baik') ? 'bg-purple-600 hover:bg-purple-700' : 'bg-rose-600 hover:bg-rose-700'"
                                 >
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                     </svg>
-                                    Verifikasi Pengembalian & Selesaikan
+                                    <span x-text="(returnCondition === 'baik' || returnCondition === 'Baik') ? 'Verifikasi Pengembalian (Unit Tersedia)' : 'Simpan Verifikasi & Klaim Kerusakan'"></span>
                                 </button>
                             </div>
                         </form>

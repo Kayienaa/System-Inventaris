@@ -13,12 +13,9 @@ class SubmitReturnAction
 {
     use AuthorizesBorrowingActions;
 
-    public function execute(User $actor, Borrowing $borrowing, string $evidencePath, ?string $returnNote = null): Borrowing
+    public function execute(User $actor, Borrowing $borrowing, ?string $evidencePath = null, ?string $returnNote = null): Borrowing
     {
         $this->authorize($actor, 'submitReturn', $borrowing);
-        if (blank($evidencePath)) {
-            throw new InvalidArgumentException('Return evidence is required.');
-        }
 
         return DB::transaction(function () use ($borrowing, $evidencePath, $returnNote): Borrowing {
             $locked = Borrowing::query()->lockForUpdate()->find($borrowing->id);
@@ -30,7 +27,7 @@ class SubmitReturnAction
             $locked->update([
                 'status' => BorrowingStatus::ReturnPendingVerification,
                 'return_submitted_at' => now(),
-                'return_evidence_path' => $evidencePath,
+                'return_evidence_path' => $evidencePath ?: $locked->return_evidence_path,
                 'return_note' => $returnNote,
             ]);
 

@@ -207,14 +207,190 @@
                 @csrf
                 <input type="hidden" name="asset_id" value="{{ $asset->id }}">
 
-                {{-- Alert Info Alur Peminjaman Dua Tahap --}}
-                <div class="rounded-xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-500/30 p-4 flex items-start gap-3">
-                    <svg class="w-5 h-5 text-amber-700 dark:text-neon-glowamber shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    <div class="text-xs text-stone-700 dark:text-stone-300 leading-relaxed">
-                        <span class="font-bold text-amber-900 dark:text-neon-glowamber">Alur Peminjaman Dua Tahap:</span> Setelah permohonan diajukan dan disetujui oleh Admin TEFA, Anda dapat mengambil unit fisik di ruangan TEFA dengan melakukan foto serah terima bersama Admin.
+                {{-- Alert Info Alur Peminjaman & Batas Waktu 10 Menit --}}
+                <div class="rounded-xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-500/40 p-4 flex items-start gap-3">
+                    <div class="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-neon-glowamber shrink-0 mt-0.5">
+                        <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
                     </div>
+                    <div class="text-xs text-stone-700 dark:text-stone-300 leading-relaxed">
+                        <span class="font-bold text-amber-950 dark:text-neon-glowamber">Aturan Serah Terima 10 Menit:</span>
+                        Setelah permohonan berhasil dikirim, Anda memiliki batas waktu <strong>10 menit</strong> untuk segera datang ke <strong>Ruang TEFA SMKN 1 Bangsri</strong> dan menemui <strong>Mas Donny</strong>. Jika dalam 10 menit belum hadir, pemesanan otomatis hangus dan unit kembali ke katalog.
+                    </div>
+                </div>
+
+                {{-- Tujuan Kebutuhan Peminjaman --}}
+                <div>
+                    <label class="block text-sm font-semibold text-stone-800 dark:text-stone-100 mb-1.5">
+                        Tujuan Kebutuhan <span class="text-rose-500">*</span>
+                    </label>
+                    <p class="text-xs text-stone-500 dark:text-stone-400 mb-3">
+                        Pilih peruntukan peminjaman aset inventaris ini.
+                    </p>
+
+                    @php
+                        $isGuru = auth()->user()?->hasRole('guru');
+                    @endphp
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {{-- KBM / Mengajar --}}
+                        <label
+                            class="relative flex items-start p-3.5 rounded-xl border transition cursor-pointer"
+                            :class="purposeCategory === 'mengajar' ? 'bg-amber-50/70 border-amber-500 dark:bg-amber-950/40 dark:border-amber-500 shadow-xs' : 'bg-white dark:bg-[#0E1420] border-stone-200 dark:border-stone-800 hover:border-stone-300'"
+                            @if(! $isGuru) style="opacity: 0.6; cursor: not-allowed;" @endif
+                        >
+                            <input
+                                type="radio"
+                                name="purpose_category"
+                                value="mengajar"
+                                x-model="purposeCategory"
+                                @if(! $isGuru) disabled @endif
+                                class="mt-0.5 text-[#6F4E37] focus:ring-[#6F4E37] dark:focus:ring-amber-500 border-stone-300 dark:border-stone-700"
+                            >
+                            <div class="ml-3 flex-1">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="text-xs font-bold text-stone-800 dark:text-stone-100">KBM / Mengajar di Kelas</span>
+                                    @if($isGuru)
+                                        <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                            <svg class="w-3 h-3 text-indigo-600 dark:text-indigo-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                            </svg>
+                                            Prioritas Guru KBM
+                                        </span>
+                                    @else
+                                        <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400">
+                                            Khusus Guru
+                                        </span>
+                                    @endif
+                                </div>
+                                <p class="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Digunakan langsung untuk kegiatan pembelajaran di ruang kelas/lab.</p>
+                            </div>
+                        </label>
+
+                        {{-- Praktik TEFA --}}
+                        <label
+                            class="relative flex items-start p-3.5 rounded-xl border transition cursor-pointer"
+                            :class="purposeCategory === 'praktik' ? 'bg-amber-50/70 border-amber-500 dark:bg-amber-950/40 dark:border-amber-500 shadow-xs' : 'bg-white dark:bg-[#0E1420] border-stone-200 dark:border-stone-800 hover:border-stone-300'"
+                        >
+                            <input
+                                type="radio"
+                                name="purpose_category"
+                                value="praktik"
+                                x-model="purposeCategory"
+                                class="mt-0.5 text-[#6F4E37] focus:ring-[#6F4E37] dark:focus:ring-amber-500 border-stone-300 dark:border-stone-700"
+                            >
+                            <div class="ml-3 flex-1">
+                                <span class="text-xs font-bold text-stone-800 dark:text-stone-100">Praktik TEFA</span>
+                                <p class="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Pengerjaan pesanan project atau praktikum unit produksi TEFA.</p>
+                            </div>
+                        </label>
+
+                        {{-- Ujian / Penilaian --}}
+                        <label
+                            class="relative flex items-start p-3.5 rounded-xl border transition cursor-pointer"
+                            :class="purposeCategory === 'ujian' ? 'bg-amber-50/70 border-amber-500 dark:bg-amber-950/40 dark:border-amber-500 shadow-xs' : 'bg-white dark:bg-[#0E1420] border-stone-200 dark:border-stone-800 hover:border-stone-300'"
+                        >
+                            <input
+                                type="radio"
+                                name="purpose_category"
+                                value="ujian"
+                                x-model="purposeCategory"
+                                class="mt-0.5 text-[#6F4E37] focus:ring-[#6F4E37] dark:focus:ring-amber-500 border-stone-300 dark:border-stone-700"
+                            >
+                            <div class="ml-3 flex-1">
+                                <span class="text-xs font-bold text-stone-800 dark:text-stone-100">Ujian / Penilaian Kompetensi</span>
+                                <p class="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Pelaksanaan ujian asesmen, sertifikasi, atau presentasi akhir.</p>
+                            </div>
+                        </label>
+
+                        {{-- Lainnya --}}
+                        <label
+                            class="relative flex items-start p-3.5 rounded-xl border transition cursor-pointer"
+                            :class="purposeCategory === 'lainnya' ? 'bg-amber-50/70 border-amber-500 dark:bg-amber-950/40 dark:border-amber-500 shadow-xs' : 'bg-white dark:bg-[#0E1420] border-stone-200 dark:border-stone-800 hover:border-stone-300'"
+                        >
+                            <input
+                                type="radio"
+                                name="purpose_category"
+                                value="lainnya"
+                                x-model="purposeCategory"
+                                class="mt-0.5 text-[#6F4E37] focus:ring-[#6F4E37] dark:focus:ring-amber-500 border-stone-300 dark:border-stone-700"
+                            >
+                            <div class="ml-3 flex-1">
+                                <span class="text-xs font-bold text-stone-800 dark:text-stone-100">Keperluan Lainnya</span>
+                                <p class="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Penugasan khusus dari pembimbing atau keperluan administratif.</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    @error('purpose_category')
+                        <p class="mt-1 text-xs font-medium text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Tingkat Urgensi --}}
+                <div>
+                    <label class="block text-sm font-semibold text-stone-800 dark:text-stone-100 mb-1.5">
+                        Tingkat Urgensi <span class="text-rose-500">*</span>
+                    </label>
+                    <p class="text-xs text-stone-500 dark:text-stone-400 mb-3">
+                        Pilih tingkat prioritas kebutuhan Anda. Jika memilih mendesak, alasan wajib diuraikan pada catatan.
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {{-- Biasa --}}
+                        <label
+                            class="relative flex items-start p-3.5 rounded-xl border transition cursor-pointer"
+                            :class="urgencyLevel === 'biasa' ? 'bg-amber-50/70 border-amber-500 dark:bg-amber-950/40 dark:border-amber-500 shadow-xs' : 'bg-white dark:bg-[#0E1420] border-stone-200 dark:border-stone-800 hover:border-stone-300'"
+                        >
+                            <input
+                                type="radio"
+                                name="urgency_level"
+                                value="biasa"
+                                x-model="urgencyLevel"
+                                class="mt-0.5 text-[#6F4E37] focus:ring-[#6F4E37] dark:focus:ring-amber-500 border-stone-300 dark:border-stone-700"
+                            >
+                            <div class="ml-3 flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold text-stone-800 dark:text-stone-100">Biasa (Reguler)</span>
+                                    <span class="text-[10px] px-1.5 py-0.2 rounded font-semibold bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400">Standar</span>
+                                </div>
+                                <p class="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Jadwal peminjaman normal tanpa kendala waktu mendadak.</p>
+                            </div>
+                        </label>
+
+                        {{-- Mendesak --}}
+                        <label
+                            class="relative flex items-start p-3.5 rounded-xl border transition cursor-pointer"
+                            :class="urgencyLevel === 'mendesak' ? 'bg-rose-50/80 border-rose-500 dark:bg-rose-950/40 dark:border-rose-500 shadow-xs' : 'bg-white dark:bg-[#0E1420] border-stone-200 dark:border-stone-800 hover:border-stone-300'"
+                        >
+                            <input
+                                type="radio"
+                                name="urgency_level"
+                                value="mendesak"
+                                x-model="urgencyLevel"
+                                class="mt-0.5 text-rose-600 focus:ring-rose-500 border-stone-300 dark:border-stone-700"
+                            >
+                            <div class="ml-3 flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold text-rose-800 dark:text-rose-300">Mendesak / Urgent</span>
+                                    <span class="text-[10px] px-1.5 py-0.2 rounded font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-300">Prioritas Antrean</span>
+                                </div>
+                                <p class="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Kebutuhan darurat / mendadak. <em>Wajib isi alasan di catatan</em>.</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div x-show="urgencyLevel === 'mendesak'" x-cloak class="mt-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2.5 text-xs text-rose-800 dark:text-rose-300 flex items-center gap-2">
+                        <svg class="w-4 h-4 shrink-0 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <span>Urgensi mendesak dipilih: Anda <strong>wajib</strong> mengisi uraian alasan pada kolom Catatan Keperluan di bawah ini.</span>
+                    </div>
+
+                    @error('urgency_level')
+                        <p class="mt-1 text-xs font-medium text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 {{-- Tanggal Rencana Pengembalian (Modern Flatpickr & Presets) --}}
@@ -305,12 +481,15 @@
                         for="borrower_note"
                         class="block text-sm font-semibold text-stone-800 dark:text-stone-100 mb-1"
                     >
-                        Keperluan Peminjaman <span class="font-normal text-stone-400 dark:text-stone-500">(opsional)</span>
+                        Keperluan Peminjaman
+                        <span x-show="urgencyLevel === 'mendesak'" class="text-rose-600 font-bold ml-1">* (Wajib diisi untuk urgensi mendesak)</span>
+                        <span x-show="urgencyLevel !== 'mendesak'" class="font-normal text-stone-400 dark:text-stone-500 ml-1">(opsional)</span>
                     </label>
                     <textarea
                         id="borrower_note"
                         name="borrower_note"
                         rows="3"
+                        :required="urgencyLevel === 'mendesak'"
                         placeholder="Contoh: Digunakan untuk pengerjaan project praktikum TEFA di Lab Pemrograman..."
                         class="w-full rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-[#0B0F17] px-4 py-2.5 text-sm text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 shadow-sm focus:border-[#6F4E37] dark:focus:border-cyan-500 focus:bg-white dark:focus:bg-[#0B0F17] focus:ring-2 focus:ring-[#6F4E37]/20 dark:focus:ring-cyan-500/20 transition"
                     >{{ old('borrower_note') }}</textarea>
@@ -350,6 +529,8 @@
             return {
                 fpInstance: null,
                 selectedPreset: 3,
+                purposeCategory: '{{ old('purpose_category', auth()->user()?->hasRole('guru') ? 'mengajar' : 'praktik') }}',
+                urgencyLevel: '{{ old('urgency_level', 'biasa') }}',
 
                 init() {
                     const defaultDue = new Date();
