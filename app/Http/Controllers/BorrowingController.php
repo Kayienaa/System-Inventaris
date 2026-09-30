@@ -103,7 +103,8 @@ class BorrowingController extends Controller
             return back()->with('error', 'Hanya peminjaman dengan status "Dipinjam" yang dapat diajukan pengembaliannya.');
         }
 
-        $evidencePath = $this->storeEvidenceImage($request, 'return_evidence', 'return-evidence');
+        $evidencePath = $this->storeEvidenceImage($request, 'return_evidence', 'return-evidence')
+            ?? $this->storeEvidenceImage($request, 'return_evidence_file', 'return-evidence');
 
         $oldAttributes = $borrowing->getAttributes();
         $result = $action->execute($request->user(), $borrowing, $evidencePath, $request->input('return_note'));
@@ -312,10 +313,11 @@ class BorrowingController extends Controller
     public function submitReturn(SubmitReturnRequest $request, Borrowing $borrowing, SubmitReturnAction $action, AuditLogService $audit): BorrowingResource
     {
         $evidencePath = $this->storeEvidenceImage($request, 'return_evidence', 'return-evidence')
+            ?? $this->storeEvidenceImage($request, 'return_evidence_file', 'return-evidence')
             ?? $this->storeEvidenceImage($request, 'borrowing_evidence', 'return-evidence');
 
         $old = $borrowing->getAttributes();
-        $result = $action->execute($request->user(), $borrowing, (string) $evidencePath, $request->input('return_note'));
+        $result = $action->execute($request->user(), $borrowing, $evidencePath, $request->input('return_note'));
         $audit->record($request->user(), 'borrowing.return_submitted', $result, $old, $result->getAttributes());
 
         return new BorrowingResource($result);

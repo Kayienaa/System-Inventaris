@@ -516,7 +516,7 @@
             x-transition:leave-end="opacity-0"
         >
             <div
-                class="relative w-full max-w-lg bg-white dark:bg-[#131B2A] rounded-2xl shadow-2xl p-6 border border-stone-200 dark:border-stone-800 flex flex-col"
+                class="relative w-full max-w-lg bg-white dark:bg-[#131B2A] rounded-2xl shadow-2xl p-6 border border-stone-200 dark:border-stone-800 flex flex-col max-h-[90vh] overflow-y-auto scroll-smooth [scrollbar-gutter:stable] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-stone-300 dark:[&::-webkit-scrollbar-thumb]:bg-stone-700 [&::-webkit-scrollbar-thumb]:rounded-full"
                 @click.outside="closeReturnModal()"
                 @click.stop
                 x-transition:enter="transition-all duration-200 cubic-bezier(0.16, 1, 0.3, 1)"
@@ -535,7 +535,7 @@
                     <button
                         type="button"
                         @click="closeReturnModal()"
-                        class="text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 p-2 -mr-1 -mt-1 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 transition cursor-pointer flex items-center justify-center shrink-0 border border-transparent hover:border-stone-200 dark:hover:border-stone-700 interactive-btn"
+                        class="text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 p-2 -mr-1 -mt-1 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 transition cursor-pointer flex items-center justify-center shrink-0 border border-transparent hover:border-stone-200 dark:border-stone-700 interactive-btn"
                         title="Tutup (Esc)"
                     >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -545,7 +545,7 @@
                 </div>
 
                 {{-- Modal Body Form --}}
-                <form :action="'/borrowings/' + activeBorrowingId + '/return-request'" method="POST" class="pt-4 space-y-4">
+                <form :action="'/borrowings/' + activeBorrowingId + '/return-request'" method="POST" enctype="multipart/form-data" class="pt-4 space-y-4" @submit="onReturnSubmit($event)">
                     @csrf
 
                     <div class="rounded-xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-600/50 p-4 text-xs text-stone-800 dark:text-amber-100 leading-relaxed flex items-start gap-3">
@@ -556,7 +556,132 @@
                         </div>
                         <div>
                             <span class="font-bold text-amber-950 dark:text-amber-200 block text-sm mb-1">Serahkan Unit ke Mas Donny</span>
-                            Silakan segera bawa fisik barang dan kelengkapannya (charger, kabel, tas, mouse) ke <strong>Ruang Teaching Factory (TEFA) SMKN 1 Bangsri</strong> dan temui <strong>Mas Donny</strong>. Admin akan melakukan pengecekan menyeluruh terhadap kondisi fisik barang sebelum status dinyatakan selesai.
+                            Silakan bawa fisik barang ke <strong>Ruang Teaching Factory (TEFA) SMKN 1 Bangsri</strong> dan temui <strong>Mas Donny</strong>. Ambil foto fisik unit bersama admin sebagai dokumentasi bukti pengembalian.
+                        </div>
+                    </div>
+
+                    {{-- Modul Kamera Real-time Webcam Pengembalian --}}
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="block text-xs font-semibold text-stone-800 dark:text-stone-100">
+                                Foto Bukti Fisik Pengembalian
+                            </label>
+                            <span class="text-[11px] font-medium text-amber-800 dark:text-neon-glowamber bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-500/30 px-2 py-0.5 rounded flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-neon-glowamber animate-pulse"></span>
+                                Kamera Real-Time
+                            </span>
+                        </div>
+
+                        <div class="rounded-xl border-2 border-dashed border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-900/50 p-3">
+                            <div class="relative w-full max-h-[45vh] sm:max-h-[50vh] overflow-hidden rounded-xl bg-stone-900 flex items-center justify-center shadow-inner">
+                                <video
+                                    x-ref="returnVideo"
+                                    autoplay
+                                    playsinline
+                                    class="w-full max-h-[45vh] sm:max-h-[50vh] object-cover rounded-xl bg-stone-900"
+                                    :class="{ 'hidden': returnCapturedPhoto || !isModalCameraOpen }"
+                                ></video>
+                                <img
+                                    x-show="returnCapturedPhoto"
+                                    :src="returnCapturedPhoto"
+                                    class="w-full max-h-[45vh] sm:max-h-[50vh] object-cover rounded-xl"
+                                    alt="Foto Pengembalian"
+                                >
+                                <canvas x-ref="returnCanvas" class="hidden"></canvas>
+
+                                <div x-show="!isModalCameraOpen && !returnCapturedPhoto" class="flex flex-col items-center justify-center p-6 text-center text-gray-400 py-8">
+                                    <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-2 text-gray-300 shadow-inner">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                    </div>
+                                    <span class="text-xs text-white font-medium">Kamera Belum Aktif</span>
+                                    <p class="text-[11px] text-gray-400 mt-1 max-w-xs">Tekan tombol "Buka Kamera" di bawah untuk mengambil foto fisik pengembalian.</p>
+                                </div>
+
+                                <div x-show="isModalCameraOpen && !returnCapturedPhoto" class="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-black/60 backdrop-blur-md text-white text-[11px] px-2.5 py-0.5 rounded-full pointer-events-none z-10">
+                                    <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                                    <span class="font-medium">Live</span>
+                                </div>
+
+                                <div x-show="returnCapturedPhoto" class="absolute top-2.5 left-2.5 flex items-center gap-1 bg-emerald-600/90 text-white text-[11px] px-2.5 py-0.5 rounded-full shadow backdrop-blur-sm pointer-events-none z-10">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span>Foto Siap Disimpan</span>
+                                </div>
+                            </div>
+
+                            {{-- Control Bar --}}
+                            <div>
+                                <div x-show="!isModalCameraOpen && !returnCapturedPhoto" class="shrink-0 pt-4 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+                                    <button
+                                        type="button"
+                                        @click="openReturnCamera()"
+                                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#6F4E37] hover:bg-[#5a3f2c] text-white dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] dark:hover:from-amber-500 dark:hover:to-[#8B5A2B] dark:shadow-neon-amber text-xs font-semibold transition-all duration-200 shadow-md active:scale-95 cursor-pointer interactive-btn"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                        </svg>
+                                        <span>Buka Kamera</span>
+                                    </button>
+                                    <p class="text-[11px] text-stone-500 dark:text-stone-400 text-center sm:text-right">
+                                        Izinkan akses kamera pada browser.
+                                    </p>
+                                </div>
+
+                                <div x-show="isModalCameraOpen && !returnCapturedPhoto" class="shrink-0 pt-4 flex items-center justify-center gap-4">
+                                    {{-- Tombol Shutter Kamera Lingkaran Cokelat di Tengah --}}
+                                    <button 
+                                        type="button" 
+                                        @click="takeReturnSnapshot()" 
+                                        class="w-14 h-14 rounded-full border-4 border-[#6F4E37] bg-white shadow-md active:scale-95 flex items-center justify-center transition-transform hover:bg-stone-50 dark:bg-white cursor-pointer interactive-btn"
+                                        title="Ambil Foto Pengembalian">
+                                        <div class="w-9 h-9 rounded-full bg-[#6F4E37] dark:bg-gradient-to-r dark:from-amber-600 dark:to-[#6F4E37] flex items-center justify-center text-white">
+                                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            </svg>
+                                        </div>
+                                    </button>
+
+                                    {{-- Tombol Ganti Kamera di Sampingnya --}}
+                                    <button
+                                        type="button"
+                                        @click="switchReturnCamera()"
+                                        class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 text-xs font-medium transition shadow-sm active:scale-95 cursor-pointer interactive-btn"
+                                        title="Ganti Kamera Depan/Belakang"
+                                    >
+                                        <svg class="w-4 h-4 text-stone-600 dark:text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                        </svg>
+                                        <span class="text-xs">Ganti Kamera</span>
+                                    </button>
+                                </div>
+
+                                <div x-show="returnCapturedPhoto" class="shrink-0 pt-4 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+                                    <div class="text-xs text-emerald-700 dark:text-neon-emerald font-medium flex items-center gap-1.5">
+                                        <svg class="w-4 h-4 text-emerald-600 dark:text-neon-emerald shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        <span>Foto pengembalian berhasil diambil.</span>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        @click="retakeReturnSnapshot()"
+                                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer interactive-btn"
+                                    >
+                                        <svg class="w-3.5 h-3.5 text-amber-600 dark:text-neon-glowamber" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                        </svg>
+                                        <span>Ambil Ulang Foto</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <input type="hidden" name="return_evidence" :value="returnCapturedPhoto">
                         </div>
                     </div>
 
@@ -568,8 +693,8 @@
                         <textarea
                             id="return_note"
                             name="return_note"
-                            rows="3"
-                            placeholder="Contoh: Unit dan charger sudah diserahkan di meja TEFA dalam kondisi prima."
+                            rows="2"
+                            placeholder="Contoh: Unit dan kelengkapannya sudah diserahkan di meja TEFA dalam kondisi prima."
                             class="w-full text-xs rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] text-stone-900 dark:text-stone-100 p-3 shadow-sm focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-neon-cyan focus:border-transparent outline-none"
                         ></textarea>
                     </div>
@@ -824,14 +949,106 @@
                 this.activeBorrowingId = borrowingId;
                 this.activeAssetName = name;
                 this.activeAssetCode = code;
+                this.returnCapturedPhoto = null;
                 this.modalOpen = true;
+                this.openReturnCamera();
             },
 
             closeReturnModal() {
+                this.closeReturnCamera();
                 this.modalOpen = false;
                 this.activeBorrowingId = null;
                 this.activeAssetName = '';
                 this.activeAssetCode = '';
+            },
+
+            closeModalCamera() {
+                this.closeReturnCamera();
+            },
+
+            async openReturnCamera() {
+                try {
+                    if (this.modalMediaStream) {
+                        this.closeReturnCamera();
+                    }
+                    this.modalMediaStream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: this.modalFacingMode,
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        },
+                        audio: false
+                    });
+                    if (this.$refs.returnVideo) {
+                        this.$refs.returnVideo.srcObject = this.modalMediaStream;
+                    }
+                    this.isModalCameraOpen = true;
+                    this.returnCapturedPhoto = null;
+                } catch (err) {
+                    console.error("Return camera access error:", err);
+                }
+            },
+
+            takeReturnSnapshot() {
+                const video = this.$refs.returnVideo;
+                const canvas = this.$refs.returnCanvas;
+                if (!video || !canvas) return;
+
+                const maxDim = 1280;
+                let w = video.videoWidth || 640;
+                let h = video.videoHeight || 480;
+
+                if (w > maxDim || h > maxDim) {
+                    if (w >= h) {
+                        h = Math.round((h * maxDim) / w);
+                        w = maxDim;
+                    } else {
+                        w = Math.round((w * maxDim) / h);
+                        h = maxDim;
+                    }
+                }
+
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, w, h);
+
+                this.applyWatermark(canvas, "{{ auth()->user()->name }}", "Pengembalian Unit");
+
+                this.returnCapturedPhoto = canvas.toDataURL('image/jpeg', 0.68);
+                this.closeReturnCamera();
+            },
+
+            retakeReturnSnapshot() {
+                this.returnCapturedPhoto = null;
+                this.openReturnCamera();
+            },
+
+            switchReturnCamera() {
+                this.modalFacingMode = this.modalFacingMode === 'user' ? 'environment' : 'user';
+                this.openReturnCamera();
+            },
+
+            closeReturnCamera() {
+                if (this.modalMediaStream) {
+                    this.modalMediaStream.getTracks().forEach(t => {
+                        try {
+                            t.stop();
+                        } catch (e) {}
+                    });
+                    this.modalMediaStream = null;
+                }
+                if (this.$refs.returnVideo) {
+                    try {
+                        this.$refs.returnVideo.pause();
+                        this.$refs.returnVideo.srcObject = null;
+                    } catch (e) {}
+                }
+                this.isModalCameraOpen = false;
+            },
+
+            onReturnSubmit(e) {
+                this.closeReturnCamera();
             },
 
 
