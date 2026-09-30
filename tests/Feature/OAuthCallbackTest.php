@@ -209,12 +209,48 @@ class OAuthCallbackTest extends TestCase
 
         // Harus ditolak dan diarahkan ke login dengan pesan error
         $response->assertRedirect(route('login'));
-        $response->assertSessionHas('error', 'Akun ini tidak dapat ditautkan otomatis via SSO. Hubungi administrator.');
+        $response->assertSessionHas('error', 'Akun administratif wajib login menggunakan kredensial internal.');
         $this->assertGuest();
 
         // Pastikan akun admin tidak tercemar
         $admin->refresh();
         $this->assertNull($admin->sipintu_external_id);
+    }
+
+    public function test_sso_rejected_for_admin_matched_via_external_id(): void
+    {
+        $baseUrl = $this->getBaseUrl();
+
+        $admin = User::create([
+            'name'                => 'Mas Donny Admin',
+            'email'               => 'donny@smkn1bangsri.sch.id',
+            'sipintu_external_id' => 'admin_donny_123',
+            'password'            => Hash::make('secret_admin_pass'),
+            'email_verified_at'   => now(),
+            'is_active'           => true,
+        ]);
+        $admin->assignRole('admin');
+
+        Http::fake([
+            "{$baseUrl}/oauth/token" => Http::response([
+                'access_token' => 'mock_token_admin_ext',
+                'token_type'   => 'Bearer',
+            ], 200),
+            "{$baseUrl}/api/v1/user" => Http::response([
+                'data' => [
+                    'name'        => 'Mas Donny Admin',
+                    'email'       => 'donny@smkn1bangsri.sch.id',
+                    'external_id' => 'admin_donny_123',
+                    'role'        => 'admin',
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->get('/oauth/callback?code=admin_ext_code_123');
+
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHas('error', 'Akun administratif wajib login menggunakan kredensial internal.');
+        $this->assertGuest();
     }
 
     public function test_sso_payload_with_admin_role_does_not_grant_admin_privileges(): void

@@ -157,10 +157,10 @@ class AssetBorrowingTest extends TestCase
         $borrowing->refresh();
         $this->assertEquals(BorrowingStatus::Approved, $borrowing->status);
 
-        // Tahap 3: Siswa & Admin melakukan serah terima fisik dengan foto kamera
+        // Tahap 3: Admin Mas Donny melakukan serah terima fisik dengan foto kamera
         $base64CheckoutPhoto = $this->createTestBase64Image();
 
-        $checkoutResponse = $this->actingAs($user)->post(route('borrowings.checkout', $borrowing), [
+        $checkoutResponse = $this->actingAs($admin)->post(route('admin.borrowings.checkout', $borrowing), [
             'borrowing_evidence' => $base64CheckoutPhoto,
         ]);
 
@@ -335,7 +335,7 @@ class AssetBorrowingTest extends TestCase
             'due_at' => now()->addDays(3),
         ]);
 
-        $response = $this->actingAs($siswa)->post(route('borrowings.checkout', $borrowing), [
+        $response = $this->actingAs($siswa)->post(route('admin.borrowings.checkout', $borrowing), [
             'borrowing_evidence' => $this->createTestBase64Image(),
         ]);
 
@@ -356,16 +356,17 @@ class AssetBorrowingTest extends TestCase
             'due_at' => now()->addDays(3),
         ]);
 
-        $response = $this->actingAs($siswaB)->post(route('borrowings.checkout', $borrowing), [
+        $response = $this->actingAs($siswaB)->post(route('admin.borrowings.checkout', $borrowing), [
             'borrowing_evidence' => $this->createTestBase64Image(),
         ]);
 
         $response->assertStatus(403);
     }
 
-    public function test_guru_can_checkout_own_approved_borrowing(): void
+    public function test_guru_cannot_checkout_without_admin_and_admin_can_checkout(): void
     {
         Storage::fake('public');
+        $admin = $this->createAdmin();
         $guru = $this->createGuru();
         $asset = Asset::first();
         $asset->update(['availability_status' => AssetAvailabilityStatus::Dipesan]);
@@ -378,7 +379,12 @@ class AssetBorrowingTest extends TestCase
             'due_at' => now()->addDays(3),
         ]);
 
-        $response = $this->actingAs($guru)->post(route('borrowings.checkout', $borrowing), [
+        $forbiddenResponse = $this->actingAs($guru)->post(route('admin.borrowings.checkout', $borrowing), [
+            'borrowing_evidence' => $this->createTestBase64Image(),
+        ]);
+        $forbiddenResponse->assertStatus(403);
+
+        $response = $this->actingAs($admin)->post(route('admin.borrowings.checkout', $borrowing), [
             'borrowing_evidence' => $this->createTestBase64Image(),
         ]);
 
@@ -557,7 +563,7 @@ class AssetBorrowingTest extends TestCase
         $asset->refresh();
 
         $this->assertEquals(BorrowingStatus::Rejected, $borrowing->status);
-        $this->assertEquals('Pemesanan hangus otomatis: Peminjam tidak menemui Mas Donny di ruang TEFA dalam batas waktu 10 menit.', $borrowing->rejection_reason);
+        $this->assertEquals('Kedaluwarsa: Batas waktu serah terima terlewati.', $borrowing->rejection_reason);
         $this->assertEquals(AssetAvailabilityStatus::Tersedia, $asset->availability_status);
     }
 

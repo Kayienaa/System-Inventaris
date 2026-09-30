@@ -295,8 +295,7 @@ class BorrowingController extends Controller
     {
         $this->authorize('checkout', $borrowing);
 
-        $evidencePath = $this->storeEvidenceImage($request, 'borrowing_evidence', 'borrowing-evidence')
-            ?? $request->input('borrowing_evidence_path');
+        $evidencePath = $this->storeEvidenceImage($request, 'borrowing_evidence', 'borrowing-evidence');
 
         $old = $borrowing->getAttributes();
         $result = $action->execute(
@@ -313,7 +312,7 @@ class BorrowingController extends Controller
     public function submitReturn(SubmitReturnRequest $request, Borrowing $borrowing, SubmitReturnAction $action, AuditLogService $audit): BorrowingResource
     {
         $evidencePath = $this->storeEvidenceImage($request, 'return_evidence', 'return-evidence')
-            ?? $request->input('return_evidence_path');
+            ?? $this->storeEvidenceImage($request, 'borrowing_evidence', 'return-evidence');
 
         $old = $borrowing->getAttributes();
         $result = $action->execute($request->user(), $borrowing, (string) $evidencePath, $request->input('return_note'));

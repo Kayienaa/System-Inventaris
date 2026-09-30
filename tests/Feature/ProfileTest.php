@@ -96,4 +96,23 @@ class ProfileTest extends TestCase
 
         $this->assertNotNull($user->fresh());
     }
+
+    public function test_admin_cannot_delete_their_account(): void
+    {
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $response = $this
+            ->actingAs($admin)
+            ->delete('/profile', [
+                'password' => 'password',
+            ]);
+
+        $response
+            ->assertRedirect(route('profile.edit'))
+            ->assertSessionHas('error');
+
+        $this->assertNotNull($admin->fresh());
+    }
 }

@@ -17,7 +17,7 @@ class SubmitReturnAction
     {
         $this->authorize($actor, 'submitReturn', $borrowing);
 
-        return DB::transaction(function () use ($borrowing, $evidencePath, $returnNote): Borrowing {
+        return DB::transaction(function () use ($actor, $borrowing, $evidencePath, $returnNote): Borrowing {
             $locked = Borrowing::query()->lockForUpdate()->find($borrowing->id);
 
             if ($locked === null || $locked->status !== BorrowingStatus::Borrowed) {

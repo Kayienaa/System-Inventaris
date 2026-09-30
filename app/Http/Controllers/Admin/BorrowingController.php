@@ -30,7 +30,7 @@ class BorrowingController extends Controller
         ]);
 
         // Filter status: all, pending, delay, approved, borrowed, return_pending_verification, returned, rejected, overdue
-        if ($request->filled('status')) {
+        if ($request->filled('status') && $request->input('status') !== 'all') {
             $status = $request->input('status');
             if ($status === 'overdue') {
                 $query->whereIn('status', [BorrowingStatus::Borrowed, BorrowingStatus::ReturnPendingVerification])
@@ -83,11 +83,9 @@ class BorrowingController extends Controller
             });
         }
 
-        // Urutkan antrean peminjaman: Prioritas Guru Mengajar -> Kebutuhan Mendesak -> Siswa/Reguler (FIFO berdasarkan created_at)
+        // Urutkan transaksi terbaru selalu di posisi paling atas secara tegas (latest id)
         $borrowings = $query
-            ->orderByDesc('is_teacher_priority')
-            ->orderByRaw("CASE WHEN urgency_level = 'mendesak' THEN 1 ELSE 2 END")
-            ->orderBy('created_at', 'asc')
+            ->latest('id')
             ->paginate(10)
             ->withQueryString();
 

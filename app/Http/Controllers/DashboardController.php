@@ -34,15 +34,12 @@ class DashboardController extends Controller
     private function analyticsData(): array
     {
         $sipintuSummary = null;
-        try {
-            $sipintuSummary = $this->sipintu->getDashboardSummary();
-        } catch (\Throwable $e) {
-            $sipintuSummary = [
-                'is_connected' => false,
-                'gateway_status' => 'offline',
-                'total_students' => 0,
-                'total_teachers' => 0,
-            ];
+        if (auth()->user()?->hasRole('super_admin')) {
+            try {
+                $sipintuSummary = $this->sipintu->getDashboardSummary();
+            } catch (\Throwable) {
+                $sipintuSummary = ['is_connected' => false, 'gateway_status' => 'offline', 'total_students' => null, 'total_teachers' => null];
+            }
         }
 
         // Periode Minggu Berjalan (Senin s.d. Minggu)

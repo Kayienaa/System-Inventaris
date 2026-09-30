@@ -39,7 +39,7 @@ class BorrowingPolicy
             ? $borrowing->status
             : BorrowingStatus::tryFrom((string) $borrowing->status);
 
-        if ($statusValue !== BorrowingStatus::Pending) {
+        if (! in_array($statusValue, [BorrowingStatus::Pending, BorrowingStatus::Delay], true)) {
             return false;
         }
 
@@ -48,22 +48,10 @@ class BorrowingPolicy
 
     public function checkout(User $user, Borrowing $borrowing): bool
     {
-        $statusValue = $borrowing->status instanceof BorrowingStatus
-            ? $borrowing->status->value
-            : (string) $borrowing->status;
+        $status = $borrowing->status instanceof BorrowingStatus ? $borrowing->status : BorrowingStatus::tryFrom((string) $borrowing->status);
 
-        // Transaksi serah terima fisik hanya diizinkan jika sudah disetujui (approved)
-        if ($statusValue !== 'approved') {
-            return false;
-        }
-
-        // Admin & Super Admin diizinkan melakukan konfirmasi serah terima transaksi approved
-        if ($user->hasAnyRole(['super_admin', 'admin'])) {
-            return true;
-        }
-
-        // Siswa dan Guru diizinkan jika transaksi milik mereka sendiri
-        return $this->owns($user, $borrowing);
+        return $status === BorrowingStatus::Approved
+            && $user->hasAnyRole(['super_admin', 'admin']);
     }
 
     public function update(User $user, Borrowing $borrowing): bool

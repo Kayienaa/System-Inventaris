@@ -67,9 +67,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/peminjaman/riwayat', [BorrowingController::class, 'webMine'])->name('borrowings.mine');
     Route::get('/borrowings/mine', [BorrowingController::class, 'webMine']);
 
-    Route::post('/borrowings/{borrowing}/checkout', [BorrowingController::class, 'webCheckout'])
-        ->name('borrowings.checkout');
-
     Route::post('/borrowings/{borrowing}/return-request', [BorrowingController::class, 'requestReturn'])
         ->name('borrowings.return-request');
 
@@ -102,6 +99,7 @@ Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->group(fu
     Route::get('/borrowings/{borrowing}', [\App\Http\Controllers\Admin\BorrowingController::class, 'show'])->whereNumber('borrowing')->name('admin.borrowings.show');
 
     // Aksi Persetujuan & Verifikasi Fisik oleh Admin / Super Admin
+    Route::post('/borrowings/{borrowing}/checkout', [BorrowingController::class, 'webCheckout'])->name('admin.borrowings.checkout');
     Route::post('/borrowings/{borrowing}/approve', [BorrowingController::class, 'webApprove'])->name('admin.borrowings.approve');
     Route::post('/borrowings/{borrowing}/reject', [BorrowingController::class, 'webReject'])->name('admin.borrowings.reject');
     Route::post('/borrowings/{borrowing}/verify-return', [BorrowingController::class, 'webVerifyReturn'])->name('admin.borrowings.verify-return');

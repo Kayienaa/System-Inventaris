@@ -65,9 +65,7 @@ class SiPintuService
         }
 
         try {
-            $response = $this->client(8)->get('/api/v1/ping', [
-                'client_id' => $this->clientId,
-            ]);
+            $response = $this->client(3)->connectTimeout(2)->get('/api/v1/ping', ['client_id' => $this->clientId]);
 
             if ($response->successful()) {
                 $result = [
@@ -86,17 +84,17 @@ class SiPintuService
             $this->safeCachePut($cacheKey, $result, 30);
             return $result;
         } catch (ConnectionException $e) {
-            return [
-                'connected' => false,
-                'error'     => 'Connection failed',
-                'message'   => 'Tidak dapat terhubung ke SiPintu Gateway: ' . $e->getMessage(),
-            ];
+            $result = ['connected' => false, 'error' => 'Connection failed', 'message' => 'Gateway tidak dapat dihubungi.'];
+            $this->safeCachePut($cacheKey, $result, 60);
+            return $result;
         } catch (\Throwable $e) {
-            return [
+            $result = [
                 'connected' => false,
                 'error'     => 'Exception',
                 'message'   => $e->getMessage(),
             ];
+            $this->safeCachePut($cacheKey, $result, 60);
+            return $result;
         }
     }
 

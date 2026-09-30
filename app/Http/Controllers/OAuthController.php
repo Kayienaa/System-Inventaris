@@ -142,15 +142,12 @@ class OAuthController extends Controller
         }
 
         if (! $user && $email !== '') {
-            $candidate = User::where('email', $email)->first();
+            $user = User::where('email', $email)->first();
+        }
 
-            if ($candidate && $candidate->hasAnyRole(['admin', 'super_admin'])) {
-                Log::warning("SSO link attempt blocked: external_id={$externalId} mencoba klaim email admin {$email}");
-
-                return redirect()->route('login')->with('error', 'Akun ini tidak dapat ditautkan otomatis via SSO. Hubungi administrator.');
-            }
-
-            $user = $candidate;
+        if ($user?->hasAnyRole(['admin', 'super_admin'])) {
+            Log::warning("SSO ditolak untuk akun staf administratif user_id={$user->id}");
+            return redirect()->route('login')->with('error', 'Akun administratif wajib login menggunakan kredensial internal.');
         }
 
         // Kunci External ID: Jika akun ditemukan tapi sipintu_external_id sudah terisi dengan ID lain, tolak login

@@ -73,17 +73,16 @@ class ImageCompressionTest extends TestCase
         $this->assertLessThanOrEqual(1280, $imageInfo[0]);
     }
 
-    public function test_corrupted_base64_returns_null_and_does_not_store_file(): void
+    public function test_corrupted_base64_throws_validation_exception_and_does_not_store_file(): void
     {
         Storage::fake('public');
 
         $corruptedBase64 = 'data:image/jpeg;base64,invalid-not-a-real-image-payload';
 
-        $service = app(ImageCompressionService::class);
-        $path = $service->compressAndStoreBase64($corruptedBase64, 'test-evidence');
+        $this->expectException(\Illuminate\Validation\ValidationException::class);
 
-        $this->assertNull($path);
-        $this->assertEmpty(Storage::disk('public')->allFiles());
+        $service = app(ImageCompressionService::class);
+        $service->compressAndStoreBase64($corruptedBase64, 'test-evidence');
     }
 
     public function test_uploaded_webp_image_is_compressed_and_stored_as_webp(): void
@@ -116,26 +115,24 @@ class ImageCompressionTest extends TestCase
         @unlink($tmpFile);
     }
 
-    public function test_base64_payload_exceeding_8mb_is_rejected(): void
+    public function test_base64_payload_exceeding_7mb_is_rejected(): void
     {
         Storage::fake('public');
 
-        // Simulasi string binary melebihi 8MB
-        $hugePayload = str_repeat('A', (8 * 1024 * 1024) + 10);
-        $service = app(ImageCompressionService::class);
-        $path = $service->compressAndStoreBase64($hugePayload, 'evidence');
+        // Simulasi string payload melebihi 7MB
+        $hugePayload = 'data:image/jpeg;base64,' . str_repeat('A', 7_000_005);
+        $this->expectException(\Illuminate\Validation\ValidationException::class);
 
-        $this->assertNull($path);
-        $this->assertEmpty(Storage::disk('public')->allFiles());
+        $service = app(ImageCompressionService::class);
+        $service->compressAndStoreBase64($hugePayload, 'evidence');
     }
 
-    public function test_base64_image_with_unreasonable_dimensions_exceeding_6000px_is_rejected(): void
+    public function test_base64_image_with_unreasonable_dimensions_exceeding_max_pixels_is_rejected(): void
     {
         Storage::fake('public');
 
-        // Header image JPEG dengan dimensi 6001x100
-        // Buat GD image 6001 x 100
-        $gdImage = imagecreatetruecolor(6001, 100);
+        // 3500 x 3500 = 12,250,000 px (> 12 MP)
+        $gdImage = imagecreatetruecolor(3500, 3500);
         ob_start();
         imagejpeg($gdImage, null, 50);
         $jpegData = ob_get_clean();
@@ -143,10 +140,9 @@ class ImageCompressionTest extends TestCase
 
         $base64 = 'data:image/jpeg;base64,' . base64_encode($jpegData);
 
-        $service = app(ImageCompressionService::class);
-        $path = $service->compressAndStoreBase64($base64, 'evidence');
+        $this->expectException(\Illuminate\Validation\ValidationException::class);
 
-        $this->assertNull($path);
-        $this->assertEmpty(Storage::disk('public')->allFiles());
+        $service = app(ImageCompressionService::class);
+        $service->compressAndStoreBase64($base64, 'evidence');
     }
 }

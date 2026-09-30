@@ -78,6 +78,11 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        if ($request->user()->hasAnyRole(['admin', 'super_admin'])) {
+            return Redirect::route('profile.edit')
+                ->with('error', 'Akun administratif tidak dapat dihapus secara mandiri.');
+        }
+
         if ($request->user()->hasAnyRole(['guru', 'siswa'])) {
             return Redirect::route('profile.edit')
                 ->with('error', 'Akun Anda dikelola secara terpusat melalui SiPintu.');

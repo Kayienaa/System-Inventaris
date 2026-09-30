@@ -7,10 +7,15 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Intervention\Image\Laravel\Facades\Image;
 
 class ImageCompressionService
 {
+    private const ALLOWED_TYPES = [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP];
+    private const MAX_PIXELS = 12_000_000;      // 12 MP
+    private const MAX_BYTES  = 5 * 1024 * 1024; // 5 MB
+
     public const MAX_WIDTH = 1280;        // Maksimal dimensi foto (px)
     public const TARGET_MAX_KB = 200;      // Batas atas ukuran file (200 KB)
     public const TARGET_MIN_KB = 100;      // Batas bawah rekomendasi (100 KB)
@@ -18,12 +23,32 @@ class ImageCompressionService
     public const MIN_QUALITY = 65;         // Batas bawah rentang kualitas kompresi standar (65 - 75)
     public const DEFAULT_QUALITY = 75;     // Level kompresi standar awal
 
+    private function fail(string $msg): never
+    {
+        throw ValidationException::withMessages(['evidence' => $msg]);
+    }
+
+    private function assertSafe(array|false $info, int $bytes): void
+    {
+        if ($bytes > self::MAX_BYTES) {
+            $this->fail('Ukuran foto maksimal 5 MB.');
+        }
+        if ($info === false || ! in_array($info[2], self::ALLOWED_TYPES, true)) {
+            $this->fail('File harus berupa foto JPG, PNG, atau WEBP.');
+        }
+        if ($info[0] * $info[1] > self::MAX_PIXELS) {
+            $this->fail('Resolusi foto terlalu besar.');
+        }
+    }
+
     /**
      * Resize + kompres foto UploadedFile agar ukurannya konsisten di rentang 100 KB – 200 KB.
      * Mengembalikan path relatif untuk disimpan di kolom database.
      */
     public function compressAndStore(UploadedFile $file, string $folder = 'uploads'): string
     {
+        $this->assertSafe(@getimagesize($file->getRealPath()), $file->getSize());
+
         try {
             if (extension_loaded('gd') || extension_loaded('imagick')) {
                 $image = Image::decode($file->getRealPath());
@@ -53,79 +78,69 @@ class ImageCompressionService
 
                 return $filename;
             }
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (\Throwable $e) {
-            // Fallback ke penyimpanan default jika proses kompresi terkendala driver / format
             Log::warning('Gagal kompresi file upload pada ImageCompressionService: ' . $e->getMessage());
+            $this->fail('Gagal memproses file foto.');
         }
 
-        return $file->store($folder, 'public');
+        $this->fail('Driver pemrosesan gambar tidak tersedia.');
     }
 
     /**
      * Resize + kompres data foto Base64 Data URL atau binary string agar konsisten di rentang 100 KB – 200 KB.
      */
-    public function compressAndStoreBase64(string $base64OrBinary, string $folder = 'evidence'): ?string
+    public function compressAndStoreBase64(string $dataUrl, string $folder = 'evidence'): ?string
     {
-        $data = $base64OrBinary;
-        $format = 'jpg';
-
-        if (str_starts_with($base64OrBinary, 'data:image/')) {
-            @[$header, $payload] = explode(';', $base64OrBinary, 2);
-            @[, $payload] = explode(',', $payload, 2);
-            if ($payload) {
-                $decoded = base64_decode($payload);
-                if ($decoded === false) {
-                    return null;
-                }
-                $data = $decoded;
-            }
-            if (str_contains($header, 'webp')) {
-                $format = 'webp';
-            }
+        if (! preg_match('#^data:image/(jpeg|png|webp);base64,#', $dataUrl, $m)) {
+            $this->fail('Format foto kamera tidak valid.');
         }
+        $encoded = substr($dataUrl, strlen($m[0]));
+        if (strlen($encoded) > 7_000_000) {
+            $this->fail('Foto terlalu besar.');
+        }
+        $binary = base64_decode($encoded, true);
+        if ($binary === false) {
+            $this->fail('Data foto rusak.');
+        }
+        $this->assertSafe(@getimagesizefromstring($binary), strlen($binary));
+
+        $format = ($m[1] === 'webp') ? 'webp' : 'jpg';
 
         try {
             if (extension_loaded('gd') || extension_loaded('imagick')) {
-                if (strlen($data) > 8 * 1024 * 1024) {
-                    Log::warning('Payload evidence melebihi batas aman.');
-                    return null;
-                }
-
-                $dimensions = @getimagesizefromstring($data);
-                if ($dimensions === false || $dimensions[0] > 6000 || $dimensions[1] > 6000) {
-                    Log::warning('Dimensi gambar evidence tidak wajar, ditolak sebelum decode.');
-                    return null;
-                }
-
-                $image = Image::decode($data);
+                $image = Image::decode($binary);
                 $image->scaleDown(width: self::MAX_WIDTH, height: self::MAX_WIDTH);
 
                 // Iterasi kompresi bertahap antara 75 turun ke 65
                 $quality = self::MAX_QUALITY; // 75
-                $encoded = $image->encodeUsingFileExtension($format, quality: $quality);
+                $encodedImg = $image->encodeUsingFileExtension($format, quality: $quality);
 
-                while (strlen((string) $encoded) > (self::TARGET_MAX_KB * 1024) && $quality > self::MIN_QUALITY) {
+                while (strlen((string) $encodedImg) > (self::TARGET_MAX_KB * 1024) && $quality > self::MIN_QUALITY) {
                     $quality -= 2;
-                    $encoded = $image->encodeUsingFileExtension($format, quality: $quality);
+                    $encodedImg = $image->encodeUsingFileExtension($format, quality: $quality);
                 }
 
-                while (strlen((string) $encoded) > (self::TARGET_MAX_KB * 1024) && $quality > 40) {
+                while (strlen((string) $encodedImg) > (self::TARGET_MAX_KB * 1024) && $quality > 40) {
                     $quality -= 5;
-                    $encoded = $image->encodeUsingFileExtension($format, quality: $quality);
+                    $encodedImg = $image->encodeUsingFileExtension($format, quality: $quality);
                 }
 
                 $ext = ($format === 'webp') ? 'webp' : 'jpg';
                 $finalFilename = $folder . '/' . now()->format('Ymd_His') . '_' . Str::random(8) . '.' . $ext;
-                Storage::disk('public')->put($finalFilename, (string) $encoded);
+                Storage::disk('public')->put($finalFilename, (string) $encodedImg);
 
                 return $finalFilename;
             }
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             Log::warning('Gagal decode gambar base64 pada ImageCompressionService: ' . $e->getMessage());
-            return null;
+            $this->fail('Gagal memproses foto kamera.');
         }
 
-        return null;
+        $this->fail('Driver pemrosesan gambar tidak tersedia.');
     }
 
     /**

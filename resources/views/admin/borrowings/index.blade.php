@@ -165,6 +165,7 @@
                 >
                     <option value="">Semua Status Transaksi</option>
                     <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Menunggu Persetujuan</option>
+                    <option value="delay" {{ request('status') === 'delay' ? 'selected' : '' }}>Dalam Antrean (Delay)</option>
                     <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Disetujui</option>
                     <option value="borrowed" {{ request('status') === 'borrowed' ? 'selected' : '' }}>Sedang Dipinjam</option>
                     <option value="return_pending_verification" {{ request('status') === 'return_pending_verification' ? 'selected' : '' }}>Menunggu Verifikasi</option>

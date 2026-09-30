@@ -2,7 +2,6 @@
 
 namespace App\Actions\Borrowings;
 
-use App\Enums\AssetAvailabilityStatus;
 use App\Enums\BorrowingStatus;
 use App\Models\Asset;
 use App\Models\Borrowing;
@@ -10,14 +9,20 @@ use Illuminate\Support\Facades\DB;
 
 class CancelExpiredBorrowingsAction
 {
+    public function __construct(
+        protected ?PromoteNextQueuedBorrowingAction $promote = null,
+    ) {
+        $this->promote = $this->promote ?? app(PromoteNextQueuedBorrowingAction::class);
+    }
+
     /**
-     * Cari dan hanguskan pengajuan peminjaman berstatus pending yang melewati batas waktu expires_at (10 menit).
+     * Cari dan hanguskan pengajuan peminjaman berstatus pending atau approved yang melewati batas waktu expires_at.
      */
     public function execute(): int
     {
         $expiredBorrowings = Borrowing::query()
             ->with(['asset', 'borrower'])
-            ->where('status', BorrowingStatus::Pending)
+            ->whereIn('status', [BorrowingStatus::Pending, BorrowingStatus::Approved])
             ->whereNotNull('expires_at')
             ->where('expires_at', '<=', now())
             ->get();
@@ -30,43 +35,22 @@ class CancelExpiredBorrowingsAction
 
         foreach ($expiredBorrowings as $borrowing) {
             DB::transaction(function () use ($borrowing, &$processedCount): void {
-                /** @var Borrowing|null $locked */
-                $locked = Borrowing::query()->lockForUpdate()->find($borrowing->id);
+                $lockedAsset = Asset::withTrashed()->lockForUpdate()->find($borrowing->asset_id);
+                $locked      = Borrowing::query()->lockForUpdate()->find($borrowing->id);
 
-                if ($locked === null || $locked->status !== BorrowingStatus::Pending) {
+                if ($locked === null || ! in_array($locked->status, [BorrowingStatus::Pending, BorrowingStatus::Approved], true)) {
                     return;
                 }
 
                 $locked->update([
                     'status' => BorrowingStatus::Rejected,
-                    'rejection_reason' => 'Pemesanan hangus otomatis: Peminjam tidak menemui Mas Donny di ruang TEFA dalam batas waktu 10 menit.',
+                    'rejection_reason' => 'Kedaluwarsa: Batas waktu serah terima terlewati.',
                     'rejected_at' => now(),
                     'due_at' => now(),
                 ]);
 
-                $lockedAsset = Asset::query()->lockForUpdate()->find($locked->asset_id);
-
-                if ($lockedAsset !== null) {
-                    // Cek apakah ada antrean tertahan (delay) untuk aset ini
-                    $nextQueue = Borrowing::query()
-                        ->where('asset_id', $lockedAsset->id)
-                        ->where('status', BorrowingStatus::Delay)
-                        ->orderByDesc('is_teacher_priority')
-                        ->orderByRaw("CASE WHEN urgency_level = 'mendesak' THEN 1 ELSE 2 END")
-                        ->orderBy('created_at', 'asc')
-                        ->first();
-
-                    if ($nextQueue !== null) {
-                        $nextQueue->update([
-                            'status' => BorrowingStatus::Pending,
-                            'expires_at' => now()->addMinutes(10),
-                        ]);
-                        // Aset tetap Dipesan untuk peminjam antrean berikutnya
-                        $lockedAsset->update(['availability_status' => AssetAvailabilityStatus::Dipesan]);
-                    } else {
-                        // Tidak ada antrean, kembalikan unit aset ke 'tersedia'
-                        $lockedAsset->update(['availability_status' => AssetAvailabilityStatus::Tersedia]);
-                    }
+                if ($lockedAsset) {
+                    $this->promote->execute($lockedAsset);
                 }
 
                 \App\Models\AdminNotification::create([

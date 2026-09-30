@@ -17,8 +17,8 @@ class CheckoutBorrowingRequest extends FormRequest
     {
         return [
             'checkout_condition' => ['nullable', Rule::enum(AssetCondition::class)],
-            'borrowing_evidence' => ['nullable'],
-            'borrowing_evidence_path' => ['nullable', 'string'],
+            'borrowing_evidence' => ['nullable', 'string', 'max:7000000'],
+            'borrowing_evidence_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];
     }
 

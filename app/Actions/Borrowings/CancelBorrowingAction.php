@@ -2,9 +2,7 @@
 
 namespace App\Actions\Borrowings;
 
-use App\Enums\AssetAvailabilityStatus;
 use App\Enums\BorrowingStatus;
-use App\Exceptions\AssetUnavailableException;
 use App\Exceptions\BorrowingStateException;
 use App\Models\Asset;
 use App\Models\Borrowing;
@@ -15,6 +13,12 @@ class CancelBorrowingAction
 {
     use AuthorizesBorrowingActions;
 
+    public function __construct(
+        protected ?PromoteNextQueuedBorrowingAction $promote = null,
+    ) {
+        $this->promote = $this->promote ?? app(PromoteNextQueuedBorrowingAction::class);
+    }
+
     public function execute(User $actor, Borrowing $borrowing, ?string $reason = null): Borrowing
     {
         $this->authorize($actor, 'cancel', $borrowing);
@@ -23,10 +27,11 @@ class CancelBorrowingAction
             $asset = Asset::withTrashed()->lockForUpdate()->find($borrowing->asset_id);
             $lockedBorrowing = Borrowing::query()->lockForUpdate()->find($borrowing->id);
 
-            if ($lockedBorrowing === null || $lockedBorrowing->status !== BorrowingStatus::Pending) {
-                throw new BorrowingStateException('Only pending borrowings can be cancelled.');
+            if ($lockedBorrowing === null || ! in_array($lockedBorrowing->status, [BorrowingStatus::Pending, BorrowingStatus::Delay], true)) {
+                throw new BorrowingStateException('Only pending or queued (delay) borrowings can be cancelled.');
             }
 
+            $holdsAsset = ($lockedBorrowing->status === BorrowingStatus::Pending);
             $reasonText = $reason ?: 'Dibatalkan oleh peminjam';
 
             $lockedBorrowing->update([
@@ -40,7 +45,9 @@ class CancelBorrowingAction
                 'due_at' => now(),
             ]);
 
-            $asset?->update(['availability_status' => AssetAvailabilityStatus::Tersedia]);
+            if ($holdsAsset && $asset) {
+                $this->promote->execute($asset);
+            }
 
             return $lockedBorrowing->fresh();
         });

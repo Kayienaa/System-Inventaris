@@ -1,8 +1,10 @@
 <?php
 
+use App\Exceptions\{AssetUnavailableException, BorrowingConcurrencyException, BorrowingStateException, UnauthorizedBorrowingActionException};
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -30,5 +32,19 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (BorrowingStateException|AssetUnavailableException|BorrowingConcurrencyException $e, Request $request) {
+            $message = match (true) {
+                $e instanceof BorrowingStateException   => 'Status peminjaman sudah berubah. Muat ulang halaman.',
+                $e instanceof AssetUnavailableException => 'Unit ini sedang tidak tersedia.',
+                default                                  => 'Unit baru saja dipesan pengguna lain. Silakan coba lagi.',
+            };
+
+            return $request->expectsJson()
+                ? response()->json(['message' => $message], 409)
+                : back()->with('error', $message);
+        });
+
+        $exceptions->render(fn (UnauthorizedBorrowingActionException $e, Request $request) =>
+            $request->expectsJson() ? response()->json(['message' => 'Tindakan tidak diizinkan.'], 403) : abort(403)
+        );
     })->create();

@@ -14,6 +14,12 @@ class RejectBorrowingAction
 {
     use AuthorizesBorrowingActions;
 
+    public function __construct(
+        protected ?PromoteNextQueuedBorrowingAction $promote = null,
+    ) {
+        $this->promote = $this->promote ?? app(PromoteNextQueuedBorrowingAction::class);
+    }
+
     public function execute(User $admin, Borrowing $borrowing, string $reason): Borrowing
     {
         $this->authorize($admin, 'reject', $borrowing);
@@ -25,9 +31,11 @@ class RejectBorrowingAction
             $asset = Asset::withTrashed()->lockForUpdate()->find($borrowing->asset_id);
             $lockedBorrowing = Borrowing::query()->lockForUpdate()->find($borrowing->id);
 
-            if ($lockedBorrowing === null || $lockedBorrowing->status !== BorrowingStatus::Pending) {
-                throw new BorrowingStateException('Only pending borrowings can be rejected.');
+            if ($lockedBorrowing === null || ! in_array($lockedBorrowing->status, [BorrowingStatus::Pending, BorrowingStatus::Delay], true)) {
+                throw new BorrowingStateException('Only pending or queued (delay) borrowings can be rejected.');
             }
+
+            $holdsAsset = ($lockedBorrowing->status === BorrowingStatus::Pending);
 
             $lockedBorrowing->update([
                 'status' => BorrowingStatus::Rejected,
@@ -37,9 +45,9 @@ class RejectBorrowingAction
                 'due_at' => now(),
             ]);
 
-            $asset?->update([
-                'availability_status' => \App\Enums\AssetAvailabilityStatus::Tersedia,
-            ]);
+            if ($holdsAsset && $asset) {
+                $this->promote->execute($asset);
+            }
 
             return $lockedBorrowing->fresh();
         });
