@@ -67,6 +67,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/peminjaman/riwayat', [BorrowingController::class, 'webMine'])->name('borrowings.mine');
     Route::get('/borrowings/mine', [BorrowingController::class, 'webMine']);
 
+    Route::post('/borrowings/{borrowing}/checkout', [BorrowingController::class, 'webCheckout'])
+        ->name('borrowings.checkout');
+
     Route::post('/borrowings/{borrowing}/return-request', [BorrowingController::class, 'requestReturn'])
         ->name('borrowings.return-request');
 

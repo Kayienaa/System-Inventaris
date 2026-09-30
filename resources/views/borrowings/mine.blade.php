@@ -498,7 +498,9 @@
 
             </div>
         </div>
-    </    {{-- Modal Pengembalian Barang (Alur Fisik Tanpa Wajib Foto Kamera User) --}}
+    </template>
+
+    {{-- Modal Pengembalian Barang (Alur Fisik Tanpa Wajib Foto Kamera User) --}}
     <template x-teleport="body">
         <div
             x-show="modalOpen"

@@ -89,7 +89,7 @@ class BorrowingController extends Controller
         $audit->record($request->user(), 'borrowing.checked_out', $result, $oldAttributes, $result->getAttributes());
 
         return redirect()->route('borrowings.mine')
-            ->with('success', 'Serah terima barang berhasil! Status unit kini resmi "Dipinjam".');
+            ->with('success', 'Serah terima berhasil! Selamat menggunakan unit TEFA.');
     }
 
     /**

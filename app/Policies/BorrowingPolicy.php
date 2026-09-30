@@ -48,10 +48,12 @@ class BorrowingPolicy
 
     public function checkout(User $user, Borrowing $borrowing): bool
     {
-        $status = $borrowing->status instanceof BorrowingStatus ? $borrowing->status : BorrowingStatus::tryFrom((string) $borrowing->status);
+        $status = $borrowing->status instanceof BorrowingStatus 
+            ? $borrowing->status 
+            : BorrowingStatus::tryFrom((string) $borrowing->status);
 
         return $status === BorrowingStatus::Approved
-            && $user->hasAnyRole(['super_admin', 'admin']);
+            && ($user->id === $borrowing->borrower_user_id || $user->hasAnyRole(['admin', 'super_admin']));
     }
 
     public function update(User $user, Borrowing $borrowing): bool
