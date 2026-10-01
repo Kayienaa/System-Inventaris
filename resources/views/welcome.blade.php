@@ -10,6 +10,15 @@
     <link rel="icon" type="image/png" href="{{ asset('images/favicon-circle.png') }}">
     <link rel="shortcut icon" type="image/png" href="{{ asset('images/favicon-circle.png') }}">
 
+    {{-- Anti-Flicker & System Scheme Sync Script --}}
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!localStorage.getItem('color-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
     {{-- Google Fonts: Plus Jakarta Sans & Poppins --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -95,10 +104,31 @@
             background: #DCC7AF;
             flex: 1;
         }
+
+        html.dark body {
+            background: #0B0F17 !important;
+            color: #F3F4F6 !important;
+        }
+
+        html.dark .card {
+            background: #131B2A !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        html.dark .logo-box {
+            background: #1e293b !important;
+            border-color: #334155 !important;
+            color: #F59E0B !important;
+        }
+
+        html.dark .decor-line {
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
     </style>
 </head>
 
-<body class="font-sans antialiased" style="
+<body class="font-sans antialiased text-stone-800 dark:text-stone-100 transition-colors duration-300" style="
     min-height: 100vh;
     margin: 0;
     display: flex;
@@ -112,6 +142,19 @@
         radial-gradient(circle at 90% 80%, rgba(111, 74, 50, 0.08), transparent 30%),
         linear-gradient(145deg, #F5EFE7 0%, #FBF8F3 48%, #F2EAE0 100%);
 ">
+
+    <div class="fixed top-4 right-4 z-50">
+        <button id="theme-toggle" type="button" 
+                class="p-2 rounded-xl text-stone-500 hover:text-stone-900 bg-white/80 hover:bg-stone-200/80 dark:bg-stone-900/90 dark:text-neon-glowcyan dark:hover:text-neon-cyan dark:border dark:border-cyan-500/30 dark:shadow-neon-sm shadow-sm backdrop-blur transition-all duration-200"
+                title="Ubah Mode Tampilan">
+            <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5 text-stone-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+        </button>
+    </div>
 
     {{-- Dekorasi background --}}
     <div style="
@@ -293,5 +336,64 @@
 
     </div>
 
+    <script>
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+        function syncThemeIcons() {
+            if (document.documentElement.classList.contains('dark')) {
+                themeToggleLightIcon?.classList.remove('hidden');
+                themeToggleDarkIcon?.classList.add('hidden');
+            } else {
+                themeToggleDarkIcon?.classList.remove('hidden');
+                themeToggleLightIcon?.classList.add('hidden');
+            }
+        }
+        syncThemeIcons();
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+            }
+            syncThemeIcons();
+            window.dispatchEvent(new CustomEvent('theme-changed'));
+        }
+
+        themeToggleBtn?.addEventListener('click', toggleTheme);
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            // Hanya ikuti tema sistem jika pengguna BELUM menyetel pilihan manual di localStorage
+            if (!localStorage.getItem('color-theme')) {
+                if (e.matches) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+                if (typeof syncThemeIcons === 'function') {
+                    syncThemeIcons();
+                }
+                window.dispatchEvent(new CustomEvent('theme-changed'));
+            }
+        });
+
+        // Opsi Reset ke Bawaan Sistem (Fallback)
+        window.resetThemeToSystem = function() {
+            localStorage.removeItem('color-theme');
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            if (typeof syncThemeIcons === 'function') {
+                syncThemeIcons();
+            }
+            window.dispatchEvent(new CustomEvent('theme-changed'));
+        };
+    </script>
 </body>
 </html>

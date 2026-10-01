@@ -11,9 +11,9 @@
         <link rel="icon" type="image/png" href="{{ asset('images/favicon-circle.png') }}">
         <link rel="shortcut icon" type="image/png" href="{{ asset('images/favicon-circle.png') }}">
 
-        {{-- Anti-Flicker Script --}}
+        {{-- Anti-Flicker & System Scheme Sync Script --}}
         <script>
-            if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            if (localStorage.getItem('color-theme') === 'dark' || (!localStorage.getItem('color-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
             } else {
                 document.documentElement.classList.remove('dark');
@@ -70,7 +70,7 @@
             }
             syncThemeIcons();
 
-            themeToggleBtn?.addEventListener('click', function() {
+            function toggleTheme() {
                 if (document.documentElement.classList.contains('dark')) {
                     document.documentElement.classList.remove('dark');
                     localStorage.setItem('color-theme', 'light');
@@ -80,7 +80,38 @@
                 }
                 syncThemeIcons();
                 window.dispatchEvent(new CustomEvent('theme-changed'));
+            }
+
+            themeToggleBtn?.addEventListener('click', toggleTheme);
+
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                // Hanya ikuti tema sistem jika pengguna BELUM menyetel pilihan manual di localStorage
+                if (!localStorage.getItem('color-theme')) {
+                    if (e.matches) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                    if (typeof syncThemeIcons === 'function') {
+                        syncThemeIcons();
+                    }
+                    window.dispatchEvent(new CustomEvent('theme-changed'));
+                }
             });
+
+            // Opsi Reset ke Bawaan Sistem (Fallback)
+            window.resetThemeToSystem = function() {
+                localStorage.removeItem('color-theme');
+                if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+                if (typeof syncThemeIcons === 'function') {
+                    syncThemeIcons();
+                }
+                window.dispatchEvent(new CustomEvent('theme-changed'));
+            };
         </script>
     </body>
 </html>
