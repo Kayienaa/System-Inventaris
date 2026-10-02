@@ -31,11 +31,15 @@ Route::match(['get', 'post'], '/sipintu/sync-user', function (\Illuminate\Http\R
     }
 
     return $controller->syncUser($request);
-});
+})->middleware(['throttle:120,1', 'sipintu.signature']);
 
-Route::match(['get', 'post'], '/sipintu/sync-password', function () {
-    return response()->json(['status' => 'ok', 'message' => 'SiPintu password sync acknowledged'], 200);
-});
+Route::match(['get', 'post'], '/sipintu/sync-password', function (\Illuminate\Http\Request $request, \App\Http\Controllers\OAuthController $controller) {
+    if ($request->isMethod('get')) {
+        return response()->json(['status' => 'ok', 'message' => 'SiPintu password sync acknowledged'], 200);
+    }
+
+    return $controller->syncPassword($request);
+})->middleware(['throttle:120,1', 'sipintu.signature']);
 
 Route::get('/', function () {
     return view('welcome');

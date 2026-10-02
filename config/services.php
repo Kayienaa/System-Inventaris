@@ -36,11 +36,14 @@ return [
     ],
 
     'sipintu' => [
-        'base_url'      => env('SIPINTU_API_URL', 'http://localhost:8000'),
-        'client_id'     => env('SIPINTU_CLIENT_ID'),
-        'client_secret' => env('SIPINTU_CLIENT_SECRET'),
-        'portal_url'    => env('SIPINTU_PORTAL_URL', 'https://sipintu.smkn1bangsri.sch.id'),
-        'timeout'       => (int) env('SIPINTU_TIMEOUT', 30),
+        'base_url'             => env('SIPINTU_API_URL', env('SIPINTU_BASE_URL', 'https://sipintu.smkn1bangsri.sch.id')),
+        'client_id'            => env('SIPINTU_CLIENT_ID'),
+        'client_secret'        => env('SIPINTU_CLIENT_SECRET'),
+        'redirect_uri'         => env('SIPINTU_REDIRECT_URI'),
+        'portal_url'           => env('SIPINTU_PORTAL_URL', 'https://sipintu.smkn1bangsri.sch.id'),
+        'accept_password_hash' => (bool) env('SIPINTU_ACCEPT_PASSWORD_HASH', false),
+        'webhook_tolerance'    => 300,
+        'timeout'              => (int) env('SIPINTU_TIMEOUT', 30),
     ],
 
     'whatsapp' => [

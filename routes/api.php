@@ -11,21 +11,17 @@ use Illuminate\Support\Facades\Route;
 // Webhook Sinkronisasi Real-time Pengguna dari SiPintu Gateway
 Route::match(['get', 'post'], 'sipintu/sync-user', function (\Illuminate\Http\Request $request, \App\Http\Controllers\OAuthController $controller) {
     if ($request->isMethod('get')) {
-        return response()->json([
-            'status' => 'ok',
-            'message' => 'SiPintu webhook sync-user ready',
-        ], 200);
+        return response()->json(['status' => 'ok', 'message' => 'SiPintu webhook sync-user ready']);
     }
-
     return $controller->syncUser($request);
-})->middleware('throttle:30,1')->name('api.sipintu.sync-user');
+})->middleware(['throttle:120,1', 'sipintu.signature'])->name('api.sipintu.sync-user');
 
-Route::match(['get', 'post'], 'sipintu/sync-password', function (\Illuminate\Http\Request $request) {
-    return response()->json([
-        'status' => 'ok',
-        'message' => 'SiPintu password sync is acknowledged',
-    ], 200);
-})->middleware('throttle:30,1')->name('api.sipintu.sync-password');
+Route::match(['get', 'post'], 'sipintu/sync-password', function (\Illuminate\Http\Request $request, \App\Http\Controllers\OAuthController $controller) {
+    if ($request->isMethod('get')) {
+        return response()->json(['status' => 'ok', 'message' => 'SiPintu password sync is acknowledged']);
+    }
+    return $controller->syncPassword($request);
+})->middleware(['throttle:120,1', 'sipintu.signature'])->name('api.sipintu.sync-password');
 
 Route::middleware('auth')->group(function (): void {
     Route::get('assets', [AssetController::class, 'index'])->middleware('permission:assets.view');

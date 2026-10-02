@@ -18,13 +18,172 @@ class SiPintuService
 
     public function __construct()
     {
-        $this->baseUrl = rtrim(env('SIPINTU_BASE_URL', config('services.sipintu.base_url', config('sipintu.api_url', 'http://sipintu.smkn1bangsri.sch.id'))), '/');
-        $this->clientId = config('sipintu.client_id', config('services.sipintu.client_id'));
-        $this->clientSecret = config('sipintu.client_secret', config('services.sipintu.client_secret'));
+        $this->baseUrl = rtrim(env('SIPINTU_BASE_URL', env('SIPINTU_API_URL', config('services.sipintu.base_url', config('sipintu.api_url', 'https://sipintu.smkn1bangsri.sch.id')))), '/');
+        $this->clientId = config('services.sipintu.client_id') ?: config('sipintu.client_id');
+        $this->clientSecret = config('services.sipintu.client_secret') ?: config('sipintu.client_secret');
         $this->timeout = (int) config('sipintu.timeout', 60);
         $this->connectTimeout = (int) config('sipintu.connect_timeout', 10);
         $this->cacheTtl = (int) config('sipintu.cache_ttl', 1800);
     }
+
+    /**
+     * Menghasilkan URL otorisasi SSO dengan PKCE S256 (code_challenge & code_challenge_method=S256).
+     */
+    public function authorizeUrl(?string $state = null, ?string $codeVerifier = null): string
+    {
+        $redirectUri = config('services.sipintu.redirect_uri')
+            ?: config('sipintu.redirect_uri', url('/oauth/callback'));
+
+        $params = [
+            'client_id'     => $this->clientId,
+            'redirect_uri'  => $redirectUri,
+            'response_type' => 'code',
+            'scope'         => '',
+        ];
+
+        if ($state !== null && $state !== '') {
+            $params['state'] = $state;
+        }
+
+        if ($codeVerifier !== null && $codeVerifier !== '') {
+            $hash = hash('sha256', $codeVerifier, true);
+            $codeChallenge = rtrim(strtr(base64_encode($hash), '+/', '-_'), '=');
+            $params['code_challenge'] = $codeChallenge;
+            $params['code_challenge_method'] = 'S256';
+        }
+
+        return "{$this->baseUrl}/oauth/authorize?" . http_build_query($params);
+    }
+
+    /**
+     * Menukar authorization code dengan access token via POST ke /oauth/token.
+     */
+    public function exchangeCode(string $code, ?string $codeVerifier = null): ?array
+    {
+        $redirectUri = config('services.sipintu.redirect_uri')
+            ?: config('sipintu.redirect_uri', url('/oauth/callback'));
+
+        $payload = [
+            'grant_type'    => 'authorization_code',
+            'client_id'     => $this->clientId,
+            'client_secret' => $this->clientSecret,
+            'redirect_uri'  => $redirectUri,
+            'code'          => $code,
+        ];
+
+        if ($codeVerifier !== null && $codeVerifier !== '') {
+            $payload['code_verifier'] = $codeVerifier;
+        }
+
+        try {
+            $response = Http::asForm()->acceptJson()->post("{$this->baseUrl}/oauth/token", $payload);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::warning('SiPintu SSO Token Exchange Failed: ' . $response->body());
+            return null;
+        } catch (\Throwable $e) {
+            Log::error('SiPintu SSO Token Exchange Exception: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Mengambil profil dari /api/v1/user, dan HAPUS (unset) atribut password serta password_hash dari payload.
+     */
+    public function fetchUser(string $accessToken): ?array
+    {
+        try {
+            $response = Http::withToken($accessToken)
+                ->acceptJson()
+                ->get("{$this->baseUrl}/api/v1/user");
+
+            if (! $response->successful()) {
+                Log::warning('SiPintu SSO User Fetch Failed: ' . $response->body());
+                return null;
+            }
+
+            $data = $response->json('data') ?? $response->json();
+
+            if (! is_array($data)) {
+                return null;
+            }
+
+            unset($data['password'], $data['password_hash']);
+            if (isset($data['user']) && is_array($data['user'])) {
+                unset($data['user']['password'], $data['user']['password_hash']);
+            }
+
+            return $data;
+        } catch (\Throwable $e) {
+            Log::error('SiPintu SSO Get User Exception: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Menembak POST ke /api/v1/auth/verify-credentials untuk fallback verifikasi login lokal siswa/guru tanpa menyimpan hash.
+     */
+    public function verifyCredentials(string $identity, string $password): ?array
+    {
+        try {
+            $response = Http::baseUrl($this->baseUrl)
+                ->acceptJson()
+                ->timeout($this->timeout)
+                ->post('/api/v1/auth/verify-credentials', [
+                    'client_id'     => $this->clientId,
+                    'client_secret' => $this->clientSecret,
+                    'identity'      => $identity,
+                    'password'      => $password,
+                ]);
+
+            if ($response->successful()) {
+                $user = $response->json('data') ?? $response->json('user') ?? $response->json();
+                if (is_array($user)) {
+                    unset($user['password'], $user['password_hash']);
+                    return $user;
+                }
+                return ['verified' => true];
+            }
+
+            return null;
+        } catch (\Throwable $e) {
+            Log::error('SiPintu verifyCredentials error: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Whitelist role strictly:
+     * - Jika terdapat kata 'admin' pada role eksternal -> RETURN NULL (tolak).
+     * - Map 'teacher'/'guru' -> 'guru'.
+     * - Map 'student'/'siswa' -> 'siswa'.
+     * - Selain itu -> null.
+     */
+    public function localRole(array $sipintuUser): ?string
+    {
+        $role = strtolower(trim((string) (
+            $sipintuUser['role'] 
+            ?? ($sipintuUser['user']['role'] ?? '')
+        )));
+
+        if ($role === '' || str_contains($role, 'admin')) {
+            return null;
+        }
+
+        if (in_array($role, ['teacher', 'guru', 'pengajar'])) {
+            return 'guru';
+        }
+
+        if (in_array($role, ['student', 'siswa'])) {
+            return 'siswa';
+        }
+
+        return null;
+    }
+
 
     /**
      * Cache store dedicated for SiPintu (uses 'file' to avoid MySQL max_allowed_packet limit).

@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'phone.filled' => \App\Http\Middleware\EnsurePhoneIsFilled::class,
+            'sipintu.signature' => \App\Http\Middleware\VerifySiPintuSignature::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
