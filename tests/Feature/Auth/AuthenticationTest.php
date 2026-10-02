@@ -5,8 +5,10 @@ namespace Tests\Feature\Auth;
 use App\Models\GuruProfile;
 use App\Models\SiswaProfile;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
@@ -131,7 +133,7 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertGuest();
-        $response->assertSessionHasErrors(['email' => 'Email, NIP, atau kata sandi yang Anda masukkan salah.']);
+        $response->assertSessionHasErrors(['email' => 'Email, NIS/NIP, atau kata sandi yang Anda masukkan salah.']);
     }
 
     public function test_siswa_can_authenticate_using_official_school_email_and_default_password(): void
@@ -161,7 +163,7 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertGuest();
-        $response->assertSessionHasErrors(['email' => 'Email, NIP, atau kata sandi yang Anda masukkan salah.']);
+        $response->assertSessionHasErrors(['email' => 'Email, NIS/NIP, atau kata sandi yang Anda masukkan salah.']);
     }
 
     public function test_guru_can_not_authenticate_with_invalid_password_via_nip(): void
@@ -183,7 +185,7 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertGuest();
-        $response->assertSessionHasErrors(['email' => 'Email, NIP, atau kata sandi yang Anda masukkan salah.']);
+        $response->assertSessionHasErrors(['email' => 'Email, NIS/NIP, atau kata sandi yang Anda masukkan salah.']);
     }
 
     public function test_siswa_can_not_authenticate_with_invalid_password_via_email(): void
@@ -200,7 +202,7 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertGuest();
-        $response->assertSessionHasErrors(['email' => 'Email, NIP, atau kata sandi yang Anda masukkan salah.']);
+        $response->assertSessionHasErrors(['email' => 'Email, NIS/NIP, atau kata sandi yang Anda masukkan salah.']);
     }
 
     public function test_can_not_authenticate_with_unregistered_numeric_identity(): void
@@ -211,7 +213,7 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertGuest();
-        $response->assertSessionHasErrors(['email' => 'Email, NIP, atau kata sandi yang Anda masukkan salah.']);
+        $response->assertSessionHasErrors(['email' => 'Email, NIS/NIP, atau kata sandi yang Anda masukkan salah.']);
     }
 
     public function test_users_can_logout(): void
@@ -222,5 +224,115 @@ class AuthenticationTest extends TestCase
 
         $this->assertGuest();
         $response->assertRedirect('/');
+    }
+
+    public function test_non_admin_can_authenticate_via_sipintu_credentials_fallback_when_local_password_is_outdated(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        $baseUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/');
+
+        $siswa = User::create([
+            'name'                => 'Budi Santoso',
+            'email'               => 'budi.santoso@smkn1bangsri.sch.id',
+            'sipintu_external_id' => '212210001',
+            'password'            => Hash::make('old_local_pass'),
+            'email_verified_at'   => now(),
+            'is_active'           => true,
+        ]);
+        $siswa->assignRole('siswa');
+
+        Http::fake([
+            "{$baseUrl}/api/v1/auth/verify-credentials" => Http::response([
+                'success' => true,
+                'data' => [
+                    'external_id' => '212210001',
+                    'name'        => 'Budi Santoso',
+                    'email'       => 'budi.santoso@smkn1bangsri.sch.id',
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->post('/login', [
+            'email'    => 'budi.santoso@smkn1bangsri.sch.id',
+            'password' => 'new_remote_sipintu_password',
+        ]);
+
+        $this->assertAuthenticatedAs($siswa);
+        $response->assertRedirect(route('dashboard', absolute: false));
+
+        // Password lokal berhasil diperbarui dan disinkronkan ke hash baru
+        $siswa->refresh();
+        $this->assertTrue(Hash::check('new_remote_sipintu_password', $siswa->password));
+    }
+
+    public function test_admin_and_super_admin_never_use_sipintu_fallback(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        $baseUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/');
+
+        $admin = User::create([
+            'name'                => 'Site Admin',
+            'email'               => 'admin@smkn1bangsri.sch.id',
+            'sipintu_external_id' => 'admin_ext_123',
+            'password'            => Hash::make('real_admin_pass'),
+            'email_verified_at'   => now(),
+            'is_active'           => true,
+        ]);
+        $admin->assignRole('admin');
+
+        // SiPintu endpoint disiapkan jika dipanggil
+        Http::fake([
+            "{$baseUrl}/api/v1/auth/verify-credentials" => Http::response([
+                'success' => true,
+                'data' => [
+                    'external_id' => 'admin_ext_123',
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->post('/login', [
+            'email'    => 'admin@smkn1bangsri.sch.id',
+            'password' => 'wrong_pass',
+        ]);
+
+        $this->assertGuest();
+        $response->assertSessionHasErrors(['email' => 'Email, NIS/NIP, atau kata sandi yang Anda masukkan salah.']);
+
+        // Pastikan endpoint verifikasi kredensial SiPintu TIDAK PERNAH dipanggil untuk akun administratif
+        Http::assertNothingSent();
+    }
+
+    public function test_fallback_fails_if_remote_credentials_are_invalid(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        $baseUrl = rtrim(config('services.sipintu.base_url', 'http://sipintu.smkn1bangsri.sch.id'), '/');
+
+        $guru = User::create([
+            'name'                => 'Guru Fail Test',
+            'email'               => 'guru.fail@smkn1bangsri.sch.id',
+            'sipintu_external_id' => '199001012015011001',
+            'password'            => Hash::make('local_secure_pass'),
+            'email_verified_at'   => now(),
+            'is_active'           => true,
+        ]);
+        $guru->assignRole('guru');
+
+        Http::fake([
+            "{$baseUrl}/api/v1/auth/verify-credentials" => Http::response([
+                'success' => false,
+                'message' => 'Invalid credentials',
+            ], 401),
+        ]);
+
+        $response = $this->post('/login', [
+            'email'    => 'guru.fail@smkn1bangsri.sch.id',
+            'password' => 'completely_wrong_pass',
+        ]);
+
+        $this->assertGuest();
+        $response->assertSessionHasErrors(['email' => 'Email, NIS/NIP, atau kata sandi yang Anda masukkan salah.']);
     }
 }

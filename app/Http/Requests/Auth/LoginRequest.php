@@ -3,11 +3,14 @@
 namespace App\Http\Requests\Auth;
 
 use App\Models\GuruProfile;
+use App\Models\SiswaProfile;
 use App\Models\User;
+use App\Services\SiPintuService;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -73,17 +76,49 @@ class LoginRequest extends FormRequest
             }
         }
 
-        // Verifikasi keberadaan user dan kecocokan hash password
-        if (! $user || ! Hash::check($password, $user->password)) {
+        $authenticated = false;
+
+        // 1. Verifikasi lokal terlebih dahulu
+        if ($user && Hash::check($password, $user->password)) {
+            $authenticated = true;
+        }
+
+        // 2. Fallback verifikasi kredensial SiPintu:
+        // Syarat: Autentikasi lokal gagal, user ada di tabel lokal, memiliki sipintu_external_id, dan BUKAN ber-role 'admin' atau 'super_admin'
+        if (! $authenticated && $user && ! empty($user->sipintu_external_id) && ! $user->hasAnyRole(['admin', 'super_admin'])) {
+            $remote = app(SiPintuService::class)->verifyCredentials($user->sipintu_external_id, $password);
+
+            $remoteExternalId = (string) (
+                $remote['external_id']
+                ?? $remote['username']
+                ?? $remote['nis']
+                ?? $remote['nip']
+                ?? ($remote['id'] ?? '')
+            );
+
+            $isMatch = is_array($remote) && ($remoteExternalId === '' || $remoteExternalId === (string) $user->sipintu_external_id);
+
+            if ($isMatch) {
+                // Perbarui password lokal menggunakan query langsung DB agar tersinkronisasi
+                DB::table('users')->where('id', $user->id)->update([
+                    'password' => Hash::make($password),
+                ]);
+
+                $authenticated = true;
+            }
+        }
+
+        // Jika tetap gagal, catat percobaan dan lemparkan pesan error standar
+        if (! $authenticated) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => __('Email, NIP, atau kata sandi yang Anda masukkan salah.'),
+                'email' => __('Email, NIS/NIP, atau kata sandi yang Anda masukkan salah.'),
             ]);
         }
 
         Auth::login($user, $this->boolean('remember'));
-
+        $this->session()->regenerate();
         RateLimiter::clear($this->throttleKey());
     }
 
