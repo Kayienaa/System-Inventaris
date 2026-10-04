@@ -112,7 +112,7 @@ class BorrowingController extends Controller
         $audit->record($request->user(), 'borrowing.return_submitted', $result, $oldAttributes, $result->getAttributes());
 
         return redirect()->route('borrowings.mine')
-            ->with('success', 'Pengajuan pengembalian berhasil diajukan! Silakan temui Mas Donny di Ruang TEFA untuk pengecekan fisik unit.');
+            ->with('success', 'Pengajuan pengembalian berhasil diajukan! Silakan temui Mas Donny di Ruang RPL untuk pengecekan fisik unit.');
     }
 
     /**

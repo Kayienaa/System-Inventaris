@@ -216,7 +216,7 @@
                     </div>
                     <div class="text-xs text-stone-700 dark:text-stone-300 leading-relaxed">
                         <span class="font-bold text-amber-950 dark:text-neon-glowamber">Aturan Serah Terima 10 Menit:</span>
-                        Setelah permohonan berhasil dikirim, Anda memiliki batas waktu <strong>10 menit</strong> untuk segera datang ke <strong>Ruang TEFA SMKN 1 Bangsri</strong> dan menemui <strong>Mas Donny</strong>. Jika dalam 10 menit belum hadir, pemesanan otomatis hangus dan unit kembali ke katalog.
+                        Setelah permohonan berhasil dikirim, Anda memiliki batas waktu <strong>10 menit</strong> untuk segera datang ke <strong>Ruang RPL</strong> dan menemui <strong>Mas Donny</strong>. Jika dalam 10 menit belum hadir, pemesanan otomatis hangus dan unit kembali ke katalog.
                     </div>
                 </div>
 
@@ -281,8 +281,8 @@
                                 class="mt-0.5 text-[#6F4E37] focus:ring-[#6F4E37] dark:focus:ring-amber-500 border-stone-300 dark:border-stone-700"
                             >
                             <div class="ml-3 flex-1">
-                                <span class="text-xs font-bold text-stone-800 dark:text-stone-100">Praktik TEFA</span>
-                                <p class="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Pengerjaan pesanan project atau praktikum unit produksi TEFA.</p>
+                                <span class="text-xs font-bold text-stone-800 dark:text-stone-100">Praktik</span>
+                                <p class="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Digunakan untuk praktikum seperti biasa.</p>
                             </div>
                         </label>
 

@@ -239,10 +239,10 @@
                                 </div>
                                 <div>
                                     <h4 class="text-sm font-bold text-amber-950 dark:text-amber-200">
-                                        Perhatian: Segera Temui Mas Donny di Ruang TEFA
+                                        Perhatian: Segera Temui Mas Donny di Ruang RPL
                                     </h4>
                                     <p class="text-xs text-amber-900/90 dark:text-amber-200/80 mt-1 leading-relaxed max-w-2xl">
-                                        Pengajuan telah tercatat. Silakan segera hadir di Ruang Teaching Factory (TEFA) SMKN 1 Bangsri dan temui Mas Donny untuk proses serah terima barang dalam waktu maksimal 10 menit.
+                                        Pengajuan telah tercatat. Silakan segera hadir di Ruang RPL dan temui Mas Donny untuk proses serah terima barang dalam waktu maksimal 10 menit.
                                     </p>
                                     <p class="text-xs font-semibold text-amber-950 dark:text-amber-100 mt-1.5 pt-1.5 border-t border-amber-300/60 dark:border-amber-700/50">
                                         Peringatan: Apabila dalam 10 menit serah terima belum dilakukan, sistem akan membatalkan pemesanan secara otomatis dan unit dikembalikan ke inventaris.
@@ -556,7 +556,7 @@
                         </div>
                         <div>
                             <span class="font-bold text-amber-950 dark:text-amber-200 block text-sm mb-1">Serahkan Unit ke Mas Donny</span>
-                            Silakan bawa fisik barang ke <strong>Ruang Teaching Factory (TEFA) SMKN 1 Bangsri</strong> dan temui <strong>Mas Donny</strong>. Ambil foto fisik unit bersama admin sebagai dokumentasi bukti pengembalian.
+                            Silakan bawa fisik barang ke <strong>Ruang RPL SMKN 1 Bangsri</strong> dan temui <strong>Mas Donny</strong>. Ambil foto fisik unit bersama admin sebagai dokumentasi bukti pengembalian.
                         </div>
                     </div>
 
@@ -694,7 +694,7 @@
                             id="return_note"
                             name="return_note"
                             rows="2"
-                            placeholder="Contoh: Unit dan kelengkapannya sudah diserahkan di meja TEFA dalam kondisi prima."
+                            placeholder="Contoh: Unit dan kelengkapannya sudah diserahkan di meja TEFA dalam kondisi baik."
                             class="w-full text-xs rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] text-stone-900 dark:text-stone-100 p-3 shadow-sm focus:ring-2 focus:ring-[#6F4E37] dark:focus:ring-neon-cyan focus:border-transparent outline-none"
                         ></textarea>
                     </div>
