@@ -1111,6 +1111,19 @@
 
                 Peminjaman
             </a>
+
+            {{-- Panduan (Hanya untuk Siswa & Guru / Peminjam) --}}
+            <a
+                href="{{ route('guides.user') }}"
+                class="menu-link {{ request()->routeIs('guides.*') ? 'active' : '' }}"
+            >
+                <svg class="menu-icon" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
+                </svg>
+
+                Panduan
+            </a>
             @endhasanyrole
 
             @hasanyrole(['admin', 'super_admin'])
@@ -1144,6 +1157,19 @@
                 </svg>
 
                 Laporan
+            </a>
+
+            {{-- Panduan SOP Admin (Admin & Super Admin) --}}
+            <a
+                href="{{ route('admin.guides.index') }}"
+                class="menu-link {{ request()->routeIs('admin.guides.*') ? 'active' : '' }}"
+            >
+                <svg class="menu-icon" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-17.25c0-.621-.504-1.125-1.125-1.125h-4.5M10.125 2.25A2.25 2.25 0 007.875 4.5h8.25a2.25 2.25 0 00-2.25-2.25m-3.75 0h3.75m-4.5 9.75l2.25 2.25 4.5-4.5"/>
+                </svg>
+
+                Panduan SOP Admin
             </a>
             @endhasanyrole
 

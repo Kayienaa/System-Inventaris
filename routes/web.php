@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OAuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SiPintuController;
+use App\Http\Controllers\UserGuideController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
@@ -87,6 +88,11 @@ Route::middleware('auth')->group(function () {
         ->name('profile.admin-whatsapp.update')
         ->middleware(['role:admin|super_admin']);
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Halaman Panduan Peminjaman untuk Peminjam (Siswa & Guru)
+    Route::get('/panduan', [UserGuideController::class, 'index'])
+        ->middleware(['role:siswa|guru'])
+        ->name('guides.user');
 });
 
 /*
@@ -115,6 +121,9 @@ Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->group(fu
     Route::get('/notifications', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'index'])->name('admin.notifications.index');
     Route::post('/notifications/mark-all-read', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'markAllAsRead'])->name('admin.notifications.mark-all-read');
     Route::delete('/notifications', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'destroyAll'])->name('admin.notifications.destroy-all');
+
+    // Halaman Panduan SOP Operasional Admin & Super Admin
+    Route::get('/guides', [\App\Http\Controllers\Admin\GuideController::class, 'index'])->name('admin.guides.index');
 });
 
 /*
