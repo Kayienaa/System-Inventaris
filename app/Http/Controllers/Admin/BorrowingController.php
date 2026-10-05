@@ -89,19 +89,31 @@ class BorrowingController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        // Counter statistik untuk kartu ringkasan di dashboard monitoring
+        // M2: 1 query aggregasi menggantikan 8 query COUNT() terpisah
+        $rawStats = Borrowing::selectRaw("
+            COUNT(*) as total,
+            SUM(status = 'pending') as pending,
+            SUM(status = 'borrowed') as borrowed,
+            SUM(status = 'return_pending_verification') as return_pending,
+            SUM(status = 'returned') as returned,
+            SUM(is_teacher_priority = 1) as guru_priority,
+            SUM(urgency_level = 'mendesak') as urgent_count,
+            SUM(
+                status IN ('borrowed','return_pending_verification')
+                AND returned_at IS NULL
+                AND due_at < NOW()
+            ) as overdue
+        ")->first();
+
         $stats = [
-            'total' => Borrowing::count(),
-            'pending' => Borrowing::where('status', BorrowingStatus::Pending)->count(),
-            'borrowed' => Borrowing::where('status', BorrowingStatus::Borrowed)->count(),
-            'return_pending' => Borrowing::where('status', BorrowingStatus::ReturnPendingVerification)->count(),
-            'returned' => Borrowing::where('status', BorrowingStatus::Returned)->count(),
-            'overdue' => Borrowing::whereIn('status', [BorrowingStatus::Borrowed, BorrowingStatus::ReturnPendingVerification])
-                ->whereNull('returned_at')
-                ->where('due_at', '<', now())
-                ->count(),
-            'guru_priority' => Borrowing::where('is_teacher_priority', true)->count(),
-            'urgent_count' => Borrowing::where('urgency_level', 'mendesak')->count(),
+            'total'         => (int) ($rawStats->total ?? 0),
+            'pending'       => (int) ($rawStats->pending ?? 0),
+            'borrowed'      => (int) ($rawStats->borrowed ?? 0),
+            'return_pending'=> (int) ($rawStats->return_pending ?? 0),
+            'returned'      => (int) ($rawStats->returned ?? 0),
+            'overdue'       => (int) ($rawStats->overdue ?? 0),
+            'guru_priority' => (int) ($rawStats->guru_priority ?? 0),
+            'urgent_count'  => (int) ($rawStats->urgent_count ?? 0),
         ];
 
         return view('admin.borrowings.index', compact('borrowings', 'stats'));

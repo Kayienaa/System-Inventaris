@@ -8,6 +8,7 @@ use App\Models\Borrowing;
 use App\Services\SiPintuService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -146,7 +147,6 @@ class DashboardController extends Controller
             'total_overdue' => $totalOverdue,
 
             'weekly_period_label' => $weeklyPeriodLabel,
-            'weeklyPeriodLabel' => $weeklyPeriodLabel,
             'weekly_history' => $weeklyHistory,
 
             'chart_labels' => $chartLabels,
@@ -182,9 +182,25 @@ class DashboardController extends Controller
     /**
      * Agregasi data riwayat top peminjaman per pekan ke belakang.
      *
+     * Hasil kalkulasi di-cache selama 5 menit untuk mencegah N+1 query
+     * dari loop per-minggu yang memanggil 3 query DB per iterasi.
+     *
      * @return array<int, array<string, mixed>>
      */
     public function getWeeklyHistory(int $weeks = 6): array
+    {
+        // M1: Cache 5 menit — key unik per jumlah minggu yang diminta
+        return Cache::remember("dashboard.weekly_history.{$weeks}", 300, function () use ($weeks): array {
+            return $this->computeWeeklyHistory($weeks);
+        });
+    }
+
+    /**
+     * Komputasi aktual riwayat mingguan (dipanggil dari cache atau langsung saat test).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function computeWeeklyHistory(int $weeks): array
     {
         $history = [];
 

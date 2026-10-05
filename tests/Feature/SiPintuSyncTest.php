@@ -717,7 +717,7 @@ class SiPintuSyncTest extends TestCase
 
         $response = $this->call(
             'POST',
-            '/sipintu/sync-user',
+            '/api/sipintu/sync-user',
             [],
             [],
             [],
@@ -830,7 +830,7 @@ class SiPintuSyncTest extends TestCase
 
         $response = $this->call(
             'POST',
-            '/sipintu/sync-user',
+            '/api/sipintu/sync-user',
             [],
             [],
             [],

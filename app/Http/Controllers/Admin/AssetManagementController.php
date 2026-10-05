@@ -74,12 +74,20 @@ class AssetManagementController extends Controller implements HasMiddleware
 
         $assets = $query->latest('id')->paginate(12)->withQueryString();
 
-        // Metrik statistik untuk ringkasan di panel admin
+        // L4: 1 query aggregasi menggantikan 4 query COUNT() terpisah
+        // (konsisten dengan pola di DashboardController::analyticsData)
+        $rawStats = Asset::selectRaw("
+            COUNT(*) as total,
+            SUM(availability_status = 'tersedia') as tersedia,
+            SUM(availability_status = 'dipinjam') as dipinjam,
+            SUM(availability_status = 'perbaikan') as perbaikan
+        ")->first();
+
         $stats = [
-            'total' => Asset::query()->count(),
-            'tersedia' => Asset::query()->where('availability_status', AssetAvailabilityStatus::Tersedia->value)->count(),
-            'dipinjam' => Asset::query()->where('availability_status', AssetAvailabilityStatus::Dipinjam->value)->count(),
-            'perbaikan' => Asset::query()->where('availability_status', AssetAvailabilityStatus::Perbaikan->value)->count(),
+            'total'     => (int) ($rawStats->total ?? 0),
+            'tersedia'  => (int) ($rawStats->tersedia ?? 0),
+            'dipinjam'  => (int) ($rawStats->dipinjam ?? 0),
+            'perbaikan' => (int) ($rawStats->perbaikan ?? 0),
         ];
 
         return view('admin.assets.index', compact('assets', 'categories', 'conditions', 'statuses', 'stats'));

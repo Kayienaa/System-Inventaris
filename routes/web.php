@@ -22,25 +22,9 @@ Route::get('/health', function () {
     return response()->json([
         'status' => 'ok',
         'app' => 'SITEFA',
-        'timestamp' => now()->toIso8601String(),
+        'timestamp' => now()->toIsoString(),
     ], 200);
 });
-
-Route::match(['get', 'post'], '/sipintu/sync-user', function (\Illuminate\Http\Request $request, \App\Http\Controllers\OAuthController $controller) {
-    if ($request->isMethod('get')) {
-        return response()->json(['status' => 'ok', 'message' => 'SiPintu webhook sync-user ready'], 200);
-    }
-
-    return $controller->syncUser($request);
-})->middleware(['throttle:120,1', 'sipintu.signature']);
-
-Route::match(['get', 'post'], '/sipintu/sync-password', function (\Illuminate\Http\Request $request, \App\Http\Controllers\OAuthController $controller) {
-    if ($request->isMethod('get')) {
-        return response()->json(['status' => 'ok', 'message' => 'SiPintu password sync acknowledged'], 200);
-    }
-
-    return $controller->syncPassword($request);
-})->middleware(['throttle:120,1', 'sipintu.signature']);
 
 Route::get('/', function () {
     return view('welcome');
@@ -161,11 +145,23 @@ Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('sipintu')->
 Route::get('/storage/{path}', function (string $path) {
     abort_if(str_contains($path, '..'), 400);
 
+    // M5: Subfolder bukti foto peminjaman/pengembalian bersifat semi-private —
+    // hanya dapat diakses oleh pengguna yang sudah login.
+    if (str_starts_with($path, 'borrowing-evidence/')
+        || str_starts_with($path, 'return-evidence/')) {
+        abort_unless(auth()->check(), 401);
+    }
+
     $disk = Storage::disk('public');
     abort_unless($disk->exists($path), 404);
 
+    // Cache-Control private untuk evidence, public untuk aset/foto lainnya
+    $cacheControl = (str_starts_with($path, 'borrowing-evidence/') || str_starts_with($path, 'return-evidence/'))
+        ? 'private, max-age=3600'
+        : 'public, max-age=86400';
+
     return response()->file($disk->path($path), [
-        'Cache-Control' => 'public, max-age=86400',
+        'Cache-Control' => $cacheControl,
     ]);
 })->where('path', '.*')->name('storage.local');
 

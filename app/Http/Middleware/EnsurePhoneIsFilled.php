@@ -33,6 +33,12 @@ class EnsurePhoneIsFilled
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // L3: Lewati pengecekan untuk API / JSON clients agar tidak menerima
+        // HTML redirect ke /complete-phone alih-alih JSON error response.
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return $next($request);
+        }
+
         $user = $request->user();
 
         if ($user && $user->hasAnyRole(['siswa', 'guru'])) {

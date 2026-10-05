@@ -2,6 +2,7 @@
 
 namespace App\Actions\Borrowings;
 
+use App\Enums\AssetAvailabilityStatus;
 use App\Enums\BorrowingStatus;
 use App\Exceptions\BorrowingStateException;
 use App\Models\Asset;
@@ -31,18 +32,19 @@ class CancelBorrowingAction
                 throw new BorrowingStateException('Only pending or queued (delay) borrowings can be cancelled.');
             }
 
-            $holdsAsset = ($lockedBorrowing->status === BorrowingStatus::Pending);
+            // M3: Pastikan aset benar-benar dalam status Dipesan sebelum melepas kunci
+            $holdsAsset = ($lockedBorrowing->status === BorrowingStatus::Pending)
+                && $asset?->availability_status === AssetAvailabilityStatus::Dipesan;
+
             $reasonText = $reason ?: 'Dibatalkan oleh peminjam';
 
+            // H1: Pembatalan oleh pengguna menggunakan status Cancelled (bukan Rejected)
             $lockedBorrowing->update([
-                'status' => BorrowingStatus::Rejected,
-                'rejected_by_user_id' => $actor->id,
-                'rejected_at' => now(),
-                'rejection_reason' => $reasonText,
+                'status'               => BorrowingStatus::Cancelled,
                 'cancelled_by_user_id' => $actor->id,
-                'cancelled_at' => now(),
-                'cancellation_reason' => $reasonText,
-                'due_at' => now(),
+                'cancelled_at'         => now(),
+                'cancellation_reason'  => $reasonText,
+                'due_at'               => now(),
             ]);
 
             if ($holdsAsset && $asset) {

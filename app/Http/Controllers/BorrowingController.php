@@ -122,8 +122,15 @@ class BorrowingController extends Controller
     {
         $this->authorize('cancel', $borrowing);
 
+        // M4: Validasi input sebelum meneruskan ke Action (konsisten dengan webReject)
+        $validated = $request->validate([
+            'cancellation_reason' => ['nullable', 'string', 'max:1000'],
+        ], [
+            'cancellation_reason.max' => 'Alasan pembatalan maksimal 1000 karakter.',
+        ]);
+
         $oldAttributes = $borrowing->getAttributes();
-        $reason = $request->input('cancellation_reason', 'Dibatalkan oleh peminjam');
+        $reason = $validated['cancellation_reason'] ?? 'Dibatalkan oleh peminjam';
         $result = $action->execute($request->user(), $borrowing, $reason);
 
         $audit->record($request->user(), 'borrowing.cancelled', $result, $oldAttributes, $result->getAttributes());

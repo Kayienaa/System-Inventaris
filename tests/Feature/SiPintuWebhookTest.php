@@ -353,12 +353,8 @@ class SiPintuWebhookTest extends TestCase
             'message' => 'SiPintu webhook sync-user ready',
         ]);
 
-        $webResponse = $this->getJson('/sipintu/sync-user');
-        $webResponse->assertOk();
-        $webResponse->assertJson([
-            'status' => 'ok',
-            'message' => 'SiPintu webhook sync-user ready',
-        ]);
+        // H2: Webhook eksternal tidak didaftarkan di web.php untuk mencegah ambiguitas routing
+        $this->getJson('/sipintu/sync-user')->assertNotFound();
     }
 
     public function test_sync_password_endpoint_acknowledges_requests_and_rotates_token(): void
@@ -370,12 +366,8 @@ class SiPintuWebhookTest extends TestCase
             'message' => 'SiPintu password sync is acknowledged',
         ]);
 
-        $webResponse = $this->getJson('/sipintu/sync-password');
-        $webResponse->assertOk();
-        $webResponse->assertJson([
-            'status' => 'ok',
-            'message' => 'SiPintu password sync acknowledged',
-        ]);
+        // H2: Webhook eksternal tidak didaftarkan di web.php
+        $this->getJson('/sipintu/sync-password')->assertNotFound();
 
         // User setup
         $initialPasswordHash = Hash::make('my_local_pass');

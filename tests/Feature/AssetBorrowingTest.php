@@ -440,9 +440,13 @@ class AssetBorrowingTest extends TestCase
         $response->assertSessionHas('success', 'Pengajuan peminjaman berhasil dibatalkan.');
 
         $borrowing->refresh();
-        $this->assertEquals(BorrowingStatus::Rejected, $borrowing->status);
-        $this->assertEquals('Dibatalkan oleh peminjam', $borrowing->rejection_reason);
-        $this->assertNotNull($borrowing->rejected_at);
+        // H1 fix: pembatalan mandiri kini menggunakan status Cancelled
+        $this->assertEquals(BorrowingStatus::Cancelled, $borrowing->status);
+        $this->assertEquals('Dibatalkan oleh peminjam', $borrowing->cancellation_reason);
+        $this->assertNotNull($borrowing->cancelled_at);
+        // Kolom rejected_* tidak lagi diisi oleh pembatalan mandiri
+        $this->assertNull($borrowing->rejected_at);
+        $this->assertNull($borrowing->rejection_reason);
 
         $asset->refresh();
         $this->assertEquals(AssetAvailabilityStatus::Tersedia, $asset->availability_status);
