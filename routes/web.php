@@ -93,6 +93,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/panduan', [UserGuideController::class, 'index'])
         ->middleware(['role:siswa|guru'])
         ->name('guides.user');
+
+    // Shortcut Cepat Super Admin di Akun Pak Agung
+    Route::post('/switch-to-super-admin', [\App\Http\Controllers\Auth\SuperAdminSwitchController::class, 'switchToSuperAdmin'])
+        ->name('switch-to-super-admin');
 });
 
 /*

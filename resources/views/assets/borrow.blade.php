@@ -231,6 +231,7 @@
 
                     @php
                         $isGuru = auth()->user()?->hasRole('guru');
+                        $isSiswa = auth()->user()?->hasRole('siswa');
                     @endphp
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -395,84 +396,135 @@
 
                 {{-- Tanggal Rencana Pengembalian (Modern Flatpickr & Presets) --}}
                 <div>
-                    <div class="flex items-center justify-between mb-1">
-                        <label
-                            for="due_at_picker"
-                            class="block text-sm font-semibold text-stone-800 dark:text-stone-100"
-                        >
-                            Tenggat Waktu Pengembalian <span class="text-rose-500">*</span>
-                        </label>
-                        <span class="text-xs text-amber-800 dark:text-neon-glowamber bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-500/30 px-2 py-0.5 rounded-md font-medium">
-                            Fleksibel & Otomatis
-                        </span>
-                    </div>
-
-                    <p class="text-xs text-stone-500 dark:text-stone-400 mb-2.5">
-                        Pilih batas waktu pengembalian barang. Gunakan tombol pilihan cepat atau tentukan tanggal & waktu pada kalender.
-                    </p>
-
-                    {{-- Tombol Preset Cepat --}}
-                    <div class="mb-2.5 flex flex-wrap items-center gap-2">
-                        <span class="text-xs text-stone-500 dark:text-stone-400 font-medium mr-1">Pilihan Cepat:</span>
-                        <button
-                            type="button"
-                            @click="setDuePreset(1)"
-                            :class="selectedPreset === 1 ? 'bg-[#6F4E37] text-white border-[#6F4E37] shadow-sm dark:bg-amber-600 dark:text-white dark:border-amber-500 dark:shadow-neon-amber' : 'bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200 dark:bg-[#0E1420] dark:text-stone-300 dark:border-stone-800 dark:hover:border-stone-700'"
-                            class="px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                        >
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                            </svg>
-                            <span>H+1</span>
-                        </button>
-                        <button
-                            type="button"
-                            @click="setDuePreset(3)"
-                            :class="selectedPreset === 3 ? 'bg-[#6F4E37] text-white border-[#6F4E37] shadow-sm dark:bg-amber-600 dark:text-white dark:border-amber-500 dark:shadow-neon-amber' : 'bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200 dark:bg-[#0E1420] dark:text-stone-300 dark:border-stone-800 dark:hover:border-stone-700'"
-                            class="px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                        >
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            <span>H+3 (Standar)</span>
-                        </button>
-                        <button
-                            type="button"
-                            @click="setDuePreset(7)"
-                            :class="selectedPreset === 7 ? 'bg-[#6F4E37] text-white border-[#6F4E37] shadow-sm dark:bg-amber-600 dark:text-white dark:border-amber-500 dark:shadow-neon-amber' : 'bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200 dark:bg-[#0E1420] dark:text-stone-300 dark:border-stone-800 dark:hover:border-stone-700'"
-                            class="px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                        >
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                            <span>H+7 (1 Minggu)</span>
-                        </button>
-                    </div>
-
-                    <div class="relative">
-                        <input
-                            type="text"
-                            id="due_at_picker"
-                            name="due_at"
-                            x-ref="dueAtInput"
-                            value="{{ old('due_at') }}"
-                            placeholder="Pilih tanggal dan jam pengembalian..."
-                            readonly
-                            required
-                            class="w-full rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-[#0B0F17] px-4 py-2.5 text-sm text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 shadow-sm focus:border-[#6F4E37] dark:focus:border-cyan-500 focus:bg-white dark:focus:bg-[#0B0F17] focus:ring-2 focus:ring-[#6F4E37]/20 dark:focus:ring-cyan-500/20 transition cursor-pointer"
-                        >
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-stone-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
+                    @if($isSiswa)
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="block text-sm font-semibold text-stone-800 dark:text-stone-100">
+                                Tenggat Waktu Pengembalian <span class="text-rose-500">*</span>
+                            </label>
+                            <span class="text-[11px] font-semibold text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 px-2 py-0.5 rounded-md flex items-center gap-1">
+                                <svg class="w-3 h-3 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                                Terkunci Otomatis (Siswa)
+                            </span>
                         </div>
-                    </div>
 
-                    @error('due_at')
-                        <p class="mt-1.5 text-xs font-medium text-rose-600 dark:text-rose-400">
-                            {{ $message }}
+                        {{-- Tampilan Informasi Terkunci Siswa (Read-Only) --}}
+                        <div class="rounded-xl border border-amber-200/90 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-950/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                            <div class="flex items-start sm:items-center gap-3.5">
+                                <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-neon-glowamber flex items-center justify-center shrink-0 border border-amber-200 dark:border-amber-700/50 mt-0.5 sm:mt-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                                        <span>Batas Pengembalian: Hari ini pukul 15:15 WIB</span>
+                                    </div>
+                                    <p class="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                                        Sesuai regulasi lab TEFA, peminjaman siswa wajib dikembalikan pada hari yang sama sebelum jam kepulangan sekolah.
+                                    </p>
+                                </div>
+                            </div>
+                            <span class="self-start sm:self-auto inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-amber-200/70 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-600/50 shrink-0">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                                Read-Only
+                            </span>
+                        </div>
+                        <input type="hidden" name="due_at" value="{{ now()->setTime(15, 15, 0)->format('Y-m-d H:i') }}">
+                    @else
+                        <div class="flex items-center justify-between mb-1">
+                            <label
+                                for="due_at_picker"
+                                class="block text-sm font-semibold text-stone-800 dark:text-stone-100"
+                            >
+                                Tenggat Waktu Pengembalian <span class="text-rose-500">*</span>
+                            </label>
+                            <span class="text-xs text-amber-800 dark:text-neon-glowamber bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-500/30 px-2 py-0.5 rounded-md font-medium">
+                                Fleksibel & Otomatis
+                            </span>
+                        </div>
+
+                        <p class="text-xs text-stone-500 dark:text-stone-400 mb-2.5">
+                            Pilih batas waktu pengembalian barang. Gunakan tombol pilihan cepat atau tentukan tanggal & waktu pada kalender.
                         </p>
-                    @enderror
+
+                        {{-- Tombol Preset Cepat Guru --}}
+                        <div class="mb-2.5 flex flex-wrap items-center gap-2">
+                            <span class="text-xs text-stone-500 dark:text-stone-400 font-medium mr-1">Pilihan Cepat:</span>
+                            <button
+                                type="button"
+                                @click="setDuePreset(1)"
+                                :class="selectedPreset === 1 ? 'bg-[#6F4E37] text-white border-[#6F4E37] shadow-sm dark:bg-amber-600 dark:text-white dark:border-amber-500 dark:shadow-neon-amber' : 'bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200 dark:bg-[#0E1420] dark:text-stone-300 dark:border-stone-800 dark:hover:border-stone-700'"
+                                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                            >
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                                <span>H+1</span>
+                            </button>
+                            <button
+                                type="button"
+                                @click="setDuePreset(3)"
+                                :class="selectedPreset === 3 ? 'bg-[#6F4E37] text-white border-[#6F4E37] shadow-sm dark:bg-amber-600 dark:text-white dark:border-amber-500 dark:shadow-neon-amber' : 'bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200 dark:bg-[#0E1420] dark:text-stone-300 dark:border-stone-800 dark:hover:border-stone-700'"
+                                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                            >
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span>H+3 (Standar)</span>
+                            </button>
+                            <button
+                                type="button"
+                                @click="setDuePreset(7)"
+                                :class="selectedPreset === 7 ? 'bg-[#6F4E37] text-white border-[#6F4E37] shadow-sm dark:bg-amber-600 dark:text-white dark:border-amber-500 dark:shadow-neon-amber' : 'bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200 dark:bg-[#0E1420] dark:text-stone-300 dark:border-stone-800 dark:hover:border-stone-700'"
+                                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                            >
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <span>H+7 (1 Minggu)</span>
+                            </button>
+                            <button
+                                type="button"
+                                @click="setDuePreset(30)"
+                                :class="selectedPreset === 30 ? 'bg-[#6F4E37] text-white border-[#6F4E37] shadow-sm dark:bg-amber-600 dark:text-white dark:border-amber-500 dark:shadow-neon-amber' : 'bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200 dark:bg-[#0E1420] dark:text-stone-300 dark:border-stone-800 dark:hover:border-stone-700'"
+                                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                            >
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <span>1 Bulan (H+30 hari)</span>
+                            </button>
+                        </div>
+
+                        <div class="relative">
+                            <input
+                                type="text"
+                                id="due_at_picker"
+                                name="due_at"
+                                x-ref="dueAtInput"
+                                value="{{ old('due_at') }}"
+                                placeholder="Pilih tanggal dan jam pengembalian..."
+                                readonly
+                                required
+                                class="w-full rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-[#0B0F17] px-4 py-2.5 text-sm text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 shadow-sm focus:border-[#6F4E37] dark:focus:border-cyan-500 focus:bg-white dark:focus:bg-[#0B0F17] focus:ring-2 focus:ring-[#6F4E37]/20 dark:focus:ring-cyan-500/20 transition cursor-pointer"
+                            >
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-stone-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        @error('due_at')
+                            <p class="mt-1.5 text-xs font-medium text-rose-600 dark:text-rose-400">
+                                {{ $message }}
+                            </p>
+                        @enderror
+                    @endif
                 </div>
 
                 {{-- Catatan / Keperluan Pinjam --}}
@@ -537,7 +589,7 @@
                     defaultDue.setDate(defaultDue.getDate() + 3);
                     defaultDue.setHours(17, 0, 0, 0);
 
-                    if (typeof flatpickr !== 'undefined') {
+                    if (this.$refs.dueAtInput && typeof flatpickr !== 'undefined') {
                         this.fpInstance = flatpickr(this.$refs.dueAtInput, {
                             locale: "id",
                             enableTime: true,
@@ -552,13 +604,13 @@
                                     const sel = selectedDates[0];
                                     const now = new Date();
                                     const diffDays = Math.round((sel.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-                                    if (![1, 3, 7].includes(diffDays)) {
+                                    if (![1, 3, 7, 30].includes(diffDays)) {
                                         this.selectedPreset = null;
                                     }
                                 }
                             }
                         });
-                    } else {
+                    } else if (this.$refs.dueAtInput) {
                         this.formatFallbackInput(defaultDue);
                     }
                 },

@@ -1042,6 +1042,29 @@
 
         </a>
 
+        @php
+            $currentUser = Auth::user();
+            $isPakAgung = $currentUser && ! $currentUser->hasRole('super_admin') && (
+                $currentUser->email === 'agungmikro2@gmail.com'
+                || $currentUser->guruProfile?->nip === '198103302010011016'
+                || str_contains(strtolower($currentUser->name), 'agung')
+            );
+        @endphp
+
+        @if($isPakAgung)
+            <div class="px-5 py-2.5 border-b border-white/10 dark:border-stone-800">
+                <button
+                    type="button"
+                    @click="$dispatch('open-superadmin-modal')"
+                    class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-stone-950 font-extrabold text-xs shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer border border-amber-300 dark:border-amber-400/40"
+                    title="Pintasan Cepat Akses Super Admin"
+                >
+                    <span class="text-sm">⚡</span>
+                    <span>Masuk Super Admin</span>
+                </button>
+            </div>
+        @endif
+
         <nav class="menu overflow-y-auto scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-[#8B5A2B]/40 [&::-webkit-scrollbar-thumb]:rounded-full">
 
             <div class="menu-label">
@@ -1329,6 +1352,7 @@
                 </svg>
             </button>
 
+
             <a href="{{ route('profile.edit') }}" class="mobile-user hover:opacity-90 transition-all active:scale-95 cursor-pointer block overflow-hidden" title="Profil Saya">
                 @if(Auth::user()->avatar)
                     <img src="{{ Auth::user()->avatar }}" 
@@ -1508,6 +1532,9 @@
         window.dispatchEvent(new CustomEvent('theme-changed'));
     };
 </script>
+
+{{-- Modal Konfirmasi Kata Sandi Super Admin (Khusus Pak Agung) --}}
+@include('layouts.partials.super-admin-modal')
 
 </body>
 </html>

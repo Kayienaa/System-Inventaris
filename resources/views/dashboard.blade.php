@@ -129,7 +129,7 @@
     {{-- =========================================
          BANNER AKSI CEPAT (QUICK ACTION CTA) PEMINJAM
     ========================================== --}}
-    @unlessrole('admin|super_admin')
+    @hasanyrole(['siswa', 'guru'])
     <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#6F4E37] via-[#7E583F] to-[#5A3C2A] dark:from-[#131B2A] dark:via-[#1A2436] dark:to-[#0E1420] text-white p-6 sm:p-7 shadow-lg border border-[#8B5A2B]/40 dark:border-amber-500/30 my-6 transition-all static-card">
         {{-- Ambient Decorative Background Glows --}}
         <div class="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-amber-400/10 dark:bg-amber-500/5 blur-2xl pointer-events-none"></div>
@@ -143,7 +143,7 @@
                     <span>Aksi Cepat Peminjaman</span>
                 </div>
                 <h2 class="brand-font font-heading font-bold text-xl sm:text-2xl text-white tracking-tight">
-                    Butuh Perangkat untuk Praktik TEFA?
+                    Butuh Perangkat untuk Praktik?
                 </h2>
                 <p class="text-sm text-stone-200 dark:text-stone-300 leading-relaxed">
                     Ajukan peminjaman laptop atau smartphone inventaris TEFA SMKN 1 Bangsri dengan mudah dan transparan.
@@ -208,7 +208,7 @@
             </div>
         </div>
     </div>
-    @endunlessrole
+    @endhasanyrole
 
     {{-- =========================================
          VISUALISASI GRAFIK TREN PEMINJAMAN (CHART.JS)

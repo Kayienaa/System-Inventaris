@@ -404,17 +404,7 @@
                                         @endif
                                     </div>
                                     <div>
-                                        <div class="flex items-center gap-1.5">
-                                            <span class="font-mono font-bold text-stone-800 dark:text-stone-100 text-xs">
-                                                {{ $b->asset?->asset_code ?? '-' }}
-                                            </span>
-                                            @if($b->asset?->category)
-                                                <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
-                                                    {{ $b->asset->category->name }}
-                                                </span>
-                                            @endif
-                                        </div>
-                                        <p class="text-xs text-stone-800 dark:text-stone-200 mt-0.5 font-medium">
+                                        <p class="text-xs font-bold text-stone-900 dark:text-stone-100 leading-snug">
                                             {{ $b->asset?->name ?? 'Barang Terhapus' }}
                                         </p>
                                     </div>

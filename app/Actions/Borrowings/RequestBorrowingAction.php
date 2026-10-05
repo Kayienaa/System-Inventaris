@@ -58,7 +58,11 @@ class RequestBorrowingAction
             $expiresAt = ($initialStatus === BorrowingStatus::Pending) ? now()->addMinutes(10) : null;
 
             $requestedAt = now();
-            $effectiveDueAt = $dueAt ?? $requestedAt->copy()->addDays(3);
+            if ($borrower->hasRole('siswa')) {
+                $effectiveDueAt = now()->setTime(15, 15, 0);
+            } else {
+                $effectiveDueAt = $dueAt ?? $requestedAt->copy()->addDays(3);
+            }
 
             $borrowing = Borrowing::query()->create([
                 'borrower_user_id' => $borrower->id,

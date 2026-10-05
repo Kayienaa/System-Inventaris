@@ -36,7 +36,7 @@ class StoreBorrowingRequest extends FormRequest
                 'max:1000',
                 Rule::requiredIf($this->input('urgency_level') === 'mendesak'),
             ],
-            'due_at' => ['nullable', 'date', 'after:now'],
+            'due_at' => $this->user()?->hasRole('siswa') ? ['nullable'] : ['nullable', 'date', 'after:now'],
             'borrowing_evidence' => ['nullable', 'string', 'max:7000000'],
             'borrowing_evidence_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];

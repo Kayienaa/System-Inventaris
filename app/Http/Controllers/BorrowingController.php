@@ -230,9 +230,13 @@ class BorrowingController extends Controller
 
         $evidencePath = $this->storeEvidenceImage($request, 'borrowing_evidence', 'borrowing-evidence');
 
-        $dueAt = $request->filled('due_at')
-            ? \Carbon\Carbon::parse($request->input('due_at'))
-            : now()->addDays(3);
+        if ($request->user()?->hasRole('siswa')) {
+            $dueAt = now()->setTime(15, 15, 0);
+        } else {
+            $dueAt = $request->filled('due_at')
+                ? \Carbon\Carbon::parse($request->input('due_at'))
+                : now()->addDays(3);
+        }
 
         $borrowing = $action->execute(
             $request->user(),

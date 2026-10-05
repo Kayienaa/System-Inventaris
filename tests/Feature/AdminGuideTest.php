@@ -65,7 +65,7 @@ class AdminGuideTest extends TestCase
                 'mobile' => 'admin-step-5-verifikasi-kembali-mobile.png',
             ],
             [
-                'title' => 'Pengelolaan Master Inventaris 31 Unit Aset',
+                'title' => 'Pengelolaan Master Inventaris 32 Unit Aset',
                 'desktop' => 'admin-step-6-master-aset.png',
                 'mobile' => 'admin-step-6-master-aset-mobile.png',
             ],
