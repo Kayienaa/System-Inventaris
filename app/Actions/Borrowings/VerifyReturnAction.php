@@ -54,7 +54,7 @@ class VerifyReturnAction
 
             $lockedBorrowing->update($updateData);
 
-            $newAvailability = $returnCondition === AssetCondition::RusakBerat
+            $newAvailability = ($returnCondition === AssetCondition::RusakBerat || $returnCondition === AssetCondition::RusakRingan)
                 ? AssetAvailabilityStatus::Perbaikan
                 : AssetAvailabilityStatus::Tersedia;
 

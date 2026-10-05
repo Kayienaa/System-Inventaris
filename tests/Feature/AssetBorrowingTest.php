@@ -720,6 +720,7 @@ class AssetBorrowingTest extends TestCase
         $this->assertNotNull($borrowing->damage_evidence_path);
         $this->assertEquals('return-evidence/user_return_photo.jpg', $borrowing->return_evidence_path);
         $this->assertEquals(AssetCondition::RusakRingan, $asset->condition);
+        $this->assertEquals(AssetAvailabilityStatus::Perbaikan, $asset->availability_status);
         $this->assertNotNull($asset->latest_damage_photo);
         $this->assertEquals($borrowing->damage_evidence_path, $asset->latest_damage_photo);
     }
