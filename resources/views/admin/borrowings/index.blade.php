@@ -4,40 +4,288 @@
 
 @section('content')
 
-<div
-    class="max-w-7xl mx-auto px-4 sm:px-6 py-8 page-enter"
-    x-data="{
+<script>
+function monitoringHandler() {
+    return {
         selectedBorrowing: null,
         openReviewModal: false,
+        openManageModalState: false,
         previewImage: null,
         rejectModalOpen: false,
         verifyModalOpen: false,
         rejectionReason: '',
-        returnCondition: 'Baik',
+        returnCondition: 'baik',
         verificationNote: '',
-        openDetail(borrowing) {
-            this.selectedBorrowing = borrowing;
-            this.openReviewModal = true;
-            this.rejectModalOpen = false;
-            this.verifyModalOpen = false;
+        mediaStream: null,
+        damageMediaStream: null,
+        isDamageCameraOpen: false,
+        damageCapturedPhoto: null,
+        damageFacingMode: 'environment',
+        borrowingsList: [],
+
+        init() {
+            this.loadBorrowingsList();
+
+            this.$watch('openReviewModal', value => { if (!value) this.closeDetail(); });
+            this.$watch('openManageModalState', value => { if (!value) this.closeDetail(); });
+            this.$watch('returnCondition', val => {
+                const isDamaged = val === 'rusak_ringan' || val === 'rusak_berat' || val === 'Rusak Ringan' || val === 'Rusak Berat';
+                const isVerifying = (this.openReviewModal || this.openManageModalState) &&
+                                    this.selectedBorrowing?.raw_status === 'return_pending_verification';
+
+                if (isVerifying && isDamaged) {
+                    if (!this.damageCapturedPhoto && !this.isDamageCameraOpen) {
+                        this.openDamageCamera();
+                    }
+                } else {
+                    this.closeDamageCamera();
+                    if (!isDamaged) {
+                        this.damageCapturedPhoto = null;
+                    }
+                }
+            });
+        },
+
+        loadBorrowingsList() {
+            if (this.borrowingsList && this.borrowingsList.length > 0) return;
+            try {
+                const el = document.getElementById('borrowings-list-data');
+                if (el && el.textContent) {
+                    this.borrowingsList = JSON.parse(el.textContent);
+                }
+            } catch (e) {
+                console.error('Error parsing borrowings list:', e);
+            }
+        },
+
+        openManageModal(id) {
+            this.closeDamageCamera();
+            this.damageCapturedPhoto = null;
+            this.returnCondition = 'baik';
+            this.loadBorrowingsList();
+
+            if (typeof id === 'object' && id !== null) {
+                this.selectedBorrowing = id;
+                this.openReviewModal = true;
+                this.openManageModalState = true;
+                this.rejectModalOpen = false;
+                this.verifyModalOpen = false;
+                this.closeDamageCamera();
+                this.damageCapturedPhoto = null;
+                return;
+            }
+
+            const targetId = Number(id);
+            const borrowing = this.borrowingsList.find(b => Number(b.id) === targetId);
+            if (borrowing) {
+                this.selectedBorrowing = borrowing;
+                this.openReviewModal = true;
+                this.openManageModalState = true;
+                this.rejectModalOpen = false;
+                this.verifyModalOpen = false;
+                this.closeDamageCamera();
+                this.damageCapturedPhoto = null;
+            } else {
+                fetch(`/admin/borrowings/${targetId}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response not ok');
+                    return res.json();
+                })
+                .then(data => {
+                    this.selectedBorrowing = data;
+                    this.openReviewModal = true;
+                    this.openManageModalState = true;
+                    this.rejectModalOpen = false;
+                    this.verifyModalOpen = false;
+                    this.closeDamageCamera();
+                    this.damageCapturedPhoto = null;
+                })
+                .catch(err => {
+                    console.error('Error openManageModal:', err);
+                    window.location.href = `/admin/borrowings/${targetId}`;
+                });
+            }
+        },
+        openDetail(id) {
+            this.openManageModal(id);
+        },
+        openReview(id) {
+            this.openManageModal(id);
+        },
+        openDetailModal(id) {
+            this.openManageModal(id);
         },
         closeDetail() {
+            this.closeDamageCamera();
+            this.damageCapturedPhoto = null;
             this.openReviewModal = false;
+            this.openManageModalState = false;
             this.previewImage = null;
             this.rejectModalOpen = false;
             this.verifyModalOpen = false;
+            this.returnCondition = 'baik';
             setTimeout(() => {
-                if (!this.openReviewModal) {
+                if (!this.openReviewModal && !this.openManageModalState) {
                     this.selectedBorrowing = null;
                 }
             }, 200);
+        },
+        closeManageModal() {
+            this.closeDetail();
+        },
+        async openDamageCamera() {
+            try {
+                this.closeDamageCamera();
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: this.damageFacingMode,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                });
+                this.damageMediaStream = stream;
+                this.mediaStream = stream;
+                if (this.$refs.damageVideo) {
+                    this.$refs.damageVideo.srcObject = stream;
+                }
+                if (this.$refs.video) {
+                    this.$refs.video.srcObject = stream;
+                }
+                this.isDamageCameraOpen = true;
+                this.damageCapturedPhoto = null;
+            } catch (err) {
+                console.error('Damage camera access error:', err);
+            }
+        },
+        takeDamageSnapshot() {
+            const video = this.$refs.damageVideo || this.$refs.video;
+            const canvas = this.$refs.damageCanvas || this.$refs.canvas;
+            if (!video || !canvas) return;
+
+            const maxDim = 1280;
+            let w = video.videoWidth || 640;
+            let h = video.videoHeight || 480;
+
+            if (w > maxDim || h > maxDim) {
+                if (w >= h) {
+                    h = Math.round((h * maxDim) / w);
+                    w = maxDim;
+                } else {
+                    w = Math.round((w * maxDim) / h);
+                    h = maxDim;
+                }
+            }
+
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, w, h);
+
+            this.applyDamageWatermark(canvas);
+
+            this.damageCapturedPhoto = canvas.toDataURL('image/jpeg', 0.68);
+            this.closeDamageCamera();
+        },
+        retakeDamageSnapshot() {
+            this.damageCapturedPhoto = null;
+            this.openDamageCamera();
+        },
+        switchDamageCamera() {
+            this.damageFacingMode = this.damageFacingMode === 'user' ? 'environment' : 'user';
+            this.openDamageCamera();
+        },
+        closeDamageCamera() {
+            if (this.damageMediaStream) {
+                this.damageMediaStream.getTracks().forEach(track => {
+                    try { track.stop(); } catch (e) {}
+                });
+                this.damageMediaStream = null;
+            }
+            if (this.mediaStream) {
+                this.mediaStream.getTracks().forEach(track => {
+                    try { track.stop(); } catch (e) {}
+                });
+                this.mediaStream = null;
+            }
+            if (this.$refs.damageVideo) {
+                try {
+                    this.$refs.damageVideo.pause();
+                    this.$refs.damageVideo.srcObject = null;
+                } catch (e) {}
+            }
+            if (this.$refs.video) {
+                try {
+                    this.$refs.video.pause();
+                    this.$refs.video.srcObject = null;
+                } catch (e) {}
+            }
+            this.isDamageCameraOpen = false;
+        },
+        applyDamageWatermark(canvas) {
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+
+            const now = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+            const year = now.getFullYear();
+            const month = pad(now.getMonth() + 1);
+            const day = pad(now.getDate());
+            const hours = pad(now.getHours());
+            const minutes = pad(now.getMinutes());
+            const seconds = pad(now.getSeconds());
+            const timestampStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds} WIB`;
+            const textStr = `BUKTI KERUSAKAN | ${timestampStr}`;
+
+            const fontSize = Math.max(13, Math.floor(width / 36));
+            ctx.font = `bold ${fontSize}px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+
+            const paddingX = 14;
+            const paddingY = 8;
+            const textMetrics = ctx.measureText(textStr);
+            const boxWidth = textMetrics.width + (paddingX * 2);
+            const boxHeight = fontSize + (paddingY * 2);
+
+            const x = width - boxWidth - 14;
+            const y = height - boxHeight - 14;
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+            if (ctx.roundRect) {
+                ctx.beginPath();
+                ctx.roundRect(x, y, boxWidth, boxHeight, 6);
+                ctx.fill();
+            } else {
+                ctx.fillRect(x, y, boxWidth, boxHeight);
+            }
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(textStr, x + paddingX, y + (boxHeight / 2));
         }
-    }"
-    x-init="$watch('openReviewModal', value => { if (!value) closeDetail(); })"
-    @keydown.escape.window="if (previewImage) { previewImage = null; } else { openReviewModal = false; }"
+    };
+}
+if (window.Alpine) {
+    window.Alpine.data('monitoringHandler', monitoringHandler);
+} else {
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('monitoringHandler', monitoringHandler);
+    });
+}
+</script>
+
+<div
+    class="max-w-7xl mx-auto px-4 sm:px-6 py-8 page-enter"
+    x-data="monitoringHandler()"
+    @keydown.escape.window="if (previewImage) { previewImage = null; } else { closeDetail(); }"
+    @beforeunload.window="closeDetail()"
 >
 
-    {{-- Page Header --}}
     {{-- Page Header --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
@@ -250,6 +498,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-stone-100 dark:divide-stone-800/60">
+                    @php $borrowingsListPayload = []; @endphp
                     @forelse ($borrowings as $b)
                         @php
                             $statusVal = $b->status->value ?? (string) $b->status;
@@ -280,6 +529,8 @@
                                     'serial_number' => $b->asset?->serial_number ?? '-',
                                     'category' => $b->asset?->category?->name ?? '-',
                                     'photo_url' => $b->asset?->photo_url,
+                                    'latest_damage_photo' => $b->asset?->latest_damage_photo,
+                                    'latest_damage_photo_url' => $b->asset?->latest_damage_photo_url,
                                 ],
                                 'dates' => [
                                     'requested_at' => $b->requested_at ? $b->requested_at->format('d M Y, H:i') . ' WIB' : '-',
@@ -295,15 +546,20 @@
                                 'purpose_category' => $b->purpose_category,
                                 'borrower_note' => $b->borrower_note ?: 'Tidak ada catatan',
                                 'return_note' => $b->return_note ?: null,
+                                'return_verification_note' => $b->return_verification_note ?: null,
+                                'return_condition' => $b->return_condition?->value ?? (string) $b->return_condition,
                                 'rejection_reason' => $b->rejection_reason,
                                 'rejected_at' => $b->rejected_at ? $b->rejected_at->format('d M Y, H:i') . ' WIB' : null,
                                 'rejected_by' => $b->rejectedBy?->name,
                                 'borrowing_evidence_url' => $b->borrowing_evidence_path ? asset('storage/' . $b->borrowing_evidence_path) : null,
                                 'return_evidence_url' => $b->return_evidence_path ? asset('storage/' . $b->return_evidence_path) : null,
+                                'damage_evidence_path' => $b->damage_evidence_path,
+                                'damage_evidence_url' => $b->damage_evidence_url ?? $b->asset?->latest_damage_photo_url,
                                 'approved_by' => $b->approvedBy?->name,
                                 'return_verified_by' => $b->returnVerifiedBy?->name,
                                 'wa_url' => $waUrl,
                             ];
+                            $borrowingsListPayload[] = $detailPayload;
                         @endphp
                         <tr class="border-b border-stone-100 dark:border-stone-800/80 interactive-row">
                             {{-- No --}}
@@ -519,7 +775,7 @@
 
                                     <button
                                         type="button"
-                                        @click="openDetail({{ Js::from($detailPayload) }})"
+                                        @click="openManageModal({{ $b->id }})"
                                         class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-[#6F4E37] dark:bg-stone-800 dark:hover:bg-cyan-600 text-stone-700 hover:text-white dark:text-stone-300 font-semibold text-xs transition active:scale-95 border border-stone-300 dark:border-stone-700 shadow-sm cursor-pointer"
                                     >
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -553,14 +809,19 @@
         </div>
     </div>
 
+    {{-- JSON Payload untuk Akses Cepat Alpine Modal --}}
+    <script id="borrowings-list-data" type="application/json">
+        {!! json_encode($borrowingsListPayload, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}
+    </script>
+
     {{-- Modal Detail Transaksi & Kelola Aksi --}}
     <template x-teleport="body">
         <div
-            x-show="openReviewModal"
+            x-show="openManageModalState || openReviewModal"
             x-cloak
             class="fixed inset-0 z-[60] overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
-            @keydown.escape.window="openReviewModal = false"
-            @click.self="openReviewModal = false"
+            @keydown.escape.window="closeDetail()"
+            @click.self="closeDetail()"
             x-transition:enter="transition-opacity duration-200 ease-out"
             x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100"
@@ -570,7 +831,7 @@
         >
             <!-- Kontainer Kartu Modal -->
             <div
-                x-show="openReviewModal"
+                x-show="openManageModalState || openReviewModal"
                 class="relative z-10 w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-[#131B2A] shadow-2xl border border-stone-200 dark:border-stone-800 p-6 scroll-smooth [scrollbar-gutter:stable] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-stone-300 dark:[&::-webkit-scrollbar-thumb]:bg-stone-700 [&::-webkit-scrollbar-thumb]:rounded-full"
                 x-transition:enter="transition-all duration-200 cubic-bezier(0.16, 1, 0.3, 1)"
                 x-transition:enter-start="opacity-0 scale-[0.97] translate-y-2"
@@ -629,7 +890,7 @@
                     {{-- Tombol Silang (Close ✕) --}}
                     <button
                         type="button"
-                        @click="openReviewModal = false"
+                        @click="closeDetail()"
                         class="text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 p-2 -mr-1 -mt-1 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 transition cursor-pointer flex items-center justify-center shrink-0 border border-transparent hover:border-stone-200 dark:hover:border-stone-700 interactive-btn"
                         title="Tutup (Esc)"
                         aria-label="Tutup Dialog Review"
@@ -770,29 +1031,158 @@
                                 </div>
                             </div>
 
-                            {{-- Kondisi Ada Kerusakan: Form Bukti Foto & Klaim Penalti --}}
-                            <div x-show="returnCondition === 'rusak_ringan' || returnCondition === 'rusak_berat' || returnCondition === 'Rusak Ringan' || returnCondition === 'Rusak Berat'" x-cloak class="p-4 rounded-xl bg-rose-50/90 dark:bg-rose-950/50 border border-rose-300 dark:border-rose-800 space-y-3">
-                                <div class="flex items-center gap-2 text-xs font-bold text-rose-800 dark:text-rose-300">
-                                    <svg class="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                                    </svg>
-                                    <span>Pemberkasan Cacat / Kerusakan & Klaim Penalti</span>
+                            {{-- Kondisi Ada Kerusakan: Form Bukti Kamera Real-Time & Klaim Penalti --}}
+                            <div x-show="returnCondition === 'rusak_ringan' || returnCondition === 'rusak_berat' || returnCondition === 'Rusak Ringan' || returnCondition === 'Rusak Berat'" x-cloak class="p-4 rounded-xl bg-rose-50/90 dark:bg-rose-950/50 border border-rose-300 dark:border-rose-800 space-y-3.5">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2 text-xs font-bold text-rose-800 dark:text-rose-300">
+                                        <svg class="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                        </svg>
+                                        <span>Pemberkasan Cacat / Kerusakan & Klaim Penalti</span>
+                                    </div>
+                                    <span class="text-[11px] font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                                        <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                                        Kamera Real-Time
+                                    </span>
                                 </div>
 
+                                {{-- Modul Kamera Real-Time Bukti Kerusakan --}}
                                 <div>
-                                    <label class="block text-xs font-semibold text-rose-900 dark:text-rose-200 mb-1">
-                                        Upload Bukti Foto Kerusakan: <span class="text-rose-500">*</span>
+                                    <label class="block text-xs font-semibold text-rose-900 dark:text-rose-200 mb-1.5 flex items-center justify-between">
+                                        <span>Ambil Foto Bukti Kerusakan Fisik: <span class="text-rose-500">*</span></span>
+                                        <span class="text-[10px] text-stone-500 font-normal">Watermark WIB Otomatis</span>
                                     </label>
-                                    <input
-                                        type="file"
-                                        name="damage_evidence_file"
-                                        accept="image/*"
-                                        capture="environment"
-                                        class="w-full text-xs text-stone-600 dark:text-stone-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-100 file:text-rose-700 dark:file:bg-rose-900/60 dark:file:text-rose-200 hover:file:bg-rose-200 cursor-pointer"
-                                    >
-                                    <p class="text-[11px] text-stone-500 dark:text-stone-400 mt-1">
-                                        Ambil / upload foto bagian unit yang mengalami kerusakan untuk arsip bukti fisik.
-                                    </p>
+
+                                    {{-- Jendela Preview Live Kamera / Foto Terjepret --}}
+                                    <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-stone-900 border-2 border-dashed border-rose-300 dark:border-rose-800 flex items-center justify-center shadow-inner">
+                                        {{-- Video Stream Live --}}
+                                        <video
+                                            x-ref="damageVideo"
+                                            autoplay
+                                            playsinline
+                                            muted
+                                            class="w-full h-full object-cover"
+                                            x-show="isDamageCameraOpen && !damageCapturedPhoto"
+                                        ></video>
+
+                                        {{-- Hidden Canvas untuk Snapshot & Watermark --}}
+                                        <canvas x-ref="damageCanvas" class="hidden"></canvas>
+
+                                        {{-- Preview Hasil Foto Terjepret --}}
+                                        <template x-if="damageCapturedPhoto">
+                                            <img
+                                                :src="damageCapturedPhoto"
+                                                alt="Bukti Foto Kerusakan"
+                                                class="w-full h-full object-cover"
+                                            >
+                                        </template>
+
+                                        {{-- State: Kamera Belum Aktif --}}
+                                        <div x-show="!isDamageCameraOpen && !damageCapturedPhoto" class="flex flex-col items-center justify-center text-center p-4">
+                                            <div class="w-10 h-10 rounded-full bg-stone-800 text-stone-400 flex items-center justify-center mb-2">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                </svg>
+                                            </div>
+                                            <span class="text-xs text-white font-medium">Kamera Bukti Belum Aktif</span>
+                                            <p class="text-[11px] text-stone-400 mt-0.5">Tekan tombol "Buka Kamera Bukti" untuk memotret fisik unit yang rusak.</p>
+                                        </div>
+
+                                        {{-- Indikator Live --}}
+                                        <div x-show="isDamageCameraOpen && !damageCapturedPhoto" class="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-black/60 backdrop-blur-md text-white text-[11px] px-2.5 py-0.5 rounded-full pointer-events-none z-10">
+                                            <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                                            <span class="font-medium">Live</span>
+                                        </div>
+
+                                        {{-- Indikator Foto Siap Disimpan --}}
+                                        <div x-show="damageCapturedPhoto" class="absolute top-2.5 left-2.5 flex items-center gap-1 bg-emerald-600/90 text-white text-[11px] px-2.5 py-0.5 rounded-full shadow backdrop-blur-sm pointer-events-none z-10">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            <span>Foto Kerusakan Siap Disimpan</span>
+                                        </div>
+                                    </div>
+
+                                    {{-- Kontrol Bar Kamera --}}
+                                    <div class="mt-2.5">
+                                        {{-- Tombol Buka Kamera Saat Belum Aktif --}}
+                                        <div x-show="!isDamageCameraOpen && !damageCapturedPhoto" class="flex flex-col sm:flex-row items-center justify-between gap-2">
+                                            <button
+                                                type="button"
+                                                @click="openDamageCamera()"
+                                                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-all duration-200 shadow-sm active:scale-95 cursor-pointer interactive-btn"
+                                            >
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                                </svg>
+                                                <span>Buka Kamera Bukti</span>
+                                            </button>
+                                            <span class="text-[11px] text-stone-500 dark:text-stone-400 italic">
+                                                Izinkan akses webcam untuk verifikasi fisik.
+                                            </span>
+                                        </div>
+
+                                        {{-- Tombol Shutter Lingkaran Saat Kamera Aktif --}}
+                                        <div x-show="isDamageCameraOpen && !damageCapturedPhoto" class="flex items-center justify-center gap-4 py-1">
+                                            <button
+                                                type="button"
+                                                @click="takeDamageSnapshot()"
+                                                class="w-14 h-14 rounded-full border-4 border-rose-600 bg-white shadow-md active:scale-95 flex items-center justify-center transition-transform hover:bg-stone-50 cursor-pointer interactive-btn"
+                                                title="Ambil Foto Bukti Kerusakan"
+                                            >
+                                                <div class="w-9 h-9 rounded-full bg-rose-600 flex items-center justify-center text-white">
+                                                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                    </svg>
+                                                </div>
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                @click="switchDamageCamera()"
+                                                class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] text-stone-700 dark:text-stone-300 hover:bg-stone-100 text-xs font-medium transition shadow-sm active:scale-95 cursor-pointer interactive-btn"
+                                                title="Ganti Kamera Depan/Belakang"
+                                            >
+                                                <svg class="w-3.5 h-3.5 text-stone-600 dark:text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                                </svg>
+                                                <span>Ganti Kamera</span>
+                                            </button>
+                                        </div>
+
+                                        {{-- Tombol Ambil Ulang Saat Foto Sudah Ada --}}
+                                        <div x-show="damageCapturedPhoto" class="flex flex-col sm:flex-row items-center justify-between gap-2">
+                                            <div class="text-xs text-emerald-700 dark:text-emerald-400 font-medium flex items-center gap-1.5">
+                                                <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                                <span>Foto kerusakan berhasil diabadikan dengan watermark WIB.</span>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                @click="retakeDamageSnapshot()"
+                                                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#0B0F17] hover:bg-stone-100 text-stone-700 dark:text-stone-300 text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer interactive-btn"
+                                            >
+                                                <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                                </svg>
+                                                <span>Ambil Ulang Foto</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {{-- Hidden Input Base64 Kamera & Fallback File Upload (untuk testing / no-webcam devices) --}}
+                                    <input type="hidden" name="damage_evidence" :value="damageCapturedPhoto">
+                                    <div class="mt-2 text-[11px] text-stone-400 flex items-center gap-1">
+                                        <span>Atau unggah berkas jika webcam terkendala:</span>
+                                        <label class="text-rose-600 dark:text-rose-400 hover:underline cursor-pointer font-medium">
+                                            Pilih Berkas Foto
+                                            <input type="file" name="damage_evidence_file" accept="image/*" class="hidden" @change="if ($event.target.files.length) { damageCapturedPhoto = null; closeDamageCamera(); }">
+                                        </label>
+                                    </div>
                                 </div>
 
                                 <div>
@@ -996,6 +1386,41 @@
                             </template>
                         </div>
                     </div>
+
+                    {{-- Bukti Kerusakan Fisik (Inspeksi Admin) - Tampil Khusus Kondisi Rusak Ringan / Rusak Berat --}}
+                    <template x-if="(selectedBorrowing?.return_condition === 'rusak_ringan' || selectedBorrowing?.return_condition === 'rusak_berat' || selectedBorrowing?.return_condition === 'Rusak Ringan' || selectedBorrowing?.return_condition === 'Rusak Berat') && (selectedBorrowing?.damage_evidence_url || selectedBorrowing?.asset?.latest_damage_photo_url)">
+                        <div class="mt-4 pt-4 border-t border-stone-200 dark:border-stone-800">
+                            <span class="text-[11px] font-semibold text-rose-600 dark:text-rose-400 block mb-1.5 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                                Bukti Kerusakan Fisik (Inspeksi Admin)
+                            </span>
+
+                            <div
+                                class="relative rounded-xl overflow-hidden bg-stone-900 border border-stone-800 shadow-sm cursor-pointer group"
+                                @click="previewImage = (selectedBorrowing?.damage_evidence_url || selectedBorrowing?.asset?.latest_damage_photo_url)"
+                            >
+                                <img
+                                    :src="selectedBorrowing?.damage_evidence_url || selectedBorrowing?.asset?.latest_damage_photo_url"
+                                    alt="Bukti Kerusakan Fisik"
+                                    class="object-cover rounded-xl w-full h-44 border border-stone-800 transition group-hover:scale-102"
+                                >
+                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-semibold gap-1 rounded-xl">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/>
+                                    </svg>
+                                    Perbesar Foto Kerusakan
+                                </div>
+                            </div>
+
+                            {{-- Catatan Kerusakan / Hasil Inspeksi Admin --}}
+                            <template x-if="selectedBorrowing?.return_note || selectedBorrowing?.return_verification_note">
+                                <div class="mt-2.5 p-3 rounded-xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-xs">
+                                    <span class="font-semibold text-stone-700 dark:text-stone-300 block mb-0.5">Catatan Kerusakan / Hasil Inspeksi:</span>
+                                    <p class="text-stone-600 dark:text-stone-400" x-text="selectedBorrowing?.return_note || selectedBorrowing?.return_verification_note"></p>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
                 </div>
 
             </div>
@@ -1019,7 +1444,7 @@
                         </template>
                         <button
                             type="button"
-                            @click="openReviewModal = false"
+                            @click="closeDetail()"
                             class="px-5 py-2 rounded-xl bg-[#6F4E37] text-white text-xs font-bold hover:bg-[#5a3f2c] transition shadow-sm cursor-pointer interactive-btn"
                         >
                             Tutup

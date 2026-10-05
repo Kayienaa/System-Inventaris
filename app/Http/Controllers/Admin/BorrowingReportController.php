@@ -20,7 +20,7 @@ class BorrowingReportController extends Controller
             ->latest('id')
             ->get();
 
-        $filename = 'laporan-peminjaman-tevault-' . Carbon::now()->format('Ymd-His') . '.csv';
+        $filename = 'laporan-peminjaman-sitefa-' . Carbon::now()->format('Ymd-His') . '.csv';
 
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
@@ -36,7 +36,7 @@ class BorrowingReportController extends Controller
             // UTF-8 BOM for Microsoft Excel compatibility
             fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-            // Header kolom
+            // Header kolom (gunakan delimiter ';' agar Microsoft Excel otomatis memisahkan data per kolom)
             fputcsv($handle, [
                 'No',
                 'Nama Peminjam',
@@ -49,7 +49,7 @@ class BorrowingReportController extends Controller
                 'Tanggal Kembali',
                 'Status',
                 'Catatan Peminjam',
-            ]);
+            ], ';');
 
             $no = 1;
             foreach ($borrowings as $b) {
@@ -87,7 +87,7 @@ class BorrowingReportController extends Controller
                     $b->returned_at ? $b->returned_at->format('d/m/Y H:i') : '-',
                     $statusText,
                     $b->borrower_note ?? '-',
-                ]);
+                ], ';');
             }
 
             fclose($handle);

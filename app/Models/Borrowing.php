@@ -47,6 +47,7 @@ class Borrowing extends Model
         'return_verified_by_user_id',
         'return_verified_at',
         'return_verification_note',
+        'damage_evidence_path',
     ];
 
     /**
@@ -128,4 +129,41 @@ class Borrowing extends Model
             && $this->expires_at !== null
             && $this->expires_at->isPast();
     }
+
+    public function getBorrowingEvidenceUrlAttribute(): ?string
+    {
+        if (empty($this->borrowing_evidence_path)) {
+            return null;
+        }
+
+        $segments = explode('/', ltrim($this->borrowing_evidence_path, '/'));
+        $encodedSegments = array_map('rawurlencode', $segments);
+
+        return asset('storage/' . implode('/', $encodedSegments));
+    }
+
+    public function getReturnEvidenceUrlAttribute(): ?string
+    {
+        if (empty($this->return_evidence_path)) {
+            return null;
+        }
+
+        $segments = explode('/', ltrim($this->return_evidence_path, '/'));
+        $encodedSegments = array_map('rawurlencode', $segments);
+
+        return asset('storage/' . implode('/', $encodedSegments));
+    }
+
+    public function getDamageEvidenceUrlAttribute(): ?string
+    {
+        if (empty($this->damage_evidence_path)) {
+            return null;
+        }
+
+        $segments = explode('/', ltrim($this->damage_evidence_path, '/'));
+        $encodedSegments = array_map('rawurlencode', $segments);
+
+        return asset('storage/' . implode('/', $encodedSegments));
+    }
 }
+

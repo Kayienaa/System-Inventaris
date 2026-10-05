@@ -390,16 +390,15 @@
                 <p>Mengetahui,</p>
                 <p><strong>Kepala Lab / Pembimbing TEFA</strong></p>
                 <div class="signature-space"></div>
-                <p class="signature-name">Budi Santoso, S.Kom.</p>
-                <p class="signature-nip">NIP. 19800101 200501 1 001</p>
+                <p class="signature-name">Dwi Agung Suhartono, S.Kom.</p>
+                <p class="signature-nip">NIP. 19810330 201001 1 016</p>
             </div>
 
             <div class="signature-box">
                 <p>Jepara, {{ $generatedAt->translatedFormat('d F Y') }}</p>
                 <p><strong>Pengelola Inventaris SITEFA</strong></p>
                 <div class="signature-space"></div>
-                <p class="signature-name">{{ auth()->user()->name }}</p>
-                <p class="signature-nip">Petugas Administrasi Lab</p>
+                <p class="signature-name" style="text-decoration: none;">( .................................................... )</p>
             </div>
         </div>
 

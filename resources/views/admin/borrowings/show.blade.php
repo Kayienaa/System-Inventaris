@@ -203,12 +203,12 @@
                         Peminjam telah mengajukan pengembalian beserta foto bukti. Periksa kondisi unit fisik lalu konfirmasi verifikasi.
                     </p>
 
-                    <form action="{{ route('admin.borrowings.verify-return', $borrowing) }}" method="POST" class="space-y-3">
+                    <form action="{{ route('admin.borrowings.verify-return', $borrowing) }}" method="POST" enctype="multipart/form-data" class="space-y-3" x-data="{ showDamage: false }">
                         @csrf
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">Kondisi Fisik Saat Kembali:</label>
-                                <select name="return_condition" class="w-full text-xs rounded-xl border border-gray-300 px-3 py-2">
+                                <select name="return_condition" @change="showDamage = ($event.target.value !== 'Baik')" class="w-full text-xs rounded-xl border border-gray-300 px-3 py-2">
                                     <option value="Baik">Baik (Normal)</option>
                                     <option value="Rusak Ringan">Rusak Ringan</option>
                                     <option value="Rusak Berat">Rusak Berat (Masuk Perbaikan)</option>
@@ -224,6 +224,13 @@
                                 >
                             </div>
                         </div>
+
+                        <div x-show="showDamage" x-cloak class="p-3.5 rounded-xl bg-rose-50 border border-rose-200 space-y-2">
+                            <label class="block text-xs font-semibold text-rose-900 mb-1">Foto Bukti Kerusakan Fisik:</label>
+                            <input type="file" name="damage_evidence_file" accept="image/*" class="w-full text-xs text-stone-600 file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-100 file:text-rose-700 hover:file:bg-rose-200 cursor-pointer">
+                            <textarea name="penalty_claim_note" rows="2" placeholder="Catatan penalti atau ganti rugi..." class="w-full text-xs rounded-xl border border-rose-300 p-2 text-stone-900 focus:outline-none"></textarea>
+                        </div>
+
                         <div class="flex justify-end pt-2">
                             <button
                                 type="submit"
@@ -483,6 +490,40 @@
                         @endif
                     </div>
                 </div>
+
+                {{-- Bukti Kerusakan Fisik (Inspeksi Admin) - Tampil Khusus Kondisi Rusak Ringan / Rusak Berat --}}
+                @if(in_array(strtolower(str_replace(' ', '_', $detail['return_condition'] ?? '')), ['rusak_ringan', 'rusak_berat'], true) && (!empty($detail['damage_evidence_url']) || !empty($detail['asset']['latest_damage_photo_url'])))
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <span class="text-xs font-semibold text-rose-600 block mb-2 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                            Bukti Kerusakan Fisik (Inspeksi Admin)
+                        </span>
+
+                        <div
+                            class="relative rounded-xl overflow-hidden bg-stone-900 border border-stone-800 shadow-sm cursor-pointer group"
+                            @click="previewImage = '{{ $detail['damage_evidence_url'] ?? $detail['asset']['latest_damage_photo_url'] }}'"
+                        >
+                            <img
+                                src="{{ $detail['damage_evidence_url'] ?? $detail['asset']['latest_damage_photo_url'] }}"
+                                alt="Bukti Kerusakan Fisik"
+                                class="object-cover rounded-xl w-full h-44 border border-stone-800 transition group-hover:scale-102"
+                            >
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-semibold gap-1 rounded-xl">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/>
+                                </svg>
+                                Perbesar Foto Kerusakan
+                            </div>
+                        </div>
+
+                        @if(!empty($detail['return_note']) || !empty($detail['return_verification_note']))
+                            <div class="mt-2.5 p-3 rounded-xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-xs">
+                                <span class="font-semibold text-stone-700 dark:text-stone-300 block mb-0.5">Catatan Kerusakan / Hasil Inspeksi:</span>
+                                <p class="text-stone-600 dark:text-stone-400">{{ $detail['return_verification_note'] ?? $detail['return_note'] }}</p>
+                            </div>
+                        @endif
+                    </div>
+                @endif
             </div>
 
         </div>

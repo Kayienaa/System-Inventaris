@@ -28,6 +28,7 @@ class Asset extends Model
         'condition',
         'availability_status',
         'photo_path',
+        'latest_damage_photo',
         'notes',
     ];
 
@@ -81,6 +82,21 @@ class Asset extends Model
 
         // Encode segmen nama berkas agar tanda '#' berubah menjadi '%23'
         $segments = explode('/', ltrim($this->photo_path, '/'));
+        $encodedSegments = array_map('rawurlencode', $segments);
+
+        return asset('storage/' . implode('/', $encodedSegments));
+    }
+
+    /**
+     * URL publik foto bukti kerusakan fisik terakhir aset.
+     */
+    public function getLatestDamagePhotoUrlAttribute(): ?string
+    {
+        if (empty($this->latest_damage_photo)) {
+            return null;
+        }
+
+        $segments = explode('/', ltrim($this->latest_damage_photo, '/'));
         $encodedSegments = array_map('rawurlencode', $segments);
 
         return asset('storage/' . implode('/', $encodedSegments));

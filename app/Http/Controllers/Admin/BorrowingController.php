@@ -184,6 +184,8 @@ class BorrowingController extends Controller
                 'serial_number' => $borrowing->asset?->serial_number ?? '-',
                 'category' => $borrowing->asset?->category?->name ?? '-',
                 'photo_url' => $borrowing->asset?->photo_url,
+                'latest_damage_photo' => $borrowing->asset?->latest_damage_photo,
+                'latest_damage_photo_url' => $borrowing->asset?->latest_damage_photo_url,
             ],
             'dates' => [
                 'requested_at' => $borrowing->requested_at ? $borrowing->requested_at->format('d M Y, H:i') . ' WIB' : '-',
@@ -204,14 +206,26 @@ class BorrowingController extends Controller
             'is_expired' => $borrowing->isExpired(),
             'borrower_note' => $borrowing->borrower_note ?: 'Tidak ada catatan',
             'return_note' => $borrowing->return_note ?: null,
+            'return_verification_note' => $borrowing->return_verification_note ?: null,
+            'return_condition' => $borrowing->return_condition?->value ?? (string) $borrowing->return_condition,
             'rejection_reason' => $borrowing->rejection_reason,
             'rejected_at' => $borrowing->rejected_at ? $borrowing->rejected_at->format('d M Y, H:i') . ' WIB' : null,
             'rejected_by' => $borrowing->rejectedBy?->name,
             'borrowing_evidence_url' => $borrowing->borrowing_evidence_path ? asset('storage/' . $borrowing->borrowing_evidence_path) : null,
             'return_evidence_url' => $borrowing->return_evidence_path ? asset('storage/' . $borrowing->return_evidence_path) : null,
+            'damage_evidence_path' => $borrowing->damage_evidence_path,
+            'damage_evidence_url' => $borrowing->damage_evidence_url ?? $borrowing->asset?->latest_damage_photo_url,
             'approved_by' => $borrowing->approvedBy?->name,
             'return_verified_by' => $borrowing->returnVerifiedBy?->name,
             'wa_url' => $waUrl,
         ];
+    }
+
+    /**
+     * Verifikasi penerimaan pengembalian fisik oleh Admin / Super Admin.
+     */
+    public function verifyReturn(Request $request, Borrowing $borrowing, \App\Actions\Borrowings\VerifyReturnAction $action, \App\Services\AuditLogService $audit, \App\Services\NotificationService $notifications)
+    {
+        return app(\App\Http\Controllers\BorrowingController::class)->webVerifyReturn($request, $borrowing, $action, $audit, $notifications);
     }
 }

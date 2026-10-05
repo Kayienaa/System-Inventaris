@@ -189,9 +189,12 @@ class BorrowingController extends Controller
             ?? AssetCondition::tryFrom($request->input('return_condition'))
             ?? AssetCondition::Baik;
 
-        $damageEvidence = $this->storeEvidenceImage($request, 'damage_evidence', 'return-evidence');
-        if ($damageEvidence === null && $request->hasFile('damage_evidence_file')) {
-            $damageEvidence = $this->storeEvidenceImage($request, 'damage_evidence_file', 'return-evidence');
+        $damageEvidence = null;
+        if ($condition !== AssetCondition::Baik) {
+            $damageEvidence = $this->storeEvidenceImage($request, 'damage_evidence', 'return-evidence');
+            if ($damageEvidence === null && $request->hasFile('damage_evidence_file')) {
+                $damageEvidence = $this->storeEvidenceImage($request, 'damage_evidence_file', 'return-evidence');
+            }
         }
 
         $note = $request->input('return_verification_note');
@@ -341,8 +344,17 @@ class BorrowingController extends Controller
 
     public function verifyReturn(VerifyReturnRequest $request, Borrowing $borrowing, VerifyReturnAction $action, AuditLogService $audit, NotificationService $notifications): BorrowingResource
     {
+        $condition = $request->enum('return_condition', AssetCondition::class) ?? AssetCondition::Baik;
+        $damageEvidence = null;
+        if ($condition !== AssetCondition::Baik) {
+            $damageEvidence = $this->storeEvidenceImage($request, 'damage_evidence', 'return-evidence');
+            if ($damageEvidence === null && $request->hasFile('damage_evidence_file')) {
+                $damageEvidence = $this->storeEvidenceImage($request, 'damage_evidence_file', 'return-evidence');
+            }
+        }
+
         $old = $borrowing->getAttributes();
-        $result = $action->execute($request->user(), $borrowing, $request->enum('return_condition', AssetCondition::class) ?? AssetCondition::Baik, $request->input('return_verification_note'));
+        $result = $action->execute($request->user(), $borrowing, $condition, $request->input('return_verification_note'), $damageEvidence);
         $audit->record($request->user(), 'borrowing.return_verified', $result, $old, $result->getAttributes());
         $notifications->queueReturnVerification($result);
 

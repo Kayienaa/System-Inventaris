@@ -666,9 +666,97 @@ class AssetBorrowingTest extends TestCase
         $this->assertEquals(BorrowingStatus::Returned, $borrowing->status);
         $this->assertEquals(AssetCondition::RusakBerat, $borrowing->return_condition);
         $this->assertNotNull($borrowing->return_evidence_path);
+        $this->assertNotNull($borrowing->damage_evidence_path);
         $this->assertStringContainsString('Engsel laptop patah', $borrowing->return_verification_note);
         $this->assertEquals(AssetCondition::RusakBerat, $asset->condition);
         $this->assertEquals(AssetAvailabilityStatus::Perbaikan, $asset->availability_status);
+        $this->assertNotNull($asset->latest_damage_photo);
+    }
+
+    public function test_admin_verifies_return_with_realtime_camera_damage_evidence(): void
+    {
+        Storage::fake('public');
+
+        $admin = $this->createAdmin();
+        $siswa = $this->createSiswa();
+        $asset = Asset::first();
+
+        $borrowing = Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::ReturnPendingVerification,
+            'requested_at' => now()->subDays(2),
+            'borrowed_at' => now()->subDays(2),
+            'due_at' => now()->addDays(1),
+            'return_evidence_path' => 'return-evidence/user_return_photo.jpg',
+            'return_note' => 'Unit dikembalikan di lab TEFA',
+        ]);
+        $asset->update([
+            'condition' => AssetCondition::Baik,
+            'availability_status' => AssetAvailabilityStatus::Dipinjam,
+        ]);
+
+        $base64Image = 'data:image/png;base64,' . base64_encode(
+            \Illuminate\Http\UploadedFile::fake()->image('webcam_snapshot.png', 400, 300)->getContent()
+        );
+
+        $response = $this->actingAs($admin)
+            ->from(route('admin.borrowings.index'))
+            ->post(route('admin.borrowings.verify-return', $borrowing), [
+                'return_condition' => 'rusak_ringan',
+                'return_verification_note' => 'Baret halus pada cover atas',
+                'penalty_claim_note' => 'Biaya penggantian stiker pelindung',
+                'damage_evidence' => $base64Image,
+            ]);
+
+        $response->assertRedirect(route('admin.borrowings.index'));
+        $response->assertSessionHas('success');
+
+        $borrowing->refresh();
+        $asset->refresh();
+
+        $this->assertEquals(BorrowingStatus::Returned, $borrowing->status);
+        $this->assertEquals(AssetCondition::RusakRingan, $borrowing->return_condition);
+        $this->assertNotNull($borrowing->damage_evidence_path);
+        $this->assertEquals('return-evidence/user_return_photo.jpg', $borrowing->return_evidence_path);
+        $this->assertEquals(AssetCondition::RusakRingan, $asset->condition);
+        $this->assertNotNull($asset->latest_damage_photo);
+        $this->assertEquals($borrowing->damage_evidence_path, $asset->latest_damage_photo);
+    }
+
+    public function test_admin_verifies_return_with_good_condition_leaves_damage_evidence_null(): void
+    {
+        $admin = $this->createAdmin();
+        $siswa = $this->createSiswa();
+        $asset = Asset::first();
+
+        $borrowing = Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::ReturnPendingVerification,
+            'requested_at' => now()->subDays(1),
+            'borrowed_at' => now()->subDays(1),
+            'due_at' => now()->addDays(2),
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->from(route('admin.borrowings.index'))
+            ->post(route('admin.borrowings.verify-return', $borrowing), [
+                'return_condition' => 'baik',
+                'return_verification_note' => 'Unit lengkap dan mulus',
+            ]);
+
+        $response->assertRedirect(route('admin.borrowings.index'));
+        $response->assertSessionHas('success');
+
+        $borrowing->refresh();
+        $asset->refresh();
+
+        $this->assertEquals(BorrowingStatus::Returned, $borrowing->status);
+        $this->assertEquals(AssetCondition::Baik, $borrowing->return_condition);
+        $this->assertNull($borrowing->damage_evidence_path);
+        $this->assertEquals(AssetCondition::Baik, $asset->condition);
+        $this->assertEquals(AssetAvailabilityStatus::Tersedia, $asset->availability_status);
     }
 }
 

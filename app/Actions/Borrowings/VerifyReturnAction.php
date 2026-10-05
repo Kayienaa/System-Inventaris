@@ -46,7 +46,10 @@ class VerifyReturnAction
             ];
 
             if ($damageEvidencePath !== null) {
-                $updateData['return_evidence_path'] = $damageEvidencePath;
+                $updateData['damage_evidence_path'] = $damageEvidencePath;
+                if (! $lockedBorrowing->return_evidence_path) {
+                    $updateData['return_evidence_path'] = $damageEvidencePath;
+                }
             }
 
             $lockedBorrowing->update($updateData);
@@ -55,10 +58,16 @@ class VerifyReturnAction
                 ? AssetAvailabilityStatus::Perbaikan
                 : AssetAvailabilityStatus::Tersedia;
 
-            $asset->update([
+            $assetUpdate = [
                 'condition' => $returnCondition,
                 'availability_status' => $newAvailability,
-            ]);
+            ];
+
+            if ($damageEvidencePath !== null) {
+                $assetUpdate['latest_damage_photo'] = $damageEvidencePath;
+            }
+
+            $asset->update($assetUpdate);
 
             // Jika aset kembali tersedia, aktifkan antrean tertahan (delay) berikutnya jika ada
             if ($newAvailability === AssetAvailabilityStatus::Tersedia) {
