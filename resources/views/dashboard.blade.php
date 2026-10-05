@@ -143,7 +143,7 @@
                     <span>Aksi Cepat Peminjaman</span>
                 </div>
                 <h2 class="brand-font font-heading font-bold text-xl sm:text-2xl text-white tracking-tight">
-                    Butuh Perangkat untuk Praktik?
+                    Butuh Perangkat untuk Praktik TEFA?
                 </h2>
                 <p class="text-sm text-stone-200 dark:text-stone-300 leading-relaxed">
                     Ajukan peminjaman laptop atau smartphone inventaris TEFA SMKN 1 Bangsri dengan mudah dan transparan.

@@ -254,10 +254,15 @@ class BorrowingController extends Controller
             return new BorrowingResource($borrowing->load(['asset', 'borrower']));
         }
 
+        $waUrl = \App\Services\WhatsAppNotificationService::getBorrowerConfirmationUrl($borrowing);
+
         return redirect()
             ->route('borrowings.mine')
-            ->with('success', 'Permohonan peminjaman berhasil diajukan! Menunggu persetujuan Admin.');
+            ->with('success', 'Permohonan peminjaman berhasil diajukan! Menunggu persetujuan Admin.')
+            ->with('wa_confirmation_url', $waUrl)
+            ->with('just_submitted_borrowing_id', $borrowing->id);
     }
+
 
     public function show(Borrowing $borrowing): BorrowingResource
     {

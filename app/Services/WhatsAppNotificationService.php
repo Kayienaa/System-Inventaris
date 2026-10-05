@@ -232,4 +232,66 @@ class WhatsAppNotificationService
     {
         return self::formatDisplayPhoneNumber(self::getAdminNumber());
     }
+
+    /**
+     * Susun draf teks pesan konfirmasi pengajuan peminjaman dari peminjam ke Admin TEFA.
+     */
+    public static function buildBorrowerConfirmationMessage(Borrowing $borrowing): string
+    {
+        $borrower = $borrowing->borrower;
+        $borrowerName = $borrower?->name ?? 'Peminjam';
+
+        $identity = '-';
+        if ($borrower?->siswaProfile?->nis) {
+            $identity = 'NIS: ' . $borrower->siswaProfile->nis;
+        } elseif ($borrower?->guruProfile?->nip) {
+            $identity = 'NIP: ' . $borrower->guruProfile->nip;
+        } elseif (! empty($borrower?->nis)) {
+            $identity = 'NIS: ' . $borrower->nis;
+        } elseif (! empty($borrower?->nip)) {
+            $identity = 'NIP: ' . $borrower->nip;
+        }
+
+        $asset = $borrowing->asset;
+        $assetName = $asset?->name ?? 'Barang Inventaris';
+
+        $transactionCode = '#TRX-' . str_pad((string) ($borrowing->id ?? 0), 5, '0', STR_PAD_LEFT);
+
+        $requestedAt = $borrowing->requested_at ?? $borrowing->created_at ?? now();
+        $formattedDate = $requestedAt instanceof \Carbon\CarbonInterface
+            ? $requestedAt->format('d/m/Y H:i') . ' WIB'
+            : (is_string($requestedAt) ? $requestedAt : '-');
+
+        $lines = [
+            'Halo Admin TEFA, saya telah mengajukan peminjaman unit di SITEFA:',
+            "- Nama Peminjam: {$borrowerName} ({$identity})",
+            "- Unit Barang: {$assetName}",
+            "- Kode Transaksi: {$transactionCode}",
+            "- Waktu Pengajuan: {$formattedDate}",
+            'Mohon untuk mengecek dan menyetujui pengajuan peminjaman saya. Terima kasih.',
+        ];
+
+        return implode("\n", $lines);
+    }
+
+    /**
+     * Dapatkan URL WhatsApp direct chat konfirmasi pengajuan peminjaman dari peminjam ke Admin TEFA.
+     */
+    public static function getBorrowerConfirmationUrl(Borrowing $borrowing): string
+    {
+        $adminPhone = self::getAdminNumber();
+        $message = self::buildBorrowerConfirmationMessage($borrowing);
+        $encodedMessage = rawurlencode($message);
+
+        return "https://wa.me/{$adminPhone}?text={$encodedMessage}";
+    }
+
+    /**
+     * Alias untuk getBorrowerConfirmationUrl().
+     */
+    public static function getConfirmationUrl(Borrowing $borrowing): string
+    {
+        return self::getBorrowerConfirmationUrl($borrowing);
+    }
 }
+
