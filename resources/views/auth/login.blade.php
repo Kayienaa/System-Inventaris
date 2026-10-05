@@ -11,6 +11,19 @@
     <link rel="icon" type="image/png" href="{{ asset('images/favicon-circle.png') }}">
     <link rel="shortcut icon" type="image/png" href="{{ asset('images/favicon-circle.png') }}">
 
+    {{-- Anti-Flicker & System Scheme Sync Script --}}
+    <script>
+        (function() {
+            const storedTheme = localStorage.getItem('color-theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (storedTheme === 'dark' || (!storedTheme && systemPrefersDark)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+
     <!-- Google Fonts: Plus Jakarta Sans & Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,6 +37,7 @@
 
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -31,19 +45,19 @@
                         heading: ['"Poppins"', 'sans-serif'],
                     },
                     colors: {
-    brand: {
-        50:  '#F7F1E8',
-        100: '#EFE3D2',
-        500: '#C69A4B',
-        600: '#A97832',
-        700: '#805827',
-        800: '#5A3A24',
-    }
-},
+                        brand: {
+                            50:  '#F7F1E8',
+                            100: '#EFE3D2',
+                            500: '#C69A4B',
+                            600: '#A97832',
+                            700: '#805827',
+                            800: '#5A3A24',
+                        }
+                    },
                     boxShadow: {
-    'card': '0 8px 48px 0 rgba(112,72,45,0.10), 0 2px 8px 0 rgba(0,0,0,0.06)',
-    'btn':  '0 4px 16px 0 rgba(169,120,50,0.28)',
-}
+                        'card': '0 8px 48px 0 rgba(112,72,45,0.10), 0 2px 8px 0 rgba(0,0,0,0.06)',
+                        'btn':  '0 4px 16px 0 rgba(169,120,50,0.28)',
+                    }
                 }
             }
         }
@@ -64,6 +78,15 @@
             radial-gradient(circle at 85% 80%, rgba(112, 72, 45, 0.10), transparent 32%),
             linear-gradient(145deg, #F7F1E8 0%, #EFE3D2 48%, #F9F6F1 100%);
         min-height: 100vh;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    html.dark body {
+        background:
+            radial-gradient(circle at 15% 20%, rgba(245, 158, 11, 0.08), transparent 30%),
+            radial-gradient(circle at 85% 80%, rgba(14, 20, 32, 0.8), transparent 32%),
+            linear-gradient(145deg, #0B0F17 0%, #0E1420 48%, #0B0F17 100%);
+        color: #F3F4F6;
     }
 
     .inp {
@@ -76,7 +99,7 @@
         font-size: 0.9375rem;
         padding: 1rem 1rem 1rem 3rem;
         height: 56px;
-        transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+        transition: border-color 0.15s, box-shadow 0.15s, background 0.15s, color 0.15s;
         outline: none;
     }
 
@@ -90,9 +113,29 @@
         box-shadow: 0 0 0 3px rgba(169, 120, 50, 0.14);
     }
 
+    html.dark .inp {
+        border-color: #2D3748;
+        background: #0E1420;
+        color: #F3F4F6;
+    }
+
+    html.dark .inp::placeholder {
+        color: #64748B;
+    }
+
+    html.dark .inp:focus {
+        border-color: #F59E0B;
+        background: #131B2A;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18);
+    }
+
     .inp-error {
         border-color: #EF4444 !important;
         background: #FFF5F5;
+    }
+
+    html.dark .inp-error {
+        background: rgba(239, 68, 68, 0.1);
     }
 
     .inp-error:focus {
@@ -145,19 +188,35 @@
 </style>
 </head>
 
-<body class="flex min-h-screen items-center justify-center p-4 sm:p-6 antialiased selection:bg-amber-700 selection:text-white"
+<body class="relative flex min-h-screen items-center justify-center p-4 sm:p-6 antialiased selection:bg-amber-700 selection:text-white"
       x-data="{
           showPass: false,
           loading: false,
           onSubmit() { this.loading = true; }
       }">
 
+    {{-- Tombol Toggle Dark/Light Mode di Pojok Kanan Atas Halaman Login --}}
+    <div class="absolute top-5 right-5 z-50">
+        <button id="theme-toggle-guest" type="button" 
+                class="p-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-white/80 dark:bg-stone-900/80 text-stone-600 dark:text-amber-400 shadow-sm backdrop-blur-md transition-all active:scale-95 cursor-pointer"
+                title="Ganti Mode Tampilan">
+            <!-- Icon Sun (Muncul saat Dark Mode) -->
+            <svg id="theme-toggle-light-icon-guest" class="hidden w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <!-- Icon Moon (Muncul saat Light Mode) -->
+            <svg id="theme-toggle-dark-icon-guest" class="hidden w-5 h-5 text-stone-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+        </button>
+    </div>
+
     <div class="w-full max-w-md card-anim">
 
         <!-- ╔══════════════════════════════════════╗ -->
         <!-- ║               CARD                   ║ -->
         <!-- ╚══════════════════════════════════════╝ -->
-        <div class="bg-white rounded-2xl overflow-hidden" style="box-shadow: 0 8px 48px rgba(112,72,45,0.13), 0 2px 12px rgba(0,0,0,0.06);">
+        <div class="bg-white dark:bg-[#131B2A] border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 rounded-2xl overflow-hidden shadow-2xl dark:shadow-[0_8px_48px_rgba(0,0,0,0.5)] transition-colors duration-200">
             <!-- Top accent bar -->
             <div class="h-1.5 w-full" style="background: linear-gradient(90deg,#70482D,#A97832,#C69A4B);"></div>
 
@@ -178,41 +237,41 @@
                             </svg>
                         </div>
                     @endif
-                    <h1 class="text-base font-extrabold font-heading text-slate-900 tracking-tight leading-snug">
+                    <h1 class="text-base font-extrabold font-heading text-slate-900 dark:text-stone-100 tracking-tight leading-snug">
                         Sistem Inventaris Barang
                     </h1>
-                    <p class="text-sm font-semibold mt-0.5" style="color:#A97832;">SMK Negeri 1 Bangsri</p>
+                    <p class="text-sm font-semibold mt-0.5 text-[#A97832] dark:text-amber-400">SMK Negeri 1 Bangsri</p>
                 </div>
 
                 <!-- ── Heading ── -->
                 <div class="mb-6">
-                    <h2 class="text-2xl font-extrabold font-heading text-slate-900 tracking-tight">Selamat Datang </h2>
-                    <p class="text-sm text-slate-500 mt-1.5 leading-relaxed">
+                    <h2 class="text-2xl font-extrabold font-heading text-slate-900 dark:text-stone-100 tracking-tight">Selamat Datang </h2>
+                    <p class="text-sm text-slate-500 dark:text-stone-400 mt-1.5 leading-relaxed">
                         Silakan masuk ke akun Anda untuk mengakses Sistem Inventaris Barang SMK Negeri 1 Bangsri.
                     </p>
                 </div>
 
                 <!-- ── Session Status ── -->
                 @if (session('status'))
-                <div class="flex items-center gap-3 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 mb-5">
-                    <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <div class="flex items-center gap-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-4 py-3 mb-5">
+                    <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <p class="text-sm font-medium text-emerald-700">{{ session('status') }}</p>
+                    <p class="text-sm font-medium text-emerald-700 dark:text-emerald-300">{{ session('status') }}</p>
                 </div>
                 @endif
 
                 <!-- ── Error Alert ── -->
                 @if ($errors->any())
-                <div class="flex items-start gap-3 rounded-xl bg-red-50 border border-red-200 px-4 py-3.5 mb-5">
-                    <svg class="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <div class="flex items-start gap-3 rounded-xl bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-800 px-4 py-3.5 mb-5">
+                    <svg class="w-5 h-5 text-red-500 dark:text-rose-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round"
                               d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
                     </svg>
                     <div>
-                        <p class="text-sm font-semibold text-red-700 mb-0.5">Login gagal</p>
+                        <p class="text-sm font-semibold text-red-700 dark:text-rose-300 mb-0.5">Login gagal</p>
                         @foreach ($errors->all() as $err)
-                            <p class="text-sm text-red-600">{{ $err }}</p>
+                            <p class="text-sm text-red-600 dark:text-rose-400">{{ $err }}</p>
                         @endforeach
                     </div>
                 </div>
@@ -224,10 +283,10 @@
 
                     <!-- Email Siswa / NIP Guru -->
                     <div class="mb-5">
-                        <label for="email" class="block text-sm font-semibold text-slate-700 mb-1.5">Email Siswa / NIP Guru</label>
+                        <label for="email" class="block text-sm font-semibold text-slate-700 dark:text-stone-300 mb-1.5">Email Siswa / NIP Guru</label>
                         <div class="relative">
                             <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-slate-400 dark:text-stone-500" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                           d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
                                 </svg>
@@ -243,10 +302,10 @@
 
                     <!-- Password -->
                     <div class="mb-5">
-                        <label for="password" class="block text-sm font-semibold text-slate-700 mb-1.5">Password</label>
+                        <label for="password" class="block text-sm font-semibold text-slate-700 dark:text-stone-300 mb-1.5">Password</label>
                         <div class="relative">
                             <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-slate-400 dark:text-stone-500" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                           d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
                                 </svg>
@@ -260,7 +319,7 @@
                             <!-- Eye toggle -->
                             <button type="button"
                                     @click="showPass = !showPass"
-                                    class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-amber-700 transition-colors duration-150"
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 dark:text-stone-500 hover:text-amber-700 dark:hover:text-amber-400 transition-colors duration-150 cursor-pointer"
                                     :title="showPass ? 'Sembunyikan' : 'Tampilkan'">
                                 <!-- Eye open (saat password terlihat/terbuka) -->
                                 <svg x-show="showPass" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
@@ -282,7 +341,7 @@
                         <label class="flex items-center gap-2 cursor-pointer group select-none">
                             <input type="checkbox" name="remember" id="remember"
                                    style="width:16px;height:16px;border-radius:4px;border:1.5px solid #CBD5E1;cursor:pointer;accent-color:#A97832;">
-                            <span class="text-sm text-slate-600 group-hover:text-slate-800 transition-colors">Ingat saya</span>
+                            <span class="text-sm text-slate-600 dark:text-stone-300 group-hover:text-slate-800 dark:group-hover:text-stone-100 transition-colors">Ingat saya</span>
                         </label>
                     </div>
 
@@ -316,11 +375,49 @@
         </div>
 
         <!-- Footer -->
-        <p style="text-align:center;margin-top:1.5rem;font-size:0.75rem;color:#64748B;">
+        <p class="text-center mt-6 text-xs text-stone-500 dark:text-stone-400">
             &copy; {{ date('Y') }} SMK Negeri 1 Bangsri &bull; All rights reserved.
         </p>
 
     </div><!-- /max-w-md -->
 
+    <script>
+        const themeToggleBtn = document.getElementById('theme-toggle-guest');
+        const lightIcon = document.getElementById('theme-toggle-light-icon-guest');
+        const darkIcon = document.getElementById('theme-toggle-dark-icon-guest');
+
+        function syncIcons() {
+            if (document.documentElement.classList.contains('dark')) {
+                lightIcon?.classList.remove('hidden');
+                darkIcon?.classList.add('hidden');
+            } else {
+                darkIcon?.classList.remove('hidden');
+                lightIcon?.classList.add('hidden');
+            }
+        }
+        syncIcons();
+
+        themeToggleBtn?.addEventListener('click', function() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+            }
+            syncIcons();
+        });
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('color-theme')) {
+                if (e.matches) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+                syncIcons();
+            }
+        });
+    </script>
 </body>
 </html>

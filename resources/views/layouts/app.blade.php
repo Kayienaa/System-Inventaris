@@ -27,6 +27,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
 
     <style>
+        [x-cloak] {
+            display: none !important;
+        }
+
         :root {
             --brown-dark: #4A3022;
             --brown: #6F4E37;
@@ -68,6 +72,9 @@
             background: rgba(19, 27, 42, 0.92) !important;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
             backdrop-filter: blur(12px);
+            position: relative;
+            z-index: 40;
+            overflow: visible !important;
         }
 
         html.dark .topbar-title {
@@ -480,6 +487,9 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            position: relative;
+            z-index: 40;
+            overflow: visible !important;
         }
 
         .topbar-title {
@@ -853,7 +863,8 @@
                 color: white;
                 position: sticky;
                 top: 0;
-                z-index: 30;
+                z-index: 40;
+                overflow: visible !important;
             }
 
             .mobile-brand-wrap {
@@ -1270,7 +1281,7 @@
     {{-- =========================
          MOBILE TOPBAR
     ========================== --}}
-    <div class="mobile-topbar">
+    <div class="mobile-topbar relative z-40 overflow-visible">
 
         <div class="mobile-brand-wrap">
             <button
@@ -1296,10 +1307,10 @@
             </span>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 overflow-visible">
             {{-- Notifikasi Real-Time In-App Khusus Admin & Super Admin --}}
             @hasanyrole('admin|super_admin')
-                <div class="relative">
+                <div class="relative overflow-visible">
                     @include('layouts.partials.admin-notifications', [
                         'buttonClass' => 'p-2 rounded-xl text-white/80 hover:text-white bg-white/10 hover:bg-white/20 dark:text-stone-300 dark:hover:text-amber-400 dark:border dark:border-stone-800 interactive-btn cursor-pointer relative'
                     ])
@@ -1341,7 +1352,7 @@
     ========================== --}}
     <main class="main-content page-enter">
 
-        <header class="topbar">
+        <header class="topbar relative z-40 overflow-visible">
 
             <div>
                 <p class="topbar-title">
@@ -1349,7 +1360,7 @@
                 </p>
             </div>
 
-            <div class="flex items-center gap-3 sm:gap-4">
+            <div class="flex items-center gap-3 sm:gap-4 overflow-visible">
                 {{-- Notifikasi Real-Time In-App Khusus Admin & Super Admin --}}
                 @hasanyrole('admin|super_admin')
                     @include('layouts.partials.admin-notifications', [

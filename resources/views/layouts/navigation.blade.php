@@ -310,7 +310,7 @@
     {{-- ══════════════════════════════════
          TOPBAR MOBILE (hamburger)
     ══════════════════════════════════ --}}
-    <div class="lg:hidden fixed top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 shadow-sm bg-[#3D2817] dark:bg-[#0E1420] border-b border-[#5a3f2c]/40 dark:border-stone-800">
+    <div class="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3 shadow-sm bg-[#3D2817] dark:bg-[#0E1420] border-b border-[#5a3f2c]/40 dark:border-stone-800 overflow-visible">
 
         <div class="flex items-center gap-3">
             <button @click="sidebarOpen = !sidebarOpen"
@@ -330,10 +330,10 @@
             <span class="brand-font font-heading font-bold text-lg tracking-wide text-[#F8F6F2]">SITEFA</span>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 overflow-visible">
             {{-- Notifikasi Real-Time In-App Khusus Admin & Super Admin --}}
             @hasanyrole('admin|super_admin')
-                <div class="relative">
+                <div class="relative overflow-visible">
                     @include('layouts.partials.admin-notifications', [
                         'buttonClass' => 'p-1.5 rounded-lg text-white/80 hover:text-white bg-white/10 hover:bg-white/20 dark:text-stone-300 dark:hover:text-amber-400 dark:border dark:border-stone-800 transition-all duration-200 cursor-pointer relative'
                     ])
