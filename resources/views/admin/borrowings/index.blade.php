@@ -710,7 +710,7 @@ if (window.Alpine) {
                             <td class="px-5 py-4 text-center">
                                 @if($isOverdue)
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-500/30">
-                                        ● Overdue
+                                        ● Terlambat / Overdue
                                     </span>
                                 @elseif($statusVal === 'pending')
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-yellow-50 text-yellow-700 dark:bg-yellow-950/50 dark:text-yellow-400 border border-yellow-300 dark:border-yellow-500/30">
@@ -878,7 +878,7 @@ if (window.Alpine) {
                             </template>
                             <template x-if="selectedBorrowing?.is_overdue">
                                 <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-500/30">
-                                    Overdue (Terlambat)
+                                    ● Terlambat / Overdue
                                 </span>
                             </template>
                         </div>

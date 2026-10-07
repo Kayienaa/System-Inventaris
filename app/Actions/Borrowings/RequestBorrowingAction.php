@@ -59,7 +59,11 @@ class RequestBorrowingAction
 
             $requestedAt = now();
             if ($borrower->hasRole('siswa')) {
-                $effectiveDueAt = now()->setTime(15, 15, 0);
+                $effectiveDueAt = $this->dueDates->forSiswa($requestedAt);
+                if ($requestedAt->setTimezone('Asia/Jakarta')->isAfter($effectiveDueAt)) {
+                    $penaltyNote = '[Melewati Batas KBM 15:15 WIB]';
+                    $borrowerNote = $borrowerNote ? ($borrowerNote . ' ' . $penaltyNote) : $penaltyNote;
+                }
             } else {
                 $effectiveDueAt = $dueAt ?? $requestedAt->copy()->addDays(3);
             }

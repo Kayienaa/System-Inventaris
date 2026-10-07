@@ -759,5 +759,87 @@ class AssetBorrowingTest extends TestCase
         $this->assertEquals(AssetCondition::Baik, $asset->condition);
         $this->assertEquals(AssetAvailabilityStatus::Tersedia, $asset->availability_status);
     }
+
+    public function test_student_borrowing_automatically_sets_due_date_to_today_15_15_wib(): void
+    {
+        Storage::fake('public');
+
+        $siswa = $this->createSiswa();
+        $admin = $this->createAdmin();
+        $asset = Asset::where('availability_status', AssetAvailabilityStatus::Tersedia)->first();
+
+        // 1. Siswa mengajukan peminjaman dengan input sembarang (misal H+5)
+        $response = $this->actingAs($siswa)->post(route('assets.borrow.store', $asset), [
+            'asset_id' => $asset->id,
+            'borrower_note' => 'Peminjaman praktik KBM siswa',
+            'due_at' => now()->addDays(5)->format('Y-m-d H:i:s'),
+        ]);
+
+        $response->assertRedirect(route('borrowings.mine'));
+        $response->assertSessionHas('success');
+
+        $borrowing = Borrowing::where('borrower_user_id', $siswa->id)->latest('id')->firstOrFail();
+
+        // Pastikan due_at dipaksa menjadi hari ini pukul 15:15:00 WIB
+        $expectedDue = now()->setTimezone('Asia/Jakarta')->setTime(15, 15, 0)->format('Y-m-d H:i:s');
+        $this->assertEquals($expectedDue, $borrowing->due_at->format('Y-m-d H:i:s'));
+
+        // 2. Admin menyetujui peminjaman
+        $this->actingAs($admin)->post(route('admin.borrowings.approve', $borrowing));
+
+        // 3. Admin melakukan serah terima fisik (checkout)
+        $checkoutPhoto = $this->createTestBase64Image();
+        $this->actingAs($admin)->post(route('admin.borrowings.checkout', $borrowing), [
+            'borrowing_evidence' => $checkoutPhoto,
+        ]);
+
+        $borrowing->refresh();
+        $this->assertEquals(BorrowingStatus::Borrowed, $borrowing->status);
+
+        // Pastikan backend TIDAK menimpa nilai 15:15 dengan default addDays(3)
+        $this->assertEquals($expectedDue, $borrowing->due_at->format('Y-m-d H:i:s'));
+    }
+
+    public function test_student_borrowing_past_15_15_wib_is_detected_as_overdue(): void
+    {
+        $siswa = $this->createSiswa();
+        $admin = $this->createAdmin();
+        $asset = Asset::first();
+
+        // Peminjaman siswa hari ini dengan batas 15:15:00 WIB
+        $dueAt = now()->setTimezone('Asia/Jakarta')->setTime(15, 15, 0);
+
+        $borrowing = Borrowing::create([
+            'borrower_user_id' => $siswa->id,
+            'asset_id' => $asset->id,
+            'status' => BorrowingStatus::Borrowed,
+            'requested_at' => now()->setTimezone('Asia/Jakarta')->setTime(8, 0, 0),
+            'borrowed_at' => now()->setTimezone('Asia/Jakarta')->setTime(8, 10, 0),
+            'due_at' => $dueAt,
+            'returned_at' => null,
+            'borrower_note' => 'Praktik KBM',
+        ]);
+
+        // Simulasikan waktu saat ini melewati pukul 15:15 WIB (misal pukul 15:30 WIB)
+        \Carbon\Carbon::setTestNow($dueAt->copy()->addMinutes(15));
+
+        try {
+            // Verifikasi accessor & helper
+            $this->assertTrue($borrowing->is_overdue);
+            $this->assertTrue($borrowing->isOverdue());
+
+            // Verifikasi tampilan di borrowings/mine.blade.php memuat badge Terlambat / Overdue
+            $responseMine = $this->actingAs($siswa)->get(route('borrowings.mine'));
+            $responseMine->assertStatus(200);
+            $responseMine->assertSee('Terlambat / Overdue');
+
+            // Verifikasi tampilan di monitoring admin (admin/borrowings/index.blade.php) memuat badge Terlambat / Overdue
+            $responseAdmin = $this->actingAs($admin)->get(route('admin.borrowings.index'));
+            $responseAdmin->assertStatus(200);
+            $responseAdmin->assertSee('Terlambat / Overdue');
+        } finally {
+            \Carbon\Carbon::setTestNow();
+        }
+    }
 }
 

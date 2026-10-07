@@ -210,6 +210,10 @@
                                     {{ $statusLabel[0] }}
                                 </span>
                             </template>
+                        @elseif ($borrowing->is_overdue)
+                            <span class="px-3 py-1 text-xs font-bold rounded-full border bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-300 dark:border-rose-500/30">
+                                ● Terlambat / Overdue
+                            </span>
                         @else
                             <span class="px-3 py-1 text-xs font-semibold rounded-full border {{ $statusLabel[1] }}">
                                 {{ $statusLabel[0] }}

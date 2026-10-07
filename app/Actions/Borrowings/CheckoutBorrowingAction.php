@@ -39,10 +39,19 @@ class CheckoutBorrowingAction
             }
 
             $borrowedAt = now();
+            $lockedBorrowing->loadMissing('borrower');
+            $isSiswa = $lockedBorrowing->borrower?->hasRole('siswa') ?? false;
+
+            if ($isSiswa) {
+                $effectiveDueAt = $this->dueDates->forSiswa($borrowedAt);
+            } else {
+                $effectiveDueAt = $lockedBorrowing->due_at ?? $this->dueDates->fromCheckout($borrowedAt);
+            }
+
             $updateData = [
                 'status' => BorrowingStatus::Borrowed,
                 'borrowed_at' => $borrowedAt,
-                'due_at' => $this->dueDates->fromCheckout($borrowedAt),
+                'due_at' => $effectiveDueAt,
                 'checkout_condition' => $checkoutCondition,
             ];
 

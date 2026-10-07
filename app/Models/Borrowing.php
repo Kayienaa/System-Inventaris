@@ -113,14 +113,24 @@ class Borrowing extends Model
         return $this->hasMany(NotificationLog::class);
     }
 
+    public function getIsOverdueAttribute(): bool
+    {
+        $allowedStatuses = [
+            BorrowingStatus::Borrowed,
+            'borrowed',
+            BorrowingStatus::ReturnPendingVerification,
+            'return_pending_verification',
+        ];
+
+        return in_array($this->status, $allowedStatuses)
+            && $this->returned_at === null
+            && $this->due_at !== null
+            && now()->isAfter($this->due_at);
+    }
+
     public function isOverdue(): bool
     {
-        return in_array($this->status, [
-            BorrowingStatus::Borrowed,
-            BorrowingStatus::ReturnPendingVerification,
-        ], true)
-            && $this->returned_at === null
-            && $this->due_at?->isPast() === true;
+        return $this->is_overdue;
     }
 
     public function isExpired(): bool

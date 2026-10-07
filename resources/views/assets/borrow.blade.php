@@ -459,7 +459,7 @@
                                 </div>
                                 <div>
                                     <div class="text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                                        <span>Batas Pengembalian: Hari ini pukul 15:15 WIB</span>
+                                        <span>Batas Pengembalian: Hari ini maksimal pukul 15:15 WIB</span>
                                     </div>
                                     <p class="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
                                         Sesuai regulasi lab TEFA, peminjaman siswa wajib dikembalikan pada hari yang sama sebelum jam kepulangan sekolah.
@@ -473,7 +473,7 @@
                                 Read-Only
                             </span>
                         </div>
-                        <input type="hidden" name="due_at" value="{{ now()->setTime(15, 15, 0)->format('Y-m-d H:i') }}">
+                        <input type="hidden" name="due_at" value="{{ now()->setTimezone('Asia/Jakarta')->setTime(15, 15, 0)->format('Y-m-d H:i') }}">
                     @else
                         <div class="flex items-center justify-between mb-1">
                             <label

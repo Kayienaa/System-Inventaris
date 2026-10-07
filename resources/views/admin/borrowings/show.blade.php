@@ -25,7 +25,7 @@
                 </h1>
                 @if($detail['is_overdue'])
                     <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300">
-                        ● Overdue (Terlambat)
+                        ● Terlambat / Overdue
                     </span>
                 @elseif($detail['raw_status'] === 'pending')
                     <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800 border border-yellow-300">

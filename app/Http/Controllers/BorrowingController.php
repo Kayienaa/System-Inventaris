@@ -241,7 +241,7 @@ class BorrowingController extends Controller
         $evidencePath = $this->storeEvidenceImage($request, 'borrowing_evidence', 'borrowing-evidence');
 
         if ($request->user()?->hasRole('siswa')) {
-            $dueAt = now()->setTime(15, 15, 0);
+            $dueAt = now()->setTimezone('Asia/Jakarta')->setTime(15, 15, 0);
         } else {
             $dueAt = $request->filled('due_at')
                 ? \Carbon\Carbon::parse($request->input('due_at'))

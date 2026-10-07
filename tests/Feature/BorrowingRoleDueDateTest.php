@@ -52,7 +52,7 @@ class BorrowingRoleDueDateTest extends TestCase
         $borrowing = Borrowing::where('borrower_user_id', $siswa->id)->firstOrFail();
 
         // Must be today at 15:15:00
-        $expectedDue = now()->setTime(15, 15, 0)->format('Y-m-d H:i:s');
+        $expectedDue = now()->setTimezone('Asia/Jakarta')->setTime(15, 15, 0)->format('Y-m-d H:i:s');
         $this->assertEquals($expectedDue, $borrowing->due_at->format('Y-m-d H:i:s'));
     }
 
@@ -72,7 +72,7 @@ class BorrowingRoleDueDateTest extends TestCase
             now()->addDays(7)
         );
 
-        $expectedDue = now()->setTime(15, 15, 0)->format('Y-m-d H:i:s');
+        $expectedDue = now()->setTimezone('Asia/Jakarta')->setTime(15, 15, 0)->format('Y-m-d H:i:s');
         $this->assertEquals($expectedDue, $borrowing->due_at->format('Y-m-d H:i:s'));
     }
 
@@ -116,7 +116,7 @@ class BorrowingRoleDueDateTest extends TestCase
         ]);
         $responseSiswa = $this->actingAs($siswa)->get(route('assets.borrow', $asset));
         $responseSiswa->assertStatus(200);
-        $responseSiswa->assertSee('Batas Pengembalian: Hari ini pukul 15:15 WIB');
+        $responseSiswa->assertSee('Batas Pengembalian: Hari ini maksimal pukul 15:15 WIB');
         $responseSiswa->assertDontSee('id="due_at_picker"', false);
 
         // Guru view
